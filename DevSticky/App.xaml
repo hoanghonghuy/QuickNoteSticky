@@ -1,0 +1,17 @@
+﻿<Application x:Class="DevSticky.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:DevSticky"
+             ShutdownMode="OnExplicitShutdown">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!-- Default theme: Dark (will be swapped by ThemeService at runtime) -->
+                <ResourceDictionary Source="Resources/DarkTheme.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            
+            <!-- Global converters and resources -->
+            <BooleanToVisibilityConverter x:Key="BoolToVisibility"/>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

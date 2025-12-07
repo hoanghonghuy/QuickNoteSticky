@@ -1,0 +1,358 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" msdata:Ordinal="0" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  
+  <!-- Common -->
+  <data name="AppName" xml:space="preserve">
+    <value>DevSticky</value>
+  </data>
+  <data name="OK" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="Rename" xml:space="preserve">
+    <value>Rename</value>
+  </data>
+  <data name="Close" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="Settings" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>Yes</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>No</value>
+  </data>
+  <data name="Info" xml:space="preserve">
+    <value>Info</value>
+  </data>
+  
+  <!-- Dashboard -->
+  <data name="Dashboard" xml:space="preserve">
+    <value>Dashboard</value>
+  </data>
+  <data name="NewNote" xml:space="preserve">
+    <value>+ New Note</value>
+  </data>
+  <data name="NoteCount" xml:space="preserve">
+    <value>{0} note(s)</value>
+  </data>
+  <data name="NoteCountFiltered" xml:space="preserve">
+    <value>{0} note(s) (filtered)</value>
+  </data>
+  <data name="NoteCountGrouped" xml:space="preserve">
+    <value>{0} note(s) • grouped</value>
+  </data>
+  <data name="ManageGroups" xml:space="preserve">
+    <value>Manage Groups</value>
+  </data>
+  <data name="ManageTags" xml:space="preserve">
+    <value>Manage Tags</value>
+  </data>
+  <data name="ToggleGroupedView" xml:space="preserve">
+    <value>Toggle grouped view</value>
+  </data>
+  <data name="SwitchToFlatView" xml:space="preserve">
+    <value>Switch to flat view</value>
+  </data>
+  <data name="SwitchToGroupedView" xml:space="preserve">
+    <value>Switch to grouped view</value>
+  </data>
+  <data name="EmptyNote" xml:space="preserve">
+    <value>(Empty note)</value>
+  </data>
+  <data name="UntitledNote" xml:space="preserve">
+    <value>Untitled Note</value>
+  </data>
+  <data name="Ungrouped" xml:space="preserve">
+    <value>Ungrouped</value>
+  </data>
+  <data name="ClickToFilter" xml:space="preserve">
+    <value>Click to filter</value>
+  </data>
+  <data name="AddTag" xml:space="preserve">
+    <value>Add tag</value>
+  </data>
+  <data name="RemoveTag" xml:space="preserve">
+    <value>Remove tag</value>
+  </data>
+  
+  <!-- Delete Confirmations -->
+  <data name="DeleteNoteTitle" xml:space="preserve">
+    <value>Delete Note</value>
+  </data>
+  <data name="DeleteNoteMessage" xml:space="preserve">
+    <value>Are you sure you want to delete this note?</value>
+  </data>
+  <data name="DeleteGroupTitle" xml:space="preserve">
+    <value>Delete Group</value>
+  </data>
+  <data name="DeleteGroupMessage" xml:space="preserve">
+    <value>Delete group "{0}"?</value>
+  </data>
+  <data name="DeleteGroupMessageWithNotes" xml:space="preserve">
+    <value>Delete group "{0}"?
+
+{1} note(s) will be moved to Ungrouped.</value>
+  </data>
+  <data name="DeleteTagTitle" xml:space="preserve">
+    <value>Delete Tag</value>
+  </data>
+  <data name="DeleteTagMessage" xml:space="preserve">
+    <value>Delete tag "{0}"?</value>
+  </data>
+  <data name="DeleteTagMessageWithNotes" xml:space="preserve">
+    <value>Delete tag "{0}"?
+
+This tag will be removed from {1} note(s).</value>
+  </data>
+  
+  <!-- Group Management -->
+  <data name="ManageGroupsTitle" xml:space="preserve">
+    <value>Manage Groups</value>
+  </data>
+  <data name="NewGroup" xml:space="preserve">
+    <value>+ New Group</value>
+  </data>
+  <data name="GroupCount" xml:space="preserve">
+    <value>{0} group(s)</value>
+  </data>
+  <data name="RenameGroup" xml:space="preserve">
+    <value>Rename Group</value>
+  </data>
+  <data name="DefaultGroupName" xml:space="preserve">
+    <value>New Group</value>
+  </data>
+  
+  <!-- Tag Management -->
+  <data name="ManageTagsTitle" xml:space="preserve">
+    <value>Manage Tags</value>
+  </data>
+  <data name="NewTag" xml:space="preserve">
+    <value>+ New Tag</value>
+  </data>
+  <data name="TagCount" xml:space="preserve">
+    <value>{0} tag(s)</value>
+  </data>
+  <data name="RenameTag" xml:space="preserve">
+    <value>Rename Tag</value>
+  </data>
+  <data name="ChangeColor" xml:space="preserve">
+    <value>Change color</value>
+  </data>
+  <data name="DefaultTagName" xml:space="preserve">
+    <value>Tag</value>
+  </data>
+  <data name="NoTagsAvailable" xml:space="preserve">
+    <value>No more tags available. Create new tags in Tag Management.</value>
+  </data>
+  
+  <!-- Settings -->
+  <data name="SettingsTitle" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="DefaultOpacity" xml:space="preserve">
+    <value>Default Opacity</value>
+  </data>
+  <data name="FontSize" xml:space="preserve">
+    <value>Font Size</value>
+  </data>
+  <data name="AutoSaveDelay" xml:space="preserve">
+    <value>Auto-save Delay</value>
+  </data>
+  <data name="DefaultWindowSize" xml:space="preserve">
+    <value>Default Window Size</value>
+  </data>
+  <data name="DefaultWidth" xml:space="preserve">
+    <value>Default Width</value>
+  </data>
+  <data name="DefaultHeight" xml:space="preserve">
+    <value>Default Height</value>
+  </data>
+  <data name="Language" xml:space="preserve">
+    <value>Language</value>
+  </data>
+  <data name="Theme" xml:space="preserve">
+    <value>Theme</value>
+  </data>
+  <data name="ThemeLight" xml:space="preserve">
+    <value>Light</value>
+  </data>
+  <data name="ThemeDark" xml:space="preserve">
+    <value>Dark</value>
+  </data>
+  <data name="ThemeSystem" xml:space="preserve">
+    <value>System</value>
+  </data>
+  <data name="BackupRestore" xml:space="preserve">
+    <value>Backup &amp; Restore</value>
+  </data>
+  <data name="ExportData" xml:space="preserve">
+    <value>📤 Export</value>
+  </data>
+  <data name="ImportData" xml:space="preserve">
+    <value>📥 Import</value>
+  </data>
+  <data name="BackupHint" xml:space="preserve">
+    <value>Export your notes to a backup file. Import to restore from a previous backup.</value>
+  </data>
+  <data name="ExportSuccess" xml:space="preserve">
+    <value>Data exported successfully!</value>
+  </data>
+  <data name="ExportError" xml:space="preserve">
+    <value>Failed to export data.</value>
+  </data>
+  <data name="ImportSuccess" xml:space="preserve">
+    <value>Data imported successfully! Please restart the app.</value>
+  </data>
+  <data name="ImportError" xml:space="preserve">
+    <value>Failed to import data. The file may be corrupted.</value>
+  </data>
+  <data name="ImportConfirm" xml:space="preserve">
+    <value>This will replace all current data. Continue?</value>
+  </data>
+  <data name="ImportConfirmTitle" xml:space="preserve">
+    <value>Confirm Import</value>
+  </data>
+  <data name="Success" xml:space="preserve">
+    <value>Success</value>
+  </data>
+  <data name="Error" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  
+  <!-- System Tray -->
+  <data name="TrayNewNote" xml:space="preserve">
+    <value>New Note</value>
+  </data>
+  <data name="TrayShowAll" xml:space="preserve">
+    <value>Show All Notes</value>
+  </data>
+  <data name="TrayHideAll" xml:space="preserve">
+    <value>Hide All Notes</value>
+  </data>
+  <data name="TrayDashboard" xml:space="preserve">
+    <value>Dashboard</value>
+  </data>
+  <data name="TraySettings" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="TrayExit" xml:space="preserve">
+    <value>Exit</value>
+  </data>
+  
+  <!-- Note Window -->
+  <data name="Pin" xml:space="preserve">
+    <value>Pin</value>
+  </data>
+  <data name="Unpin" xml:space="preserve">
+    <value>Unpin</value>
+  </data>
+  <data name="Search" xml:space="preserve">
+    <value>Search</value>
+  </data>
+  <data name="SearchPlaceholder" xml:space="preserve">
+    <value>Search...</value>
+  </data>
+  <data name="Next" xml:space="preserve">
+    <value>Next</value>
+  </data>
+  <data name="Previous" xml:space="preserve">
+    <value>Previous</value>
+  </data>
+  <data name="Format" xml:space="preserve">
+    <value>Format</value>
+  </data>
+  <data name="Opacity" xml:space="preserve">
+    <value>Opacity</value>
+  </data>
+  
+  <!-- Languages -->
+  <data name="LangPlainText" xml:space="preserve">
+    <value>Plain Text</value>
+  </data>
+  <data name="LangCSharp" xml:space="preserve">
+    <value>C#</value>
+  </data>
+  <data name="LangJava" xml:space="preserve">
+    <value>Java</value>
+  </data>
+  <data name="LangJavaScript" xml:space="preserve">
+    <value>JavaScript</value>
+  </data>
+  <data name="LangTypeScript" xml:space="preserve">
+    <value>TypeScript</value>
+  </data>
+  <data name="LangJSON" xml:space="preserve">
+    <value>JSON</value>
+  </data>
+  <data name="LangXML" xml:space="preserve">
+    <value>XML</value>
+  </data>
+  <data name="LangSQL" xml:space="preserve">
+    <value>SQL</value>
+  </data>
+  <data name="LangPython" xml:space="preserve">
+    <value>Python</value>
+  </data>
+  <data name="LangBash" xml:space="preserve">
+    <value>Bash</value>
+  </data>
+  
+  <!-- Welcome -->
+  <data name="WelcomeTitle" xml:space="preserve">
+    <value>Welcome</value>
+  </data>
+  <data name="WelcomeContent" xml:space="preserve">
+    <value>// Welcome to DevSticky!
+// Your developer-friendly sticky notes</value>
+  </data>
+</root>
