@@ -1,6 +1,8 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
+using DevSticky.Interfaces;
 using DevSticky.Services;
 using DevSticky.ViewModels;
 using Button = System.Windows.Controls.Button;
@@ -19,6 +21,7 @@ namespace DevSticky.Views;
 public partial class DashboardWindow : Window
 {
     private readonly MainViewModel _mainViewModel;
+    private ICloudSyncService? _cloudSyncService;
     private Guid? _editingNoteId;
     private Guid? _filterTagId;
     private bool _isGroupedView;
@@ -27,7 +30,23 @@ public partial class DashboardWindow : Window
     {
         InitializeComponent();
         _mainViewModel = mainViewModel;
+        
+        // Try to get cloud sync service for status display
+        try
+        {
+            _cloudSyncService = App.GetService<ICloudSyncService>();
+            if (_cloudSyncService != null)
+            {
+                _cloudSyncService.SyncProgress += OnSyncProgress;
+            }
+        }
+        catch
+        {
+            // Cloud sync service not available
+        }
+        
         RefreshNotesList();
+        UpdateCloudSyncStatus();
     }
 
     public void RefreshNotesList()
@@ -199,6 +218,123 @@ public partial class DashboardWindow : Window
         var window = new TagManagementWindow(_mainViewModel);
         window.ShowDialog();
         RefreshNotesList();
+    }
+
+    // New v2.0 feature buttons
+    private void BtnSnippetLibrary_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var window = new SnippetBrowserWindow();
+            window.Owner = this;
+            window.ShowDialog();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Failed to open snippet library: {ex.Message}");
+            CustomDialog.ShowInfo(L.Get("Error"), L.Get("SnippetLibraryNotAvailable"), this);
+        }
+    }
+
+    private void BtnTemplateManagement_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var window = new TemplateSelectionDialog();
+            window.Owner = this;
+            window.ShowDialog();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Failed to open template management: {ex.Message}");
+            CustomDialog.ShowInfo(L.Get("Error"), L.Get("TemplateManagementNotAvailable"), this);
+        }
+    }
+
+    private void BtnGraphView_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var window = new GraphViewWindow();
+            window.NoteClicked += (_, noteId) => _mainViewModel.OpenNoteById(noteId);
+            window.Owner = this;
+            window.Show();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Failed to open graph view: {ex.Message}");
+            CustomDialog.ShowInfo(L.Get("Error"), L.Get("GraphViewNotAvailable"), this);
+        }
+    }
+
+    // Cloud Sync Status
+    private void UpdateCloudSyncStatus()
+    {
+        if (_cloudSyncService == null)
+        {
+            SyncStatusBadge.Visibility = Visibility.Collapsed;
+            return;
+        }
+
+        SyncStatusBadge.Visibility = Visibility.Visible;
+        
+        switch (_cloudSyncService.Status)
+        {
+            case SyncStatus.Disconnected:
+                SyncStatusIcon.Text = "☁️";
+                SyncStatusText.Text = L.Get("CloudStatusDisconnected");
+                SyncStatusBadge.Background = new SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#45475A"));
+                break;
+            case SyncStatus.Connecting:
+                SyncStatusIcon.Text = "🔄";
+                SyncStatusText.Text = L.Get("CloudStatusConnecting");
+                SyncStatusBadge.Background = new SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#F9E2AF"));
+                break;
+            case SyncStatus.Syncing:
+                SyncStatusIcon.Text = "🔄";
+                SyncStatusText.Text = L.Get("CloudStatusSyncing");
+                SyncStatusBadge.Background = new SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#89B4FA"));
+                break;
+            case SyncStatus.Idle:
+                SyncStatusIcon.Text = "✓";
+                var lastSync = _cloudSyncService.LastSyncResult?.CompletedAt;
+                SyncStatusText.Text = lastSync.HasValue 
+                    ? L.Get("CloudStatusConnectedLastSync", lastSync.Value.ToString("HH:mm"))
+                    : L.Get("CloudStatusConnected");
+                SyncStatusBadge.Background = new SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#A6E3A1"));
+                break;
+            case SyncStatus.Error:
+                SyncStatusIcon.Text = "⚠️";
+                SyncStatusText.Text = L.Get("CloudStatusError");
+                SyncStatusBadge.Background = new SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#F38BA8"));
+                break;
+        }
+    }
+
+    private void OnSyncProgress(object? sender, SyncProgressEventArgs e)
+    {
+        Dispatcher.Invoke(() =>
+        {
+            UpdateCloudSyncStatus();
+        });
+    }
+
+    private async void SyncStatus_Click(object sender, MouseButtonEventArgs e)
+    {
+        if (_cloudSyncService == null) return;
+
+        if (_cloudSyncService.Status == SyncStatus.Error || _cloudSyncService.Status == SyncStatus.Idle)
+        {
+            try
+            {
+                await _cloudSyncService.SyncAsync();
+                UpdateCloudSyncStatus();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Manual sync failed: {ex.Message}");
+            }
+        }
     }
 
     // Inline Title Edit
@@ -437,8 +573,22 @@ public partial class DashboardWindow : Window
 
     protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
     {
+        // Unsubscribe from cloud sync events
+        if (_cloudSyncService != null)
+        {
+            _cloudSyncService.SyncProgress -= OnSyncProgress;
+        }
+        
         e.Cancel = true;
         Hide();
+    }
+
+    /// <summary>
+    /// Refresh the cloud sync status display
+    /// </summary>
+    public void RefreshSyncStatus()
+    {
+        UpdateCloudSyncStatus();
     }
 
     // Helper methods

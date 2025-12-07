@@ -348,6 +348,223 @@
                         <ComboBoxItem Content="{loc:Localize ThemeSystem}" Tag="System"/>
                     </ComboBox>
                     
+                    <!-- Hotkeys Section -->
+                    <Border BorderBrush="{DynamicResource Surface1Brush}" BorderThickness="0,1,0,0" 
+                            Padding="0,16,0,0" Margin="0,8,0,0">
+                        <StackPanel>
+                            <TextBlock Text="{loc:Localize Hotkeys}" Style="{StaticResource SettingLabel}" 
+                                       FontWeight="SemiBold" Margin="0,0,0,12"/>
+                            
+                            <!-- New Note Hotkey -->
+                            <TextBlock Style="{StaticResource SettingLabel}" Text="{loc:Localize NewNoteHotkey}"/>
+                            <Grid Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox x:Name="NewNoteHotkeyBox" Grid.Column="0" IsReadOnly="True"
+                                         Background="{DynamicResource Surface1Brush}" 
+                                         Foreground="{DynamicResource TextBrush}"
+                                         BorderThickness="0" Padding="8,6" 
+                                         PreviewKeyDown="HotkeyBox_PreviewKeyDown"
+                                         GotFocus="HotkeyBox_GotFocus"
+                                         LostFocus="HotkeyBox_LostFocus"/>
+                                <Button Grid.Column="1" Content="✕" Width="28" Height="28" Margin="4,0,0,0"
+                                        Style="{StaticResource IconBtn}" 
+                                        Click="ClearNewNoteHotkey_Click"/>
+                            </Grid>
+                            
+                            <!-- Toggle Visibility Hotkey -->
+                            <TextBlock Style="{StaticResource SettingLabel}" Text="{loc:Localize ToggleVisibilityHotkey}"/>
+                            <Grid Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox x:Name="ToggleVisibilityHotkeyBox" Grid.Column="0" IsReadOnly="True"
+                                         Background="{DynamicResource Surface1Brush}" 
+                                         Foreground="{DynamicResource TextBrush}"
+                                         BorderThickness="0" Padding="8,6"
+                                         PreviewKeyDown="HotkeyBox_PreviewKeyDown"
+                                         GotFocus="HotkeyBox_GotFocus"
+                                         LostFocus="HotkeyBox_LostFocus"/>
+                                <Button Grid.Column="1" Content="✕" Width="28" Height="28" Margin="4,0,0,0"
+                                        Style="{StaticResource IconBtn}" 
+                                        Click="ClearToggleVisibilityHotkey_Click"/>
+                            </Grid>
+                            
+                            <!-- Quick Capture Hotkey -->
+                            <TextBlock Style="{StaticResource SettingLabel}" Text="{loc:Localize QuickCaptureHotkey}"/>
+                            <Grid Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox x:Name="QuickCaptureHotkeyBox" Grid.Column="0" IsReadOnly="True"
+                                         Background="{DynamicResource Surface1Brush}" 
+                                         Foreground="{DynamicResource TextBrush}"
+                                         BorderThickness="0" Padding="8,6"
+                                         PreviewKeyDown="HotkeyBox_PreviewKeyDown"
+                                         GotFocus="HotkeyBox_GotFocus"
+                                         LostFocus="HotkeyBox_LostFocus"/>
+                                <Button Grid.Column="1" Content="✕" Width="28" Height="28" Margin="4,0,0,0"
+                                        Style="{StaticResource IconBtn}" 
+                                        Click="ClearQuickCaptureHotkey_Click"/>
+                            </Grid>
+                            
+                            <TextBlock Text="{loc:Localize HotkeyHint}" Foreground="{DynamicResource SubtextBrush}" 
+                                       FontSize="11" TextWrapping="Wrap" Margin="0,0,0,8"/>
+                            
+                            <!-- Hotkey status indicator -->
+                            <TextBlock x:Name="HotkeyStatusText" Foreground="{DynamicResource SubtextBrush}" 
+                                       FontSize="11" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Border>
+                    
+                    <!-- Cloud Sync Section (Requirements 5.1, 5.10, 5.11) -->
+                    <Border BorderBrush="{DynamicResource Surface1Brush}" BorderThickness="0,1,0,0" 
+                            Padding="0,16,0,0" Margin="0,8,0,0">
+                        <StackPanel>
+                            <TextBlock Text="{loc:Localize CloudSync}" Style="{StaticResource SettingLabel}" 
+                                       FontWeight="SemiBold" Margin="0,0,0,12"/>
+                            
+                            <!-- Cloud Provider Selection -->
+                            <TextBlock Style="{StaticResource SettingLabel}" Text="{loc:Localize CloudProvider}"/>
+                            <ComboBox x:Name="CloudProviderCombo" Margin="0,0,0,12"
+                                      SelectionChanged="CloudProviderCombo_SelectionChanged">
+                                <ComboBox.Style>
+                                    <Style TargetType="ComboBox">
+                                        <Setter Property="Background" Value="{DynamicResource Surface1Brush}"/>
+                                        <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+                                        <Setter Property="BorderThickness" Value="0"/>
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="ComboBox">
+                                                    <Grid>
+                                                        <ToggleButton x:Name="ToggleButton" 
+                                                                      Background="{DynamicResource Surface1Brush}"
+                                                                      BorderThickness="0" Focusable="False"
+                                                                      IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
+                                                            <ToggleButton.Template>
+                                                                <ControlTemplate TargetType="ToggleButton">
+                                                                    <Border x:Name="bd" Background="{TemplateBinding Background}" 
+                                                                            CornerRadius="4" Padding="12,8">
+                                                                        <Grid>
+                                                                            <ContentPresenter x:Name="ContentSite" IsHitTestVisible="False"
+                                                                                              Content="{TemplateBinding Content}"
+                                                                                              HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                                                                            <TextBlock Text="▾" HorizontalAlignment="Right" 
+                                                                                       Foreground="{DynamicResource SubtextBrush}" VerticalAlignment="Center"/>
+                                                                        </Grid>
+                                                                    </Border>
+                                                                    <ControlTemplate.Triggers>
+                                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                                            <Setter TargetName="bd" Property="Background" Value="{DynamicResource Surface2Brush}"/>
+                                                                        </Trigger>
+                                                                    </ControlTemplate.Triggers>
+                                                                </ControlTemplate>
+                                                            </ToggleButton.Template>
+                                                            <ContentPresenter Content="{TemplateBinding SelectionBoxItem}"
+                                                                              ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"/>
+                                                        </ToggleButton>
+                                                        <Popup x:Name="Popup" Placement="Bottom" IsOpen="{TemplateBinding IsDropDownOpen}"
+                                                               AllowsTransparency="True" Focusable="False" PopupAnimation="Slide">
+                                                            <Border Background="{DynamicResource Surface0Brush}" 
+                                                                    BorderBrush="{DynamicResource Surface1Brush}" 
+                                                                    BorderThickness="1" CornerRadius="4" Margin="0,2,0,0">
+                                                                <ItemsPresenter/>
+                                                            </Border>
+                                                        </Popup>
+                                                    </Grid>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </ComboBox.Style>
+                                <ComboBox.ItemContainerStyle>
+                                    <Style TargetType="ComboBoxItem">
+                                        <Setter Property="Background" Value="Transparent"/>
+                                        <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+                                        <Setter Property="Padding" Value="12,8"/>
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="ComboBoxItem">
+                                                    <Border x:Name="bd" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+                                                        <ContentPresenter/>
+                                                    </Border>
+                                                    <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter TargetName="bd" Property="Background" Value="{DynamicResource Surface1Brush}"/>
+                                                        </Trigger>
+                                                        <Trigger Property="IsSelected" Value="True">
+                                                            <Setter TargetName="bd" Property="Background" Value="{DynamicResource Surface2Brush}"/>
+                                                        </Trigger>
+                                                    </ControlTemplate.Triggers>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </ComboBox.ItemContainerStyle>
+                                <ComboBoxItem Content="{loc:Localize CloudProviderNone}" Tag="None"/>
+                                <ComboBoxItem Content="OneDrive" Tag="OneDrive"/>
+                                <ComboBoxItem Content="Google Drive" Tag="GoogleDrive"/>
+                            </ComboBox>
+                            
+                            <!-- Connect/Disconnect Button -->
+                            <Grid Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock x:Name="CloudStatusText" Grid.Column="0" 
+                                           Foreground="{DynamicResource SubtextBrush}" 
+                                           FontSize="12" VerticalAlignment="Center"
+                                           Text="{loc:Localize CloudStatusDisconnected}"/>
+                                <Button x:Name="CloudConnectBtn" Grid.Column="1" 
+                                        Content="{loc:Localize CloudConnect}" 
+                                        Style="{StaticResource ActionBtn}" 
+                                        Click="CloudConnectBtn_Click" Padding="16,8"/>
+                            </Grid>
+                            
+                            <!-- Encryption Passphrase (Requirements 5.11) -->
+                            <TextBlock Style="{StaticResource SettingLabel}" Text="{loc:Localize EncryptionPassphrase}"/>
+                            <Grid Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <PasswordBox x:Name="EncryptionPassphraseBox" Grid.Column="0"
+                                             Background="{DynamicResource Surface1Brush}" 
+                                             Foreground="{DynamicResource TextBrush}"
+                                             BorderThickness="0" Padding="8,6"
+                                             PasswordChanged="EncryptionPassphraseBox_PasswordChanged"/>
+                                <Button Grid.Column="1" Content="👁" Width="28" Height="28" Margin="4,0,0,0"
+                                        Style="{StaticResource IconBtn}" 
+                                        Click="TogglePassphraseVisibility_Click"
+                                        ToolTip="{loc:Localize ShowPassword}"/>
+                            </Grid>
+                            <TextBlock Text="{loc:Localize EncryptionHint}" Foreground="{DynamicResource SubtextBrush}" 
+                                       FontSize="11" TextWrapping="Wrap" Margin="0,0,0,12"/>
+                            
+                            <!-- Sync Interval -->
+                            <TextBlock Style="{StaticResource SettingLabel}">
+                                <Run Text="{loc:Localize SyncInterval}"/>
+                                <Run Text=": "/>
+                                <Run x:Name="SyncIntervalValue" Text="5"/>
+                                <Run Text=" "/>
+                                <Run Text="{loc:Localize Minutes}"/>
+                            </TextBlock>
+                            <Slider x:Name="SyncIntervalSlider" Style="{StaticResource SettingSlider}"
+                                    Minimum="1" Maximum="60" Value="5"
+                                    ValueChanged="SyncIntervalSlider_ValueChanged"
+                                    IsSnapToTickEnabled="True" TickFrequency="1"/>
+                            
+                            <!-- Sync Status Indicator -->
+                            <TextBlock x:Name="CloudSyncStatusText" Foreground="{DynamicResource SubtextBrush}" 
+                                       FontSize="11" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Border>
+                    
                     <!-- Backup & Restore Section -->
                     <Border BorderBrush="{DynamicResource Surface1Brush}" BorderThickness="0,1,0,0" 
                             Padding="0,16,0,0" Margin="0,8,0,0">

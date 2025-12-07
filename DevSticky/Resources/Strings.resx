@@ -355,4 +355,360 @@ This tag will be removed from {1} note(s).</value>
     <value>// Welcome to DevSticky!
 // Your developer-friendly sticky notes</value>
   </data>
+  
+  <!-- Hotkeys -->
+  <data name="HotkeyConflictTitle" xml:space="preserve">
+    <value>Hotkey Conflict</value>
+  </data>
+  <data name="HotkeyConflictMessage" xml:space="preserve">
+    <value>Could not register hotkey "{0}" ({1}). It may be in use by another application.</value>
+  </data>
+  <data name="Hotkeys" xml:space="preserve">
+    <value>Hotkeys</value>
+  </data>
+  <data name="NewNoteHotkey" xml:space="preserve">
+    <value>New Note</value>
+  </data>
+  <data name="ToggleVisibilityHotkey" xml:space="preserve">
+    <value>Toggle Visibility</value>
+  </data>
+  <data name="QuickCaptureHotkey" xml:space="preserve">
+    <value>Quick Capture</value>
+  </data>
+  <data name="SnippetBrowserHotkey" xml:space="preserve">
+    <value>Snippet Browser</value>
+  </data>
+  <data name="HotkeyHint" xml:space="preserve">
+    <value>Press a key combination (e.g., Ctrl+Shift+N)</value>
+  </data>
+  <data name="HotkeyAvailable" xml:space="preserve">
+    <value>Available</value>
+  </data>
+  <data name="HotkeyInUse" xml:space="preserve">
+    <value>In use by another application</value>
+  </data>
+  <data name="ClearHotkey" xml:space="preserve">
+    <value>Clear</value>
+  </data>
+  
+  <!-- Cloud Sync -->
+  <data name="CloudSync" xml:space="preserve">
+    <value>Cloud Sync</value>
+  </data>
+  <data name="CloudProvider" xml:space="preserve">
+    <value>Cloud Provider</value>
+  </data>
+  <data name="CloudProviderNone" xml:space="preserve">
+    <value>None (Disabled)</value>
+  </data>
+  <data name="CloudConnect" xml:space="preserve">
+    <value>Connect</value>
+  </data>
+  <data name="CloudDisconnect" xml:space="preserve">
+    <value>Disconnect</value>
+  </data>
+  <data name="CloudConnecting" xml:space="preserve">
+    <value>Connecting...</value>
+  </data>
+  <data name="CloudStatusDisconnected" xml:space="preserve">
+    <value>Not connected</value>
+  </data>
+  <data name="CloudStatusConnecting" xml:space="preserve">
+    <value>Connecting...</value>
+  </data>
+  <data name="CloudStatusSyncing" xml:space="preserve">
+    <value>Syncing...</value>
+  </data>
+  <data name="CloudStatusConnected" xml:space="preserve">
+    <value>Connected</value>
+  </data>
+  <data name="CloudStatusConnectedLastSync" xml:space="preserve">
+    <value>Connected • Last sync: {0}</value>
+  </data>
+  <data name="CloudStatusError" xml:space="preserve">
+    <value>Error - Click to retry</value>
+  </data>
+  <data name="CloudConnectSuccess" xml:space="preserve">
+    <value>Successfully connected to cloud storage!</value>
+  </data>
+  <data name="CloudConnectFailed" xml:space="preserve">
+    <value>Failed to connect to cloud storage.</value>
+  </data>
+  <data name="CloudSelectProvider" xml:space="preserve">
+    <value>Please select a cloud provider first.</value>
+  </data>
+  <data name="CloudSyncNotAvailable" xml:space="preserve">
+    <value>Cloud sync service not available</value>
+  </data>
+  <data name="EncryptionPassphrase" xml:space="preserve">
+    <value>Encryption Passphrase</value>
+  </data>
+  <data name="EncryptionHint" xml:space="preserve">
+    <value>Your notes will be encrypted before uploading. Keep this passphrase safe - it cannot be recovered!</value>
+  </data>
+  <data name="ShowPassword" xml:space="preserve">
+    <value>Show password</value>
+  </data>
+  <data name="PassphraseLength" xml:space="preserve">
+    <value>Passphrase length: {0} characters</value>
+  </data>
+  <data name="SyncInterval" xml:space="preserve">
+    <value>Sync Interval</value>
+  </data>
+  <data name="Minutes" xml:space="preserve">
+    <value>minutes</value>
+  </data>
+  <data name="SyncNow" xml:space="preserve">
+    <value>Sync Now</value>
+  </data>
+  <data name="LastSyncTime" xml:space="preserve">
+    <value>Last sync: {0}</value>
+  </data>
+  <data name="NeverSynced" xml:space="preserve">
+    <value>Never synced</value>
+  </data>
+  
+  <!-- Dashboard v2.0 Features -->
+  <data name="SnippetLibrary" xml:space="preserve">
+    <value>Snippet Library</value>
+  </data>
+  <data name="SnippetLibraryNotAvailable" xml:space="preserve">
+    <value>Snippet library is not available.</value>
+  </data>
+  <data name="TemplateManagement" xml:space="preserve">
+    <value>Template Management</value>
+  </data>
+  <data name="TemplateManagementNotAvailable" xml:space="preserve">
+    <value>Template management is not available.</value>
+  </data>
+  <data name="GraphView" xml:space="preserve">
+    <value>Graph View</value>
+  </data>
+  <data name="GraphViewNotAvailable" xml:space="preserve">
+    <value>Graph view is not available.</value>
+  </data>
+  
+  <!-- Snippet Browser -->
+  <data name="SnippetBrowserTitle" xml:space="preserve">
+    <value>Snippet Library</value>
+  </data>
+  <data name="SearchSnippets" xml:space="preserve">
+    <value>Search snippets...</value>
+  </data>
+  <data name="AllCategories" xml:space="preserve">
+    <value>All Categories</value>
+  </data>
+  <data name="NoSnippetsFound" xml:space="preserve">
+    <value>No snippets found</value>
+  </data>
+  <data name="SnippetPreview" xml:space="preserve">
+    <value>Preview</value>
+  </data>
+  <data name="InsertSnippet" xml:space="preserve">
+    <value>Insert</value>
+  </data>
+  <data name="EditSnippet" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="DeleteSnippet" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="ExportSnippets" xml:space="preserve">
+    <value>Export</value>
+  </data>
+  <data name="ImportSnippets" xml:space="preserve">
+    <value>Import</value>
+  </data>
+  <data name="SnippetName" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="SnippetDescription" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="SnippetCategory" xml:space="preserve">
+    <value>Category</value>
+  </data>
+  <data name="SnippetTags" xml:space="preserve">
+    <value>Tags</value>
+  </data>
+  <data name="SnippetContent" xml:space="preserve">
+    <value>Content</value>
+  </data>
+  <data name="SaveSnippet" xml:space="preserve">
+    <value>Save Snippet</value>
+  </data>
+  <data name="SaveSnippetTitle" xml:space="preserve">
+    <value>Save as Snippet</value>
+  </data>
+  <data name="PlaceholdersDetected" xml:space="preserve">
+    <value>Placeholders detected: {0}</value>
+  </data>
+  <data name="SnippetExportSuccess" xml:space="preserve">
+    <value>Snippets exported successfully!</value>
+  </data>
+  <data name="SnippetImportSuccess" xml:space="preserve">
+    <value>Snippets imported successfully!</value>
+  </data>
+  <data name="SnippetImportConflict" xml:space="preserve">
+    <value>Import Conflict</value>
+  </data>
+  <data name="SnippetImportConflictMessage" xml:space="preserve">
+    <value>Some snippets already exist. How would you like to handle conflicts?</value>
+  </data>
+  <data name="SkipExisting" xml:space="preserve">
+    <value>Skip existing</value>
+  </data>
+  <data name="ReplaceExisting" xml:space="preserve">
+    <value>Replace existing</value>
+  </data>
+  <data name="KeepBoth" xml:space="preserve">
+    <value>Keep both</value>
+  </data>
+  
+  <!-- Template Selection -->
+  <data name="TemplateSelectionTitle" xml:space="preserve">
+    <value>Select Template</value>
+  </data>
+  <data name="BlankNote" xml:space="preserve">
+    <value>Blank Note</value>
+  </data>
+  <data name="BlankNoteDescription" xml:space="preserve">
+    <value>Start with an empty note</value>
+  </data>
+  <data name="BuiltInTemplates" xml:space="preserve">
+    <value>Built-in Templates</value>
+  </data>
+  <data name="UserTemplates" xml:space="preserve">
+    <value>My Templates</value>
+  </data>
+  <data name="CreateTemplate" xml:space="preserve">
+    <value>Create Template</value>
+  </data>
+  <data name="EditTemplate" xml:space="preserve">
+    <value>Edit Template</value>
+  </data>
+  <data name="DeleteTemplate" xml:space="preserve">
+    <value>Delete Template</value>
+  </data>
+  <data name="ExportTemplates" xml:space="preserve">
+    <value>Export Templates</value>
+  </data>
+  <data name="ImportTemplates" xml:space="preserve">
+    <value>Import Templates</value>
+  </data>
+  <data name="TemplateExportSuccess" xml:space="preserve">
+    <value>Templates exported successfully!</value>
+  </data>
+  <data name="TemplateImportSuccess" xml:space="preserve">
+    <value>Templates imported successfully!</value>
+  </data>
+  <data name="SaveAsTemplate" xml:space="preserve">
+    <value>Save as Template</value>
+  </data>
+  <data name="SaveAsTemplateTitle" xml:space="preserve">
+    <value>Save Note as Template</value>
+  </data>
+  <data name="TemplateName" xml:space="preserve">
+    <value>Template Name</value>
+  </data>
+  <data name="TemplateDescription" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="TemplateCategory" xml:space="preserve">
+    <value>Category</value>
+  </data>
+  <data name="CannotDeleteBuiltIn" xml:space="preserve">
+    <value>Built-in templates cannot be deleted.</value>
+  </data>
+  
+  <!-- Graph View -->
+  <data name="GraphViewTitle" xml:space="preserve">
+    <value>Note Graph</value>
+  </data>
+  <data name="GraphViewEmpty" xml:space="preserve">
+    <value>No linked notes found</value>
+  </data>
+  <data name="GraphViewHint" xml:space="preserve">
+    <value>Click a node to open the note. Scroll to zoom, drag to pan.</value>
+  </data>
+  <data name="GraphNodeLinks" xml:space="preserve">
+    <value>{0} links</value>
+  </data>
+  <data name="GraphNodeBacklinks" xml:space="preserve">
+    <value>{0} backlinks</value>
+  </data>
+  
+  <!-- Note Linking -->
+  <data name="ShowBacklinks" xml:space="preserve">
+    <value>Show Backlinks</value>
+  </data>
+  <data name="BacklinksTitle" xml:space="preserve">
+    <value>Backlinks</value>
+  </data>
+  <data name="NoBacklinks" xml:space="preserve">
+    <value>No notes link to this note</value>
+  </data>
+  <data name="BrokenLink" xml:space="preserve">
+    <value>Broken link (note deleted)</value>
+  </data>
+  <data name="LinkToNote" xml:space="preserve">
+    <value>Link to note</value>
+  </data>
+  
+  <!-- Markdown Preview -->
+  <data name="MarkdownPreview" xml:space="preserve">
+    <value>Preview</value>
+  </data>
+  <data name="TogglePreview" xml:space="preserve">
+    <value>Toggle Preview</value>
+  </data>
+  <data name="ExportAsHtml" xml:space="preserve">
+    <value>Export as HTML</value>
+  </data>
+  <data name="ExportAsPdf" xml:space="preserve">
+    <value>Export as PDF</value>
+  </data>
+  <data name="ExportAsMarkdown" xml:space="preserve">
+    <value>Export as Markdown</value>
+  </data>
+  <data name="ExportMarkdownSuccess" xml:space="preserve">
+    <value>Markdown exported successfully!</value>
+  </data>
+  
+  <!-- Multi-Monitor -->
+  <data name="MoveToMonitor" xml:space="preserve">
+    <value>Move to Monitor</value>
+  </data>
+  <data name="PrimaryMonitor" xml:space="preserve">
+    <value>Primary</value>
+  </data>
+  <data name="MonitorUnavailable" xml:space="preserve">
+    <value>Note moved to primary monitor (original monitor unavailable)</value>
+  </data>
+  
+  <!-- Conflict Resolution -->
+  <data name="SyncConflictTitle" xml:space="preserve">
+    <value>Sync Conflict</value>
+  </data>
+  <data name="SyncConflictMessage" xml:space="preserve">
+    <value>This note was modified on another device. How would you like to resolve the conflict?</value>
+  </data>
+  <data name="KeepLocal" xml:space="preserve">
+    <value>Keep Local Version</value>
+  </data>
+  <data name="KeepRemote" xml:space="preserve">
+    <value>Keep Remote Version</value>
+  </data>
+  <data name="MergeVersions" xml:space="preserve">
+    <value>Merge Both Versions</value>
+  </data>
+  <data name="LocalVersion" xml:space="preserve">
+    <value>Local Version</value>
+  </data>
+  <data name="RemoteVersion" xml:space="preserve">
+    <value>Remote Version</value>
+  </data>
+  <data name="LastModified" xml:space="preserve">
+    <value>Last modified: {0}</value>
+  </data>
 </root>

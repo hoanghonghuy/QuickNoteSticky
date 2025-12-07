@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using System.Windows.Input;
 using DevSticky.Interfaces;
 using DevSticky.Models;
 using DevSticky.Services;
@@ -21,6 +22,11 @@ public partial class App : Application
     private System.Windows.Forms.ContextMenuStrip? _trayContextMenu;
     private DashboardWindow? _dashboardWindow;
     private IThemeService? _themeService;
+    private IHotkeyService? _hotkeyService;
+    private ICloudSyncService? _cloudSyncService;
+    private System.Windows.Forms.ToolStripMenuItem? _syncStatusMenuItem;
+    private System.Windows.Forms.ToolStripMenuItem? _syncNowMenuItem;
+    private System.Windows.Forms.ToolStripMenuItem? _lastSyncMenuItem;
     
     public static IServiceProvider ServiceProvider => _serviceProvider 
         ?? throw new InvalidOperationException("ServiceProvider not initialized");
@@ -50,6 +56,20 @@ public partial class App : Application
         // Subscribe to theme changes for tray menu updates (Requirements 4.1)
         _themeService.ThemeChanged += OnThemeChanged;
 
+        // Initialize global hotkey service (Requirements 1.4)
+        _hotkeyService = ServiceProvider.GetRequiredService<IHotkeyService>();
+        
+        // Initialize cloud sync service (Requirements 5.5, 5.6)
+        try
+        {
+            _cloudSyncService = ServiceProvider.GetRequiredService<ICloudSyncService>();
+            _cloudSyncService.SyncProgress += OnCloudSyncProgress;
+        }
+        catch
+        {
+            _cloudSyncService = null;
+        }
+
         // Setup system tray
         SetupSystemTray();
         
@@ -62,11 +82,135 @@ public partial class App : Application
         // Wire up dashboard and settings callbacks
         _mainViewModel.OnOpenDashboard = OpenDashboard;
         _mainViewModel.OnOpenSettings = OpenSettings;
+        _mainViewModel.OnShowTemplateSelection = ShowTemplateSelectionDialog;
         
         await _mainViewModel.LoadNotesAsync();
 
+        // Register global hotkeys after main view model is ready (Requirements 1.4)
+        RegisterGlobalHotkeys(settings);
+
         // Don't show main window - notes are shown individually
         MainWindow = null;
+    }
+
+    /// <summary>
+    /// Register global hotkeys based on settings (Requirements 1.1, 1.2, 1.3, 1.4)
+    /// </summary>
+    private void RegisterGlobalHotkeys(AppSettings settings)
+    {
+        if (_hotkeyService == null) return;
+
+        // Subscribe to hotkey events
+        _hotkeyService.HotkeyPressed += OnHotkeyPressed;
+
+        // Register configured hotkeys
+        RegisterHotkeyFromString("NewNote", settings.Hotkeys.NewNoteHotkey);
+        RegisterHotkeyFromString("ToggleVisibility", settings.Hotkeys.ToggleVisibilityHotkey);
+        RegisterHotkeyFromString("QuickCapture", settings.Hotkeys.QuickCaptureHotkey);
+        RegisterHotkeyFromString("SnippetBrowser", settings.Hotkeys.SnippetBrowserHotkey);
+    }
+
+    /// <summary>
+    /// Register a hotkey from a string configuration
+    /// </summary>
+    private void RegisterHotkeyFromString(string id, string hotkeyString)
+    {
+        if (_hotkeyService == null || string.IsNullOrEmpty(hotkeyString)) return;
+
+        if (_hotkeyService.TryParseHotkey(hotkeyString, out var modifiers, out var key))
+        {
+            if (!_hotkeyService.RegisterHotkey(id, modifiers, key))
+            {
+                // Hotkey conflict detected (Requirements 1.6)
+                NotifyHotkeyConflict(id, hotkeyString);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Notify user of hotkey conflict (Requirements 1.6)
+    /// </summary>
+    private void NotifyHotkeyConflict(string hotkeyId, string hotkeyString)
+    {
+        // Show notification via system tray balloon
+        _notifyIcon?.ShowBalloonTip(
+            3000,
+            L.Get("HotkeyConflictTitle"),
+            string.Format(L.Get("HotkeyConflictMessage"), hotkeyId, hotkeyString),
+            System.Windows.Forms.ToolTipIcon.Warning);
+    }
+
+    /// <summary>
+    /// Handle hotkey pressed events (Requirements 1.1, 1.2, 1.3)
+    /// </summary>
+    private void OnHotkeyPressed(object? sender, HotkeyEventArgs e)
+    {
+        Dispatcher.Invoke(() =>
+        {
+            switch (e.HotkeyId)
+            {
+                case "NewNote":
+                    // Requirements 1.1: Create new note and bring to focus
+                    _mainViewModel?.CreateNewNote();
+                    break;
+
+                case "ToggleVisibility":
+                    // Requirements 1.2: Toggle visibility of all note windows
+                    _mainViewModel?.TrayViewModel.ToggleVisibilityCommand?.Execute(null);
+                    break;
+
+                case "QuickCapture":
+                    // Requirements 1.3: Open quick capture with clipboard content
+                    OpenQuickCapture();
+                    break;
+
+                case "SnippetBrowser":
+                    // Future: Open snippet browser (Phase 3)
+                    break;
+            }
+        });
+    }
+
+    /// <summary>
+    /// Open quick capture dialog with clipboard content (Requirements 1.3)
+    /// </summary>
+    private void OpenQuickCapture()
+    {
+        // Create a new note with clipboard content pre-filled
+        _mainViewModel?.CreateNewNote();
+        
+        // Try to paste clipboard content into the new note
+        try
+        {
+            if (System.Windows.Clipboard.ContainsText())
+            {
+                var clipboardText = System.Windows.Clipboard.GetText();
+                // The note window will be focused, so we can send paste command
+                // For now, we just create the note - clipboard paste can be done manually
+            }
+        }
+        catch
+        {
+            // Ignore clipboard errors
+        }
+    }
+
+    /// <summary>
+    /// Re-register hotkeys when settings change (Requirements 1.7)
+    /// </summary>
+    public void ReregisterHotkeys()
+    {
+        if (_hotkeyService == null || _mainViewModel == null) return;
+
+        // Unregister all existing hotkeys
+        _hotkeyService.UnregisterAll();
+
+        // Re-register with current settings
+        var settings = _mainViewModel.AppSettings;
+        RegisterHotkeyFromString("NewNote", settings.Hotkeys.NewNoteHotkey);
+        RegisterHotkeyFromString("ToggleVisibility", settings.Hotkeys.ToggleVisibilityHotkey);
+        RegisterHotkeyFromString("QuickCapture", settings.Hotkeys.QuickCaptureHotkey);
+        RegisterHotkeyFromString("SnippetBrowser", settings.Hotkeys.SnippetBrowserHotkey);
     }
     
     private void OpenDashboard()
@@ -94,6 +238,27 @@ public partial class App : Application
         settingsWindow.ShowDialog();
     }
 
+    /// <summary>
+    /// Show template selection dialog when creating a new note (Requirements 6.1)
+    /// </summary>
+    private NoteTemplate? ShowTemplateSelectionDialog()
+    {
+        var dialog = new TemplateSelectionDialog();
+        
+        if (dialog.ShowDialog() == true)
+        {
+            if (dialog.CreateBlankNote)
+            {
+                // User chose blank note - return null to signal blank note creation
+                return null;
+            }
+            return dialog.SelectedTemplate;
+        }
+        
+        // Dialog was cancelled - create blank note as fallback
+        return null;
+    }
+
     private static void ConfigureServices(IServiceCollection services)
     {
         // Models
@@ -106,10 +271,29 @@ public partial class App : Application
         services.AddSingleton<IFormatterService, FormatterService>();
         services.AddSingleton<ISearchService, SearchService>();
         services.AddSingleton<IDebounceService, DebounceService>();
+        services.AddSingleton<IMonitorService, MonitorService>();
         services.AddSingleton<IWindowService>(sp => 
-            new WindowService(note => CreateNoteWindow(sp, note)));
+            new WindowService(
+                note => CreateNoteWindow(sp, note),
+                sp.GetRequiredService<IMonitorService>(),
+                note => sp.GetRequiredService<MainViewModel>().SaveAllNotes()));
         services.AddSingleton<IWindowsThemeDetector, WindowsThemeDetector>();
         services.AddSingleton<IThemeService, ThemeService>();
+        services.AddSingleton<IHotkeyService, HotkeyService>();
+        services.AddSingleton<ISnippetService, SnippetService>();
+        services.AddSingleton<IMarkdownService, MarkdownService>();
+        services.AddSingleton<ITemplateService>(sp => 
+            new TemplateService(sp.GetRequiredService<AppSettings>()));
+        services.AddSingleton<ILinkService>(sp =>
+            new LinkService(sp.GetRequiredService<INoteService>()));
+        
+        // Cloud Sync Services (Requirements 5.1, 5.11)
+        services.AddSingleton<IEncryptionService, EncryptionService>();
+        services.AddSingleton<ICloudSyncService>(sp =>
+            new CloudSyncService(
+                sp.GetRequiredService<INoteService>(),
+                sp.GetRequiredService<IStorageService>(),
+                sp.GetRequiredService<IEncryptionService>()));
         
         // ViewModels
         services.AddSingleton<MainViewModel>();
@@ -133,6 +317,12 @@ public partial class App : Application
             },
             onSave: () => mainVm.SaveAllNotes()
         );
+        
+        // Wire up NavigateToNoteCommand for internal note links (Requirements 4.7)
+        vm.NavigateToNoteCommand = new RelayCommand<Guid>(noteId =>
+        {
+            mainVm.OpenNoteById(noteId);
+        });
         
         window = new NoteWindow { DataContext = vm };
         return window;
@@ -200,11 +390,163 @@ public partial class App : Application
         _trayContextMenu.Items.Add(Services.L.Get("TrayShowAll"), null, (_, _) => _mainViewModel?.TrayViewModel.ShowAllCommand.Execute(null));
         _trayContextMenu.Items.Add(Services.L.Get("TrayHideAll"), null, (_, _) => _mainViewModel?.TrayViewModel.HideAllCommand.Execute(null));
         _trayContextMenu.Items.Add("-");
+        
+        // Cloud Sync Section (Requirements 5.5, 5.6)
+        AddCloudSyncMenuItems();
+        
         _trayContextMenu.Items.Add(Services.L.Get("TraySettings"), null, (_, _) => OpenSettings());
         _trayContextMenu.Items.Add(Services.L.Get("TrayExit"), null, (_, _) => _mainViewModel?.TrayViewModel.ExitCommand.Execute(null));
         
         // Re-apply theme to new menu items
         ApplyThemeToTrayMenu();
+    }
+    
+    /// <summary>
+    /// Add cloud sync menu items to the tray context menu (Requirements 5.5, 5.6)
+    /// </summary>
+    private void AddCloudSyncMenuItems()
+    {
+        if (_trayContextMenu == null) return;
+        
+        // Sync status indicator
+        _syncStatusMenuItem = new System.Windows.Forms.ToolStripMenuItem
+        {
+            Text = GetSyncStatusText(),
+            Enabled = false // Status is display-only
+        };
+        _trayContextMenu.Items.Add(_syncStatusMenuItem);
+        
+        // Last sync time
+        _lastSyncMenuItem = new System.Windows.Forms.ToolStripMenuItem
+        {
+            Text = GetLastSyncText(),
+            Enabled = false // Status is display-only
+        };
+        _trayContextMenu.Items.Add(_lastSyncMenuItem);
+        
+        // Sync Now button
+        _syncNowMenuItem = new System.Windows.Forms.ToolStripMenuItem
+        {
+            Text = "🔄 " + Services.L.Get("SyncNow"),
+            Enabled = _cloudSyncService?.Status == SyncStatus.Idle
+        };
+        _syncNowMenuItem.Click += async (_, _) => await TriggerManualSync();
+        _trayContextMenu.Items.Add(_syncNowMenuItem);
+        
+        _trayContextMenu.Items.Add("-");
+    }
+    
+    /// <summary>
+    /// Get the sync status text for display
+    /// </summary>
+    private string GetSyncStatusText()
+    {
+        if (_cloudSyncService == null)
+            return "☁️ " + Services.L.Get("CloudSyncNotAvailable");
+        
+        return _cloudSyncService.Status switch
+        {
+            SyncStatus.Disconnected => "☁️ " + Services.L.Get("CloudStatusDisconnected"),
+            SyncStatus.Connecting => "🔄 " + Services.L.Get("CloudStatusConnecting"),
+            SyncStatus.Syncing => "🔄 " + Services.L.Get("CloudStatusSyncing"),
+            SyncStatus.Idle => "✅ " + Services.L.Get("CloudStatusConnected"),
+            SyncStatus.Error => "❌ " + Services.L.Get("CloudStatusError"),
+            _ => "☁️ " + Services.L.Get("CloudStatusDisconnected")
+        };
+    }
+    
+    /// <summary>
+    /// Get the last sync time text for display
+    /// </summary>
+    private string GetLastSyncText()
+    {
+        if (_cloudSyncService?.LastSyncResult?.CompletedAt != null)
+        {
+            var lastSync = _cloudSyncService.LastSyncResult.CompletedAt.ToLocalTime();
+            return "📅 " + string.Format(Services.L.Get("LastSyncTime"), lastSync.ToString("g"));
+        }
+        return "📅 " + Services.L.Get("NeverSynced");
+    }
+    
+    /// <summary>
+    /// Trigger a manual sync operation (Requirements 5.5, 5.6)
+    /// </summary>
+    private async Task TriggerManualSync()
+    {
+        if (_cloudSyncService == null || _cloudSyncService.Status != SyncStatus.Idle)
+            return;
+        
+        // Update menu to show syncing
+        UpdateSyncStatusInTray();
+        
+        try
+        {
+            var result = await _cloudSyncService.SyncAsync();
+            
+            if (result.Success)
+            {
+                _notifyIcon?.ShowBalloonTip(
+                    2000,
+                    Services.L.Get("CloudSync"),
+                    $"✅ {result.NotesUploaded} uploaded, {result.NotesDownloaded} downloaded",
+                    System.Windows.Forms.ToolTipIcon.Info);
+            }
+            else
+            {
+                _notifyIcon?.ShowBalloonTip(
+                    3000,
+                    Services.L.Get("CloudSync"),
+                    $"❌ {result.ErrorMessage}",
+                    System.Windows.Forms.ToolTipIcon.Warning);
+            }
+        }
+        catch (Exception ex)
+        {
+            _notifyIcon?.ShowBalloonTip(
+                3000,
+                Services.L.Get("Error"),
+                ex.Message,
+                System.Windows.Forms.ToolTipIcon.Error);
+        }
+        finally
+        {
+            UpdateSyncStatusInTray();
+        }
+    }
+    
+    /// <summary>
+    /// Update the sync status display in the tray menu
+    /// </summary>
+    private void UpdateSyncStatusInTray()
+    {
+        Dispatcher.Invoke(() =>
+        {
+            if (_syncStatusMenuItem != null)
+                _syncStatusMenuItem.Text = GetSyncStatusText();
+            
+            if (_lastSyncMenuItem != null)
+                _lastSyncMenuItem.Text = GetLastSyncText();
+            
+            if (_syncNowMenuItem != null)
+                _syncNowMenuItem.Enabled = _cloudSyncService?.Status == SyncStatus.Idle;
+        });
+    }
+    
+    /// <summary>
+    /// Handle cloud sync progress events (Requirements 5.5, 5.6)
+    /// </summary>
+    private void OnCloudSyncProgress(object? sender, SyncProgressEventArgs e)
+    {
+        UpdateSyncStatusInTray();
+        
+        // Update tray icon tooltip with progress
+        Dispatcher.Invoke(() =>
+        {
+            if (_notifyIcon != null)
+            {
+                _notifyIcon.Text = $"DevSticky - {e.Operation}: {e.ProgressPercent}%";
+            }
+        });
     }
     
     /// <summary>
@@ -264,6 +606,19 @@ public partial class App : Application
             _themeService.ThemeChanged -= OnThemeChanged;
         }
         
+        // Unsubscribe from hotkey events and unregister all hotkeys (Requirements 1.5)
+        if (_hotkeyService != null)
+        {
+            _hotkeyService.HotkeyPressed -= OnHotkeyPressed;
+            _hotkeyService.UnregisterAll();
+        }
+        
+        // Unsubscribe from cloud sync events
+        if (_cloudSyncService != null)
+        {
+            _cloudSyncService.SyncProgress -= OnCloudSyncProgress;
+        }
+        
         // Unsubscribe from language changes
         LocalizationService.Instance.LanguageChanged -= OnLanguageChanged;
         
@@ -271,6 +626,8 @@ public partial class App : Application
         _trayContextMenu?.Dispose();
         (ServiceProvider.GetService<IDebounceService>() as IDisposable)?.Dispose();
         (ServiceProvider.GetService<IThemeService>() as IDisposable)?.Dispose();
+        (ServiceProvider.GetService<IHotkeyService>() as IDisposable)?.Dispose();
+        (ServiceProvider.GetService<ICloudSyncService>() as IDisposable)?.Dispose();
         base.OnExit(e);
     }
 

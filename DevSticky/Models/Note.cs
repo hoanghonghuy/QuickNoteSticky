@@ -16,4 +16,14 @@ public class Note
     public DateTime ModifiedDate { get; set; } = DateTime.UtcNow;
     public Guid? GroupId { get; set; }
     public List<Guid> TagIds { get; set; } = new();
+
+    // v2.0 properties for multi-monitor support
+    public string? MonitorDeviceId { get; set; }
+
+    // v2.0 properties for template tracking
+    public Guid? TemplateId { get; set; }
+
+    // v2.0 properties for cloud sync
+    public long SyncVersion { get; set; }
+    public DateTime? LastSyncedDate { get; set; }
 }

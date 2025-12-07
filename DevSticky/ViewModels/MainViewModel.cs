@@ -27,6 +27,12 @@ public class MainViewModel : ViewModelBase
     
     public Action? OnOpenDashboard { get; set; }
     public Action? OnOpenSettings { get; set; }
+    
+    /// <summary>
+    /// Callback for showing template selection dialog (Requirements 6.1)
+    /// Returns the selected template or null for blank note
+    /// </summary>
+    public Func<NoteTemplate?>? OnShowTemplateSelection { get; set; }
 
     public MainViewModel(
         INoteService noteService,
@@ -76,7 +82,63 @@ public class MainViewModel : ViewModelBase
             CreateNewNote();
     }
 
+    /// <summary>
+    /// Create a new note, optionally showing template selection dialog (Requirements 6.1, 6.2)
+    /// </summary>
     public void CreateNewNote()
+    {
+        // Show template selection dialog if callback is set
+        if (OnShowTemplateSelection != null)
+        {
+            var template = OnShowTemplateSelection();
+            if (template != null)
+            {
+                // Create note from template
+                CreateNoteFromTemplate(template);
+                return;
+            }
+            // If template is null but dialog was shown, user chose blank note or cancelled
+            // For blank note, continue with default creation
+        }
+        
+        // Create blank note
+        var note = _noteService.CreateNote();
+        var vm = CreateNoteViewModel(note);
+        Notes.Add(vm);
+        _windowService.ShowNote(note);
+    }
+
+    /// <summary>
+    /// Create a new note from a template (Requirements 6.2)
+    /// </summary>
+    public async void CreateNoteFromTemplate(NoteTemplate template)
+    {
+        try
+        {
+            var templateService = App.GetService<ITemplateService>();
+            var note = await templateService.CreateNoteFromTemplateAsync(template.Id);
+            
+            // Add to notes collection
+            var vm = CreateNoteViewModel(note);
+            Notes.Add(vm);
+            _windowService.ShowNote(note);
+            SaveAllNotes();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Failed to create note from template: {ex.Message}");
+            // Fall back to blank note
+            var note = _noteService.CreateNote();
+            var vm = CreateNoteViewModel(note);
+            Notes.Add(vm);
+            _windowService.ShowNote(note);
+        }
+    }
+
+    /// <summary>
+    /// Create a blank note without showing template dialog
+    /// </summary>
+    public void CreateBlankNote()
     {
         var note = _noteService.CreateNote();
         var vm = CreateNoteViewModel(note);
@@ -119,6 +181,31 @@ public class MainViewModel : ViewModelBase
     {
         var note = vm.ToNote();
         _windowService.ShowNote(note);
+    }
+
+    /// <summary>
+    /// Open a note by its ID (for internal note link navigation - Requirements 4.7)
+    /// </summary>
+    public void OpenNoteById(Guid noteId)
+    {
+        // Check if note is already open
+        var existingVm = Notes.FirstOrDefault(n => n.Id == noteId);
+        if (existingVm != null)
+        {
+            // Show and focus the existing note window
+            var note = existingVm.ToNote();
+            _windowService.ShowNote(note);
+            return;
+        }
+
+        // Try to load the note from storage
+        var noteFromService = _noteService.GetNoteById(noteId);
+        if (noteFromService != null)
+        {
+            var vm = CreateNoteViewModel(noteFromService);
+            Notes.Add(vm);
+            _windowService.ShowNote(noteFromService);
+        }
     }
 
     private void ExitApplication()

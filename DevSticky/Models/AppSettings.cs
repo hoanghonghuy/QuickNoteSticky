@@ -4,6 +4,37 @@ using System.Text.Json;
 namespace DevSticky.Models;
 
 /// <summary>
+/// Hotkey configuration settings for global keyboard shortcuts
+/// </summary>
+public class HotkeySettings
+{
+    public string NewNoteHotkey { get; set; } = "Ctrl+Shift+N";
+    public string ToggleVisibilityHotkey { get; set; } = "Ctrl+Shift+D";
+    public string QuickCaptureHotkey { get; set; } = "Ctrl+Shift+Q";
+    public string SnippetBrowserHotkey { get; set; } = "Ctrl+Shift+I";
+}
+
+/// <summary>
+/// Cloud provider enumeration
+/// </summary>
+public enum CloudProvider
+{
+    OneDrive,
+    GoogleDrive
+}
+
+/// <summary>
+/// Cloud synchronization settings
+/// </summary>
+public class CloudSyncSettings
+{
+    public bool IsEnabled { get; set; }
+    public CloudProvider? Provider { get; set; }
+    public int SyncIntervalSeconds { get; set; } = 300;
+    public bool EncryptData { get; set; } = true;
+}
+
+/// <summary>
 /// Application settings
 /// </summary>
 public class AppSettings
@@ -21,6 +52,18 @@ public class AppSettings
     public string ThemeMode { get; set; } = "System"; // "Light", "Dark", or "System"
     public bool StartWithWindows { get; set; } = false;
     public string Language { get; set; } = "en"; // en, vi
+
+    // v2.0 property for user information (used in templates)
+    public string? AuthorName { get; set; }
+
+    // v2.0 properties for global hotkeys
+    public HotkeySettings Hotkeys { get; set; } = new();
+
+    // v2.0 properties for cloud synchronization
+    public CloudSyncSettings CloudSync { get; set; } = new();
+
+    // v2.0 property for encryption passphrase hash (stored securely)
+    public string? EncryptionPassphraseHash { get; set; }
 
     public void Save()
     {

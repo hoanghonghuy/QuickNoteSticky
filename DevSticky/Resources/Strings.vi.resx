@@ -19,326 +19,145 @@
       </xsd:complexType>
     </xsd:element>
   </xsd:schema>
-  <resheader name="resmimetype">
-    <value>text/microsoft-resx</value>
-  </resheader>
-  <resheader name="version">
-    <value>2.0</value>
-  </resheader>
-  
-  <!-- Common -->
-  <data name="AppName" xml:space="preserve">
-    <value>DevSticky</value>
-  </data>
-  <data name="OK" xml:space="preserve">
-    <value>Đồng ý</value>
-  </data>
-  <data name="Cancel" xml:space="preserve">
-    <value>Hủy</value>
-  </data>
-  <data name="Save" xml:space="preserve">
-    <value>Lưu</value>
-  </data>
-  <data name="Delete" xml:space="preserve">
-    <value>Xóa</value>
-  </data>
-  <data name="Rename" xml:space="preserve">
-    <value>Đổi tên</value>
-  </data>
-  <data name="Close" xml:space="preserve">
-    <value>Đóng</value>
-  </data>
-  <data name="Settings" xml:space="preserve">
-    <value>Cài đặt</value>
-  </data>
-  <data name="Yes" xml:space="preserve">
-    <value>Có</value>
-  </data>
-  <data name="No" xml:space="preserve">
-    <value>Không</value>
-  </data>
-  <data name="Info" xml:space="preserve">
-    <value>Thông tin</value>
-  </data>
-  
-  <!-- Dashboard -->
-  <data name="Dashboard" xml:space="preserve">
-    <value>Bảng điều khiển</value>
-  </data>
-  <data name="NewNote" xml:space="preserve">
-    <value>+ Ghi chú mới</value>
-  </data>
-  <data name="NoteCount" xml:space="preserve">
-    <value>{0} ghi chú</value>
-  </data>
-  <data name="NoteCountFiltered" xml:space="preserve">
-    <value>{0} ghi chú (đã lọc)</value>
-  </data>
-  <data name="NoteCountGrouped" xml:space="preserve">
-    <value>{0} ghi chú • theo nhóm</value>
-  </data>
-  <data name="ManageGroups" xml:space="preserve">
-    <value>Quản lý nhóm</value>
-  </data>
-  <data name="ManageTags" xml:space="preserve">
-    <value>Quản lý thẻ</value>
-  </data>
-  <data name="ToggleGroupedView" xml:space="preserve">
-    <value>Chuyển chế độ xem nhóm</value>
-  </data>
-  <data name="SwitchToFlatView" xml:space="preserve">
-    <value>Chuyển sang xem danh sách</value>
-  </data>
-  <data name="SwitchToGroupedView" xml:space="preserve">
-    <value>Chuyển sang xem theo nhóm</value>
-  </data>
-  <data name="EmptyNote" xml:space="preserve">
-    <value>(Ghi chú trống)</value>
-  </data>
-  <data name="UntitledNote" xml:space="preserve">
-    <value>Chưa đặt tên</value>
-  </data>
-  <data name="Ungrouped" xml:space="preserve">
-    <value>Chưa phân nhóm</value>
-  </data>
-  <data name="ClickToFilter" xml:space="preserve">
-    <value>Nhấn để lọc</value>
-  </data>
-  <data name="AddTag" xml:space="preserve">
-    <value>Thêm thẻ</value>
-  </data>
-  <data name="RemoveTag" xml:space="preserve">
-    <value>Xóa thẻ</value>
-  </data>
-  
-  <!-- Delete Confirmations -->
-  <data name="DeleteNoteTitle" xml:space="preserve">
-    <value>Xóa ghi chú</value>
-  </data>
-  <data name="DeleteNoteMessage" xml:space="preserve">
-    <value>Bạn có chắc muốn xóa ghi chú này?</value>
-  </data>
-  <data name="DeleteGroupTitle" xml:space="preserve">
-    <value>Xóa nhóm</value>
-  </data>
-  <data name="DeleteGroupMessage" xml:space="preserve">
-    <value>Xóa nhóm "{0}"?</value>
-  </data>
-  <data name="DeleteGroupMessageWithNotes" xml:space="preserve">
-    <value>Xóa nhóm "{0}"?
-
-{1} ghi chú sẽ được chuyển sang Chưa phân nhóm.</value>
-  </data>
-  <data name="DeleteTagTitle" xml:space="preserve">
-    <value>Xóa thẻ</value>
-  </data>
-  <data name="DeleteTagMessage" xml:space="preserve">
-    <value>Xóa thẻ "{0}"?</value>
-  </data>
-  <data name="DeleteTagMessageWithNotes" xml:space="preserve">
-    <value>Xóa thẻ "{0}"?
-
-Thẻ này sẽ bị xóa khỏi {1} ghi chú.</value>
-  </data>
-  
-  <!-- Group Management -->
-  <data name="ManageGroupsTitle" xml:space="preserve">
-    <value>Quản lý nhóm</value>
-  </data>
-  <data name="NewGroup" xml:space="preserve">
-    <value>+ Nhóm mới</value>
-  </data>
-  <data name="GroupCount" xml:space="preserve">
-    <value>{0} nhóm</value>
-  </data>
-  <data name="RenameGroup" xml:space="preserve">
-    <value>Đổi tên nhóm</value>
-  </data>
-  <data name="DefaultGroupName" xml:space="preserve">
-    <value>Nhóm mới</value>
-  </data>
-  
-  <!-- Tag Management -->
-  <data name="ManageTagsTitle" xml:space="preserve">
-    <value>Quản lý thẻ</value>
-  </data>
-  <data name="NewTag" xml:space="preserve">
-    <value>+ Thẻ mới</value>
-  </data>
-  <data name="TagCount" xml:space="preserve">
-    <value>{0} thẻ</value>
-  </data>
-  <data name="RenameTag" xml:space="preserve">
-    <value>Đổi tên thẻ</value>
-  </data>
-  <data name="ChangeColor" xml:space="preserve">
-    <value>Đổi màu</value>
-  </data>
-  <data name="DefaultTagName" xml:space="preserve">
-    <value>Thẻ</value>
-  </data>
-  <data name="NoTagsAvailable" xml:space="preserve">
-    <value>Không còn thẻ nào. Tạo thẻ mới trong Quản lý thẻ.</value>
-  </data>
-  
-  <!-- Settings -->
-  <data name="SettingsTitle" xml:space="preserve">
-    <value>Cài đặt</value>
-  </data>
-  <data name="DefaultOpacity" xml:space="preserve">
-    <value>Độ trong suốt mặc định</value>
-  </data>
-  <data name="FontSize" xml:space="preserve">
-    <value>Cỡ chữ</value>
-  </data>
-  <data name="AutoSaveDelay" xml:space="preserve">
-    <value>Độ trễ tự động lưu</value>
-  </data>
-  <data name="DefaultWindowSize" xml:space="preserve">
-    <value>Kích thước cửa sổ mặc định</value>
-  </data>
-  <data name="DefaultWidth" xml:space="preserve">
-    <value>Chiều rộng mặc định</value>
-  </data>
-  <data name="DefaultHeight" xml:space="preserve">
-    <value>Chiều cao mặc định</value>
-  </data>
-  <data name="Language" xml:space="preserve">
-    <value>Ngôn ngữ</value>
-  </data>
-  <data name="Theme" xml:space="preserve">
-    <value>Giao diện</value>
-  </data>
-  <data name="ThemeLight" xml:space="preserve">
-    <value>Sáng</value>
-  </data>
-  <data name="ThemeDark" xml:space="preserve">
-    <value>Tối</value>
-  </data>
-  <data name="ThemeSystem" xml:space="preserve">
-    <value>Theo hệ thống</value>
-  </data>
-  <data name="BackupRestore" xml:space="preserve">
-    <value>Sao lưu &amp; Khôi phục</value>
-  </data>
-  <data name="ExportData" xml:space="preserve">
-    <value>📤 Xuất dữ liệu</value>
-  </data>
-  <data name="ImportData" xml:space="preserve">
-    <value>📥 Nhập dữ liệu</value>
-  </data>
-  <data name="BackupHint" xml:space="preserve">
-    <value>Xuất ghi chú ra file sao lưu. Nhập để khôi phục từ bản sao lưu trước.</value>
-  </data>
-  <data name="ExportSuccess" xml:space="preserve">
-    <value>Xuất dữ liệu thành công!</value>
-  </data>
-  <data name="ExportError" xml:space="preserve">
-    <value>Không thể xuất dữ liệu.</value>
-  </data>
-  <data name="ImportSuccess" xml:space="preserve">
-    <value>Nhập dữ liệu thành công! Vui lòng khởi động lại ứng dụng.</value>
-  </data>
-  <data name="ImportError" xml:space="preserve">
-    <value>Không thể nhập dữ liệu. File có thể bị hỏng.</value>
-  </data>
-  <data name="ImportConfirm" xml:space="preserve">
-    <value>Thao tác này sẽ thay thế toàn bộ dữ liệu hiện tại. Tiếp tục?</value>
-  </data>
-  <data name="ImportConfirmTitle" xml:space="preserve">
-    <value>Xác nhận nhập dữ liệu</value>
-  </data>
-  <data name="Success" xml:space="preserve">
-    <value>Thành công</value>
-  </data>
-  <data name="Error" xml:space="preserve">
-    <value>Lỗi</value>
-  </data>
-  
-  <!-- System Tray -->
-  <data name="TrayNewNote" xml:space="preserve">
-    <value>Ghi chú mới</value>
-  </data>
-  <data name="TrayShowAll" xml:space="preserve">
-    <value>Hiện tất cả</value>
-  </data>
-  <data name="TrayHideAll" xml:space="preserve">
-    <value>Ẩn tất cả</value>
-  </data>
-  <data name="TrayDashboard" xml:space="preserve">
-    <value>Bảng điều khiển</value>
-  </data>
-  <data name="TraySettings" xml:space="preserve">
-    <value>Cài đặt</value>
-  </data>
-  <data name="TrayExit" xml:space="preserve">
-    <value>Thoát</value>
-  </data>
-  
-  <!-- Note Window -->
-  <data name="Pin" xml:space="preserve">
-    <value>Ghim</value>
-  </data>
-  <data name="Unpin" xml:space="preserve">
-    <value>Bỏ ghim</value>
-  </data>
-  <data name="Search" xml:space="preserve">
-    <value>Tìm kiếm</value>
-  </data>
-  <data name="SearchPlaceholder" xml:space="preserve">
-    <value>Tìm kiếm...</value>
-  </data>
-  <data name="Next" xml:space="preserve">
-    <value>Tiếp</value>
-  </data>
-  <data name="Previous" xml:space="preserve">
-    <value>Trước</value>
-  </data>
-  <data name="Format" xml:space="preserve">
-    <value>Định dạng</value>
-  </data>
-  <data name="Opacity" xml:space="preserve">
-    <value>Độ trong suốt</value>
-  </data>
-  
-  <!-- Languages -->
-  <data name="LangPlainText" xml:space="preserve">
-    <value>Văn bản</value>
-  </data>
-  <data name="LangCSharp" xml:space="preserve">
-    <value>C#</value>
-  </data>
-  <data name="LangJava" xml:space="preserve">
-    <value>Java</value>
-  </data>
-  <data name="LangJavaScript" xml:space="preserve">
-    <value>JavaScript</value>
-  </data>
-  <data name="LangTypeScript" xml:space="preserve">
-    <value>TypeScript</value>
-  </data>
-  <data name="LangJSON" xml:space="preserve">
-    <value>JSON</value>
-  </data>
-  <data name="LangXML" xml:space="preserve">
-    <value>XML</value>
-  </data>
-  <data name="LangSQL" xml:space="preserve">
-    <value>SQL</value>
-  </data>
-  <data name="LangPython" xml:space="preserve">
-    <value>Python</value>
-  </data>
-  <data name="LangBash" xml:space="preserve">
-    <value>Bash</value>
-  </data>
-  
-  <!-- Welcome -->
-  <data name="WelcomeTitle" xml:space="preserve">
-    <value>Chào mừng</value>
-  </data>
-  <data name="WelcomeContent" xml:space="preserve">
-    <value>// Chào mừng đến với DevSticky!
-// Ghi chú dành cho lập trình viên</value>
-  </data>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <data name="AppName" xml:space="preserve"><value>DevSticky</value></data>
+  <data name="OK" xml:space="preserve"><value>Đồng ý</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Hủy</value></data>
+  <data name="Save" xml:space="preserve"><value>Lưu</value></data>
+  <data name="Delete" xml:space="preserve"><value>Xóa</value></data>
+  <data name="Rename" xml:space="preserve"><value>Đổi tên</value></data>
+  <data name="Close" xml:space="preserve"><value>Đóng</value></data>
+  <data name="Settings" xml:space="preserve"><value>Cài đặt</value></data>
+  <data name="Yes" xml:space="preserve"><value>Có</value></data>
+  <data name="No" xml:space="preserve"><value>Không</value></data>
+  <data name="Info" xml:space="preserve"><value>Thông tin</value></data>
+  <data name="Dashboard" xml:space="preserve"><value>Bảng điều khiển</value></data>
+  <data name="NewNote" xml:space="preserve"><value>+ Ghi chú mới</value></data>
+  <data name="NoteCount" xml:space="preserve"><value>{0} ghi chú</value></data>
+  <data name="NoteCountFiltered" xml:space="preserve"><value>{0} ghi chú (đã lọc)</value></data>
+  <data name="NoteCountGrouped" xml:space="preserve"><value>{0} ghi chú theo nhóm</value></data>
+  <data name="ManageGroups" xml:space="preserve"><value>Quản lý nhóm</value></data>
+  <data name="ManageTags" xml:space="preserve"><value>Quản lý thẻ</value></data>
+  <data name="ToggleGroupedView" xml:space="preserve"><value>Chuyển chế độ xem nhóm</value></data>
+  <data name="SwitchToFlatView" xml:space="preserve"><value>Chuyển sang xem danh sách</value></data>
+  <data name="SwitchToGroupedView" xml:space="preserve"><value>Chuyển sang xem theo nhóm</value></data>
+  <data name="EmptyNote" xml:space="preserve"><value>(Ghi chú trống)</value></data>
+  <data name="UntitledNote" xml:space="preserve"><value>Chưa đặt tên</value></data>
+  <data name="Ungrouped" xml:space="preserve"><value>Chưa phân nhóm</value></data>
+  <data name="ClickToFilter" xml:space="preserve"><value>Nhấn để lọc</value></data>
+  <data name="AddTag" xml:space="preserve"><value>Thêm thẻ</value></data>
+  <data name="RemoveTag" xml:space="preserve"><value>Xóa thẻ</value></data>
+  <data name="DeleteNoteTitle" xml:space="preserve"><value>Xóa ghi chú</value></data>
+  <data name="DeleteNoteMessage" xml:space="preserve"><value>Bạn có chắc muốn xóa ghi chú này?</value></data>
+  <data name="DeleteGroupTitle" xml:space="preserve"><value>Xóa nhóm</value></data>
+  <data name="DeleteGroupMessage" xml:space="preserve"><value>Xóa nhóm "{0}"?</value></data>
+  <data name="DeleteGroupMessageWithNotes" xml:space="preserve"><value>Xóa nhóm "{0}"? {1} ghi chú sẽ được chuyển sang Chưa phân nhóm.</value></data>
+  <data name="DeleteTagTitle" xml:space="preserve"><value>Xóa thẻ</value></data>
+  <data name="DeleteTagMessage" xml:space="preserve"><value>Xóa thẻ "{0}"?</value></data>
+  <data name="DeleteTagMessageWithNotes" xml:space="preserve"><value>Xóa thẻ "{0}"? Thẻ này sẽ bị xóa khỏi {1} ghi chú.</value></data>
+  <data name="ManageGroupsTitle" xml:space="preserve"><value>Quản lý nhóm</value></data>
+  <data name="NewGroup" xml:space="preserve"><value>+ Nhóm mới</value></data>
+  <data name="GroupCount" xml:space="preserve"><value>{0} nhóm</value></data>
+  <data name="RenameGroup" xml:space="preserve"><value>Đổi tên nhóm</value></data>
+  <data name="DefaultGroupName" xml:space="preserve"><value>Nhóm mới</value></data>
+  <data name="ManageTagsTitle" xml:space="preserve"><value>Quản lý thẻ</value></data>
+  <data name="NewTag" xml:space="preserve"><value>+ Thẻ mới</value></data>
+  <data name="TagCount" xml:space="preserve"><value>{0} thẻ</value></data>
+  <data name="RenameTag" xml:space="preserve"><value>Đổi tên thẻ</value></data>
+  <data name="ChangeColor" xml:space="preserve"><value>Đổi màu</value></data>
+  <data name="DefaultTagName" xml:space="preserve"><value>Thẻ</value></data>
+  <data name="NoTagsAvailable" xml:space="preserve"><value>Không còn thẻ nào. Tạo thẻ mới trong Quản lý thẻ.</value></data>
+  <data name="SettingsTitle" xml:space="preserve"><value>Cài đặt</value></data>
+  <data name="DefaultOpacity" xml:space="preserve"><value>Độ trong suốt mặc định</value></data>
+  <data name="FontSize" xml:space="preserve"><value>Cỡ chữ</value></data>
+  <data name="AutoSaveDelay" xml:space="preserve"><value>Độ trễ tự động lưu</value></data>
+  <data name="DefaultWindowSize" xml:space="preserve"><value>Kích thước cửa sổ mặc định</value></data>
+  <data name="DefaultWidth" xml:space="preserve"><value>Chiều rộng mặc định</value></data>
+  <data name="DefaultHeight" xml:space="preserve"><value>Chiều cao mặc định</value></data>
+  <data name="Language" xml:space="preserve"><value>Ngôn ngữ</value></data>
+  <data name="Theme" xml:space="preserve"><value>Giao diện</value></data>
+  <data name="ThemeLight" xml:space="preserve"><value>Sáng</value></data>
+  <data name="ThemeDark" xml:space="preserve"><value>Tối</value></data>
+  <data name="ThemeSystem" xml:space="preserve"><value>Theo hệ thống</value></data>
+  <data name="BackupRestore" xml:space="preserve"><value>Sao lưu và Khôi phục</value></data>
+  <data name="ExportData" xml:space="preserve"><value>Xuất dữ liệu</value></data>
+  <data name="ImportData" xml:space="preserve"><value>Nhập dữ liệu</value></data>
+  <data name="BackupHint" xml:space="preserve"><value>Xuất ghi chú ra file sao lưu. Nhập để khôi phục từ bản sao lưu trước.</value></data>
+  <data name="ExportSuccess" xml:space="preserve"><value>Xuất dữ liệu thành công!</value></data>
+  <data name="ExportError" xml:space="preserve"><value>Không thể xuất dữ liệu.</value></data>
+  <data name="ImportSuccess" xml:space="preserve"><value>Nhập dữ liệu thành công! Vui lòng khởi động lại ứng dụng.</value></data>
+  <data name="ImportError" xml:space="preserve"><value>Không thể nhập dữ liệu. File có thể bị hỏng.</value></data>
+  <data name="ImportConfirm" xml:space="preserve"><value>Thao tác này sẽ thay thế toàn bộ dữ liệu hiện tại. Tiếp tục?</value></data>
+  <data name="ImportConfirmTitle" xml:space="preserve"><value>Xác nhận nhập dữ liệu</value></data>
+  <data name="Success" xml:space="preserve"><value>Thành công</value></data>
+  <data name="Error" xml:space="preserve"><value>Lỗi</value></data>
+  <data name="TrayNewNote" xml:space="preserve"><value>Ghi chú mới</value></data>
+  <data name="TrayShowAll" xml:space="preserve"><value>Hiện tất cả</value></data>
+  <data name="TrayHideAll" xml:space="preserve"><value>Ẩn tất cả</value></data>
+  <data name="TrayDashboard" xml:space="preserve"><value>Bảng điều khiển</value></data>
+  <data name="TraySettings" xml:space="preserve"><value>Cài đặt</value></data>
+  <data name="TrayExit" xml:space="preserve"><value>Thoát</value></data>
+  <data name="Pin" xml:space="preserve"><value>Ghim</value></data>
+  <data name="Unpin" xml:space="preserve"><value>Bỏ ghim</value></data>
+  <data name="Search" xml:space="preserve"><value>Tìm kiếm</value></data>
+  <data name="SearchPlaceholder" xml:space="preserve"><value>Tìm kiếm...</value></data>
+  <data name="Next" xml:space="preserve"><value>Tiếp</value></data>
+  <data name="Previous" xml:space="preserve"><value>Trước</value></data>
+  <data name="Format" xml:space="preserve"><value>Định dạng</value></data>
+  <data name="Opacity" xml:space="preserve"><value>Độ trong suốt</value></data>
+  <data name="LangPlainText" xml:space="preserve"><value>Văn bản</value></data>
+  <data name="LangCSharp" xml:space="preserve"><value>C#</value></data>
+  <data name="LangJava" xml:space="preserve"><value>Java</value></data>
+  <data name="LangJavaScript" xml:space="preserve"><value>JavaScript</value></data>
+  <data name="LangTypeScript" xml:space="preserve"><value>TypeScript</value></data>
+  <data name="LangJSON" xml:space="preserve"><value>JSON</value></data>
+  <data name="LangXML" xml:space="preserve"><value>XML</value></data>
+  <data name="LangSQL" xml:space="preserve"><value>SQL</value></data>
+  <data name="LangPython" xml:space="preserve"><value>Python</value></data>
+  <data name="LangBash" xml:space="preserve"><value>Bash</value></data>
+  <data name="WelcomeTitle" xml:space="preserve"><value>Chào mừng</value></data>
+  <data name="WelcomeContent" xml:space="preserve"><value>// Chào mừng đến với DevSticky!</value></data>
+  <data name="HotkeyConflictTitle" xml:space="preserve"><value>Xung đột phím tắt</value></data>
+  <data name="HotkeyConflictMessage" xml:space="preserve"><value>Không thể đăng ký phím tắt. Có thể đang được sử dụng bởi ứng dụng khác.</value></data>
+  <data name="Hotkeys" xml:space="preserve"><value>Phím tắt</value></data>
+  <data name="NewNoteHotkey" xml:space="preserve"><value>Ghi chú mới</value></data>
+  <data name="ToggleVisibilityHotkey" xml:space="preserve"><value>Ẩn/Hiện</value></data>
+  <data name="QuickCaptureHotkey" xml:space="preserve"><value>Ghi nhanh</value></data>
+  <data name="SnippetBrowserHotkey" xml:space="preserve"><value>Thư viện mã</value></data>
+  <data name="HotkeyHint" xml:space="preserve"><value>Nhấn tổ hợp phím</value></data>
+  <data name="HotkeyAvailable" xml:space="preserve"><value>Khả dụng</value></data>
+  <data name="HotkeyInUse" xml:space="preserve"><value>Đang được sử dụng bởi ứng dụng khác</value></data>
+  <data name="ClearHotkey" xml:space="preserve"><value>Xóa</value></data>
+  <data name="CloudSync" xml:space="preserve"><value>Đồng bộ đám mây</value></data>
+  <data name="CloudProvider" xml:space="preserve"><value>Nhà cung cấp</value></data>
+  <data name="CloudProviderNone" xml:space="preserve"><value>Không (Tắt)</value></data>
+  <data name="CloudConnect" xml:space="preserve"><value>Kết nối</value></data>
+  <data name="CloudDisconnect" xml:space="preserve"><value>Ngắt kết nối</value></data>
+  <data name="CloudConnecting" xml:space="preserve"><value>Đang kết nối...</value></data>
+  <data name="CloudStatusDisconnected" xml:space="preserve"><value>Chưa kết nối</value></data>
+  <data name="CloudStatusConnecting" xml:space="preserve"><value>Đang kết nối...</value></data>
+  <data name="CloudStatusSyncing" xml:space="preserve"><value>Đang đồng bộ...</value></data>
+  <data name="CloudStatusConnected" xml:space="preserve"><value>Đã kết nối</value></data>
+  <data name="CloudStatusConnectedLastSync" xml:space="preserve"><value>Đã kết nối - Đồng bộ lần cuối: {0}</value></data>
+  <data name="CloudStatusError" xml:space="preserve"><value>Lỗi - Nhấn để thử lại</value></data>
+  <data name="CloudConnectSuccess" xml:space="preserve"><value>Kết nối thành công!</value></data>
+  <data name="CloudConnectFailed" xml:space="preserve"><value>Không thể kết nối.</value></data>
+  <data name="CloudSelectProvider" xml:space="preserve"><value>Vui lòng chọn nhà cung cấp đám mây trước.</value></data>
+  <data name="CloudSyncNotAvailable" xml:space="preserve"><value>Dịch vụ đồng bộ đám mây không khả dụng</value></data>
+  <data name="EncryptionPassphrase" xml:space="preserve"><value>Mật khẩu mã hóa</value></data>
+  <data name="EncryptionHint" xml:space="preserve"><value>Ghi chú sẽ được mã hóa trước khi tải lên.</value></data>
+  <data name="ShowPassword" xml:space="preserve"><value>Hiện mật khẩu</value></data>
+  <data name="PassphraseLength" xml:space="preserve"><value>Độ dài mật khẩu: {0} ký tự</value></data>
+  <data name="SyncInterval" xml:space="preserve"><value>Khoảng thời gian đồng bộ</value></data>
+  <data name="Minutes" xml:space="preserve"><value>phút</value></data>
+  <data name="SyncNow" xml:space="preserve"><value>Đồng bộ ngay</value></data>
+  <data name="LastSyncTime" xml:space="preserve"><value>Đồng bộ lần cuối: {0}</value></data>
+  <data name="NeverSynced" xml:space="preserve"><value>Chưa đồng bộ</value></data>
+  <data name="SnippetLibrary" xml:space="preserve"><value>Thư viện mã</value></data>
+  <data name="SnippetLibraryNotAvailable" xml:space="preserve"><value>Thư viện mã không khả dụng.</value></data>
+  <data name="TemplateManagement" xml:space="preserve"><value>Quản lý mẫu</value></data>
+  <data name="TemplateManagementNotAvailable" xml:space="preserve"><value>Quản lý mẫu không khả dụng.</value></data>
+  <data name="GraphView" xml:space="preserve"><value>Xem đồ thị</value></data>
+  <data name="GraphViewNotAvailable" xml:space="preserve"><value>Xem đồ thị không khả dụng.</value></data>
 </root>

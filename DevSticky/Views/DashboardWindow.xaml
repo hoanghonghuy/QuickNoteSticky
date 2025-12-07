@@ -267,9 +267,25 @@
             <!-- Footer -->
             <Border Grid.Row="2" Background="{DynamicResource Surface0Brush}" CornerRadius="0,0,8,8">
                 <Grid Margin="12,0">
-                    <TextBlock x:Name="NoteCount" Foreground="{DynamicResource SubtextBrush}" 
-                               FontSize="12" VerticalAlignment="Center"/>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock x:Name="NoteCount" Foreground="{DynamicResource SubtextBrush}" 
+                                   FontSize="12" VerticalAlignment="Center"/>
+                        <!-- Cloud Sync Status -->
+                        <Border x:Name="SyncStatusBadge" Visibility="Collapsed" CornerRadius="3" 
+                                Padding="6,2" Margin="8,0,0,0" Cursor="Hand" MouseLeftButtonDown="SyncStatus_Click">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock x:Name="SyncStatusIcon" FontSize="10" Margin="0,0,4,0"/>
+                                <TextBlock x:Name="SyncStatusText" FontSize="10" Foreground="{DynamicResource SubtextBrush}"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                        <Button Content="📝" Style="{StaticResource IconBtn}" Click="BtnSnippetLibrary_Click" 
+                                ToolTip="{loc:Localize SnippetLibrary}" Width="32" Height="32"/>
+                        <Button Content="📋" Style="{StaticResource IconBtn}" Click="BtnTemplateManagement_Click" 
+                                ToolTip="{loc:Localize TemplateManagement}" Width="32" Height="32"/>
+                        <Button Content="🔗" Style="{StaticResource IconBtn}" Click="BtnGraphView_Click" 
+                                ToolTip="{loc:Localize GraphView}" Width="32" Height="32"/>
                         <Button Content="📁" Style="{StaticResource IconBtn}" Click="BtnManageGroups_Click" 
                                 ToolTip="{loc:Localize ManageGroups}" Width="32" Height="32"/>
                         <Button Content="🏷️" Style="{StaticResource IconBtn}" Click="BtnManageTags_Click" 

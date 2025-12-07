@@ -8,6 +8,8 @@
             <ResourceDictionary.MergedDictionaries>
                 <!-- Default theme: Dark (will be swapped by ThemeService at runtime) -->
                 <ResourceDictionary Source="Resources/DarkTheme.xaml"/>
+                <!-- Shared styles for all windows -->
+                <ResourceDictionary Source="Resources/SharedStyles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
             
             <!-- Global converters and resources -->

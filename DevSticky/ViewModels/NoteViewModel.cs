@@ -28,6 +28,7 @@ public class NoteViewModel : ViewModelBase
     private IReadOnlyList<SearchMatch> _searchMatches = Array.Empty<SearchMatch>();
     private Guid? _groupId;
     private List<Guid> _tagIds = new();
+    private string? _monitorDeviceId;
 
     public Guid Id { get; }
     public WindowRect WindowRect { get; set; }
@@ -50,6 +51,18 @@ public class NoteViewModel : ViewModelBase
     {
         get => _tagIds;
         set => SetProperty(ref _tagIds, value ?? new());
+    }
+
+    public string? MonitorDeviceId
+    {
+        get => _monitorDeviceId;
+        set
+        {
+            if (SetProperty(ref _monitorDeviceId, value))
+            {
+                _debounceService.Debounce($"save_{Id}", () => Save(), 500);
+            }
+        }
     }
 
     public string Content
@@ -122,6 +135,7 @@ public class NoteViewModel : ViewModelBase
     public ICommand PreviousMatchCommand { get; }
     public ICommand IncreaseOpacityCommand { get; }
     public ICommand DecreaseOpacityCommand { get; }
+    public ICommand? NavigateToNoteCommand { get; set; }
 
     public NoteViewModel(
         Note note,
@@ -140,6 +154,7 @@ public class NoteViewModel : ViewModelBase
         _opacity = note.Opacity;
         _groupId = note.GroupId;
         _tagIds = note.TagIds ?? new();
+        _monitorDeviceId = note.MonitorDeviceId;
         WindowRect = note.WindowRect;
         CreatedDate = note.CreatedDate;
         ModifiedDate = note.ModifiedDate;
@@ -209,6 +224,7 @@ public class NoteViewModel : ViewModelBase
         Opacity = Opacity,
         GroupId = GroupId,
         TagIds = TagIds,
+        MonitorDeviceId = MonitorDeviceId,
         WindowRect = WindowRect,
         CreatedDate = CreatedDate,
         ModifiedDate = ModifiedDate

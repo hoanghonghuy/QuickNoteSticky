@@ -1,0 +1,95 @@
+<UserControl x:Class="DevSticky.Views.BacklinksPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             MinWidth="200"
+             MaxWidth="300">
+    
+    <Border Background="{DynamicResource Surface0Brush}" 
+            BorderBrush="{DynamicResource Surface2Brush}" 
+            BorderThickness="1"
+            CornerRadius="4"
+            Padding="8">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            
+            <!-- Header -->
+            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,8">
+                <TextBlock Text="🔗" FontSize="14" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                <TextBlock Text="Backlinks" 
+                           FontWeight="SemiBold"
+                           Foreground="{DynamicResource TextBrush}"
+                           VerticalAlignment="Center"/>
+                <TextBlock x:Name="CountText"
+                           Text="(0)"
+                           Foreground="{DynamicResource SubtextBrush}"
+                           Margin="6,0,0,0"
+                           VerticalAlignment="Center"/>
+            </StackPanel>
+            
+            <!-- Backlinks List -->
+            <ListBox x:Name="BacklinksList"
+                     Grid.Row="1"
+                     Background="Transparent"
+                     BorderThickness="0"
+                     MaxHeight="300"
+                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                     MouseDoubleClick="BacklinksList_MouseDoubleClick">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Margin="2">
+                            <TextBlock Text="{Binding Title}" 
+                                       Foreground="{DynamicResource TextBrush}"
+                                       FontWeight="Medium"
+                                       TextTrimming="CharacterEllipsis"/>
+                            <TextBlock Text="{Binding Preview}" 
+                                       Foreground="{DynamicResource SubtextBrush}"
+                                       FontSize="11"
+                                       TextTrimming="CharacterEllipsis"
+                                       MaxWidth="260"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+                <ListBox.ItemContainerStyle>
+                    <Style TargetType="ListBoxItem">
+                        <Setter Property="Background" Value="Transparent"/>
+                        <Setter Property="Padding" Value="4,2"/>
+                        <Setter Property="Cursor" Value="Hand"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ListBoxItem">
+                                    <Border x:Name="Bd" 
+                                            Background="{TemplateBinding Background}" 
+                                            Padding="{TemplateBinding Padding}"
+                                            CornerRadius="2">
+                                        <ContentPresenter/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource Surface1Brush}"/>
+                                        </Trigger>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource Surface2Brush}"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </ListBox.ItemContainerStyle>
+            </ListBox>
+            
+            <!-- Empty State -->
+            <TextBlock x:Name="EmptyText"
+                       Grid.Row="1"
+                       Text="No notes link to this note"
+                       Foreground="{DynamicResource SubtextBrush}"
+                       FontStyle="Italic"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       Visibility="Collapsed"/>
+        </Grid>
+    </Border>
+</UserControl>
