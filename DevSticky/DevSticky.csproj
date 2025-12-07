@@ -22,13 +22,26 @@
   </PropertyGroup>
 
   <!-- Publish Configuration (use dotnet publish -c Release) -->
+  <!-- Option 1: Framework-dependent (small ~5MB, requires .NET 8 Runtime) -->
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>false</SelfContained>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <PublishReadyToRun>true</PublishReadyToRun>
+  </PropertyGroup>
+  
+  <!-- Option 2: Self-contained trimmed (~60-80MB, no runtime needed) -->
+  <!-- Uncomment below and comment above to use -->
+  <!--
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <PublishSingleFile>true</PublishSingleFile>
     <SelfContained>true</SelfContained>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <PublishTrimmed>true</PublishTrimmed>
+    <TrimMode>partial</TrimMode>
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
   </PropertyGroup>
+  -->
 
   <ItemGroup>
     <PackageReference Include="AvalonEdit" Version="6.3.0.90" />
