@@ -11,94 +11,11 @@
         ResizeMode="NoResize">
     
     <Window.Resources>
-        <Style x:Key="SettingLabel" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
-            <Setter Property="FontSize" Value="13"/>
-            <Setter Property="Margin" Value="0,0,0,6"/>
-        </Style>
-        
-        <Style x:Key="SettingSlider" TargetType="Slider">
-            <Setter Property="Height" Value="20"/>
-            <Setter Property="Margin" Value="0,0,0,16"/>
-        </Style>
-        
-        <Style x:Key="ActionBtn" TargetType="Button">
-            <Setter Property="Background" Value="{DynamicResource Surface1Brush}"/>
-            <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding" Value="20,8"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="bd" Background="{TemplateBinding Background}" 
-                                CornerRadius="4" Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="bd" Property="Background" Value="{DynamicResource Surface2Brush}"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-        
-        <Style x:Key="PrimaryBtn" TargetType="Button" BasedOn="{StaticResource ActionBtn}">
-            <Setter Property="Background" Value="{DynamicResource BlueBrush}"/>
-            <Setter Property="Foreground" Value="{DynamicResource BaseBrush}"/>
-        </Style>
-        
-        <!-- Dark ScrollBar Style -->
-        <Style x:Key="DarkScrollBar" TargetType="ScrollBar">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Width" Value="10"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="ScrollBar">
-                        <Grid Background="Transparent">
-                            <Track x:Name="PART_Track" IsDirectionReversed="True">
-                                <Track.Thumb>
-                                    <Thumb Background="{DynamicResource Surface2Brush}">
-                                        <Thumb.Template>
-                                            <ControlTemplate TargetType="Thumb">
-                                                <Border Background="{TemplateBinding Background}" 
-                                                        CornerRadius="4" Margin="2"/>
-                                            </ControlTemplate>
-                                        </Thumb.Template>
-                                    </Thumb>
-                                </Track.Thumb>
-                            </Track>
-                        </Grid>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-        
-        <Style x:Key="IconBtn" TargetType="Button">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="{DynamicResource SubtextBrush}"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Width" Value="28"/>
-            <Setter Property="Height" Value="28"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="bd" Background="{TemplateBinding Background}" CornerRadius="4">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="bd" Property="Background" Value="{DynamicResource Surface1Brush}"/>
-                                <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Resources/SharedStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
     </Window.Resources>
     
     <Border Background="{DynamicResource BaseBrush}" CornerRadius="8" 

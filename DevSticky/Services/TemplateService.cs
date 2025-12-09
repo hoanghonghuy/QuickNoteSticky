@@ -34,8 +34,8 @@ public partial class TemplateService : ITemplateService
     {
         _settings = settings;
         var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-        var devStickyFolder = Path.Combine(appDataPath, "DevSticky");
-        _storagePath = Path.Combine(devStickyFolder, "templates.json");
+        var devStickyFolder = Path.Combine(appDataPath, AppConstants.AppDataFolderName);
+        _storagePath = Path.Combine(devStickyFolder, AppConstants.TemplatesFileName);
         _builtInTemplates = CreateBuiltInTemplates();
     }
 

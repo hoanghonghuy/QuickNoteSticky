@@ -16,6 +16,7 @@ public class MainViewModel : ViewModelBase
     private readonly ISearchService _searchService;
     private readonly IDebounceService _debounceService;
     private readonly IWindowService _windowService;
+    private readonly ITemplateService _templateService;
     private readonly CacheService _cacheService = new();
 
     public ObservableCollection<NoteViewModel> Notes { get; } = new();
@@ -40,7 +41,8 @@ public class MainViewModel : ViewModelBase
         IFormatterService formatterService,
         ISearchService searchService,
         IDebounceService debounceService,
-        IWindowService windowService)
+        IWindowService windowService,
+        ITemplateService templateService)
     {
         _noteService = noteService;
         _storageService = storageService;
@@ -48,6 +50,7 @@ public class MainViewModel : ViewModelBase
         _searchService = searchService;
         _debounceService = debounceService;
         _windowService = windowService;
+        _templateService = templateService;
         
         AppSettings = AppSettings.Load();
 
@@ -93,8 +96,8 @@ public class MainViewModel : ViewModelBase
             var template = OnShowTemplateSelection();
             if (template != null)
             {
-                // Create note from template
-                CreateNoteFromTemplate(template);
+                // Create note from template - fire and forget with proper exception handling
+                _ = CreateNoteFromTemplateAsync(template);
                 return;
             }
             // If template is null but dialog was shown, user chose blank note or cancelled
@@ -111,12 +114,11 @@ public class MainViewModel : ViewModelBase
     /// <summary>
     /// Create a new note from a template (Requirements 6.2)
     /// </summary>
-    public async void CreateNoteFromTemplate(NoteTemplate template)
+    public async Task CreateNoteFromTemplateAsync(NoteTemplate template)
     {
         try
         {
-            var templateService = App.GetService<ITemplateService>();
-            var note = await templateService.CreateNoteFromTemplateAsync(template.Id);
+            var note = await _templateService.CreateNoteFromTemplateAsync(template.Id);
             
             // Add to notes collection
             var vm = CreateNoteViewModel(note);

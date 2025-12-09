@@ -286,6 +286,11 @@ public class CloudSyncPropertyTests
         public Note? GetNoteById(Guid id) => _notes.FirstOrDefault(n => n.Id == id);
         public void TogglePin(Guid id) { }
         public double AdjustOpacity(Guid id, double step) => 1.0;
+        public void LoadNotes(IEnumerable<Note> notes)
+        {
+            _notes.Clear();
+            _notes.AddRange(notes);
+        }
     }
 
     private class MockStorageService : IStorageService

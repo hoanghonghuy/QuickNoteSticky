@@ -31,40 +31,52 @@ public partial class SaveAsTemplateDialog : Window
 
     private async void InitializeForm()
     {
-        // Pre-fill name from note title
-        NameBox.Text = _sourceNote.Title;
-
-        // Populate language combo
-        LanguageCombo.ItemsSource = new[]
+        try
         {
-            "PlainText", "Markdown", "CSharp", "Java", "JavaScript", "TypeScript",
-            "Json", "Xml", "Sql", "Python", "Bash"
-        };
+            // Pre-fill name from note title
+            NameBox.Text = _sourceNote.Title;
 
-        var langIndex = Array.IndexOf(
-            new[] { "PlainText", "Markdown", "CSharp", "Java", "JavaScript", "TypeScript", "Json", "Xml", "Sql", "Python", "Bash" },
-            _sourceNote.Language);
-        LanguageCombo.SelectedIndex = langIndex >= 0 ? langIndex : 0;
+            // Populate language combo
+            LanguageCombo.ItemsSource = new[]
+            {
+                "PlainText", "Markdown", "CSharp", "Java", "JavaScript", "TypeScript",
+                "Json", "Xml", "Sql", "Python", "Bash"
+            };
 
-        // Populate category combo with existing categories
-        var templates = await _templateService.GetAllTemplatesAsync();
-        var categories = templates
-            .Select(t => t.Category)
-            .Distinct()
-            .OrderBy(c => c)
-            .ToList();
+            var langIndex = Array.IndexOf(
+                new[] { "PlainText", "Markdown", "CSharp", "Java", "JavaScript", "TypeScript", "Json", "Xml", "Sql", "Python", "Bash" },
+                _sourceNote.Language);
+            LanguageCombo.SelectedIndex = langIndex >= 0 ? langIndex : 0;
 
-        if (!categories.Contains("General"))
-            categories.Insert(0, "General");
-        if (!categories.Contains("Personal"))
-            categories.Add("Personal");
-        if (!categories.Contains("Development"))
-            categories.Add("Development");
-        if (!categories.Contains("Meeting"))
-            categories.Add("Meeting");
+            // Populate category combo with existing categories
+            var templates = await _templateService.GetAllTemplatesAsync();
+            var categories = templates
+                .Select(t => t.Category)
+                .Distinct()
+                .OrderBy(c => c)
+                .ToList();
 
-        CategoryCombo.ItemsSource = categories.Distinct().OrderBy(c => c).ToList();
-        CategoryCombo.SelectedIndex = 0;
+            if (!categories.Contains("General"))
+                categories.Insert(0, "General");
+            if (!categories.Contains("Personal"))
+                categories.Add("Personal");
+            if (!categories.Contains("Development"))
+                categories.Add("Development");
+            if (!categories.Contains("Meeting"))
+                categories.Add("Meeting");
+
+            CategoryCombo.ItemsSource = categories.Distinct().OrderBy(c => c).ToList();
+            CategoryCombo.SelectedIndex = 0;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Failed to initialize form: {ex.Message}");
+            // Set defaults on failure
+            LanguageCombo.ItemsSource = new[] { "PlainText" };
+            LanguageCombo.SelectedIndex = 0;
+            CategoryCombo.ItemsSource = new[] { "General", "Personal", "Development", "Meeting" };
+            CategoryCombo.SelectedIndex = 0;
+        }
     }
 
     /// <summary>

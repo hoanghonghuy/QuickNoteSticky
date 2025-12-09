@@ -56,7 +56,15 @@ public partial class GraphViewWindow : Window
 
     private async void OnLoaded(object sender, RoutedEventArgs e)
     {
-        await LoadGraphAsync();
+        try
+        {
+            await LoadGraphAsync();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Failed to load graph: {ex.Message}");
+            StatusText.Text = $"Error loading graph: {ex.Message}";
+        }
     }
 
     /// <summary>
@@ -453,7 +461,15 @@ public partial class GraphViewWindow : Window
 
     private async void BtnRefresh_Click(object sender, RoutedEventArgs e)
     {
-        await LoadGraphAsync();
+        try
+        {
+            await LoadGraphAsync();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Failed to refresh graph: {ex.Message}");
+            StatusText.Text = $"Error refreshing graph: {ex.Message}";
+        }
     }
 
     private void SetZoom(double newZoom)

@@ -93,16 +93,23 @@ public partial class SnippetBrowserWindow : Window
     /// </summary>
     private async void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
     {
-        var query = SearchBox.Text.Trim();
-        
-        if (string.IsNullOrEmpty(query))
+        try
         {
-            BuildCategoryTree(_allSnippets);
+            var query = SearchBox.Text.Trim();
+            
+            if (string.IsNullOrEmpty(query))
+            {
+                BuildCategoryTree(_allSnippets);
+            }
+            else
+            {
+                var filtered = await _snippetService.SearchSnippetsAsync(query);
+                BuildCategoryTree(filtered);
+            }
         }
-        else
+        catch (Exception ex)
         {
-            var filtered = await _snippetService.SearchSnippetsAsync(query);
-            BuildCategoryTree(filtered);
+            System.Diagnostics.Debug.WriteLine($"Search failed: {ex.Message}");
         }
     }
 
@@ -239,12 +246,19 @@ public partial class SnippetBrowserWindow : Window
     {
         if (_selectedSnippet == null) return;
         
-        if (CustomDialog.Confirm("Delete Snippet", 
-            $"Are you sure you want to delete '{_selectedSnippet.Name}'?"))
+        try
         {
-            await _snippetService.DeleteSnippetAsync(_selectedSnippet.Id);
-            await LoadSnippetsAsync();
-            ClearSelection();
+            if (CustomDialog.Confirm("Delete Snippet", 
+                $"Are you sure you want to delete '{_selectedSnippet.Name}'?"))
+            {
+                await _snippetService.DeleteSnippetAsync(_selectedSnippet.Id);
+                await LoadSnippetsAsync();
+                ClearSelection();
+            }
+        }
+        catch (Exception ex)
+        {
+            CustomDialog.ShowError("Delete Failed", ex.Message);
         }
     }
 

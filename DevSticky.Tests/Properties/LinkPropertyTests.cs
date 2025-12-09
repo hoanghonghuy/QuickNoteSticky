@@ -345,6 +345,12 @@ public class TestNoteService : INoteService
         }
         return 0.9;
     }
+
+    public void LoadNotes(IEnumerable<Note> notes)
+    {
+        _notes.Clear();
+        _notes.AddRange(notes);
+    }
 }
 
 #endregion

@@ -30,8 +30,8 @@ public partial class SnippetService : ISnippetService
     public SnippetService()
     {
         var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-        var devStickyFolder = Path.Combine(appDataPath, "DevSticky");
-        _storagePath = Path.Combine(devStickyFolder, "snippets.json");
+        var devStickyFolder = Path.Combine(appDataPath, AppConstants.AppDataFolderName);
+        _storagePath = Path.Combine(devStickyFolder, AppConstants.SnippetsFileName);
     }
 
     /// <summary>

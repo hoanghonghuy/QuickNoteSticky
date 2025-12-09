@@ -31,31 +31,43 @@ public partial class SaveSnippetDialog : Window
 
     private async void InitializeForm(string defaultLanguage)
     {
-        // Populate language combo
-        LanguageCombo.ItemsSource = new[] 
-        { 
-            "PlainText", "CSharp", "Java", "JavaScript", "TypeScript", 
-            "Json", "Xml", "Sql", "Python", "Bash" 
-        };
-        
-        var langIndex = Array.IndexOf(
-            new[] { "PlainText", "CSharp", "Java", "JavaScript", "TypeScript", "Json", "Xml", "Sql", "Python", "Bash" },
-            defaultLanguage);
-        LanguageCombo.SelectedIndex = langIndex >= 0 ? langIndex : 0;
-        
-        // Populate category combo with existing categories
-        var snippets = await _snippetService.GetAllSnippetsAsync();
-        var categories = snippets
-            .Select(s => s.Category)
-            .Distinct()
-            .OrderBy(c => c)
-            .ToList();
-        
-        if (!categories.Contains("General"))
-            categories.Insert(0, "General");
-        
-        CategoryCombo.ItemsSource = categories;
-        CategoryCombo.SelectedIndex = 0;
+        try
+        {
+            // Populate language combo
+            LanguageCombo.ItemsSource = new[] 
+            { 
+                "PlainText", "CSharp", "Java", "JavaScript", "TypeScript", 
+                "Json", "Xml", "Sql", "Python", "Bash" 
+            };
+            
+            var langIndex = Array.IndexOf(
+                new[] { "PlainText", "CSharp", "Java", "JavaScript", "TypeScript", "Json", "Xml", "Sql", "Python", "Bash" },
+                defaultLanguage);
+            LanguageCombo.SelectedIndex = langIndex >= 0 ? langIndex : 0;
+            
+            // Populate category combo with existing categories
+            var snippets = await _snippetService.GetAllSnippetsAsync();
+            var categories = snippets
+                .Select(s => s.Category)
+                .Distinct()
+                .OrderBy(c => c)
+                .ToList();
+            
+            if (!categories.Contains("General"))
+                categories.Insert(0, "General");
+            
+            CategoryCombo.ItemsSource = categories;
+            CategoryCombo.SelectedIndex = 0;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Failed to initialize form: {ex.Message}");
+            // Set defaults on failure
+            LanguageCombo.ItemsSource = new[] { "PlainText" };
+            LanguageCombo.SelectedIndex = 0;
+            CategoryCombo.ItemsSource = new[] { "General" };
+            CategoryCombo.SelectedIndex = 0;
+        }
     }
 
     /// <summary>

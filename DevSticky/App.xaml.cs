@@ -7,7 +7,6 @@ using DevSticky.ViewModels;
 using DevSticky.Views;
 using Microsoft.Extensions.DependencyInjection;
 using Application = System.Windows.Application;
-using WinFormsColor = System.Drawing.Color;
 
 namespace DevSticky;
 
@@ -19,14 +18,11 @@ public partial class App : Application
     private static IServiceProvider? _serviceProvider;
     private MainViewModel? _mainViewModel;
     private System.Windows.Forms.NotifyIcon? _notifyIcon;
-    private System.Windows.Forms.ContextMenuStrip? _trayContextMenu;
     private DashboardWindow? _dashboardWindow;
     private IThemeService? _themeService;
     private IHotkeyService? _hotkeyService;
     private ICloudSyncService? _cloudSyncService;
-    private System.Windows.Forms.ToolStripMenuItem? _syncStatusMenuItem;
-    private System.Windows.Forms.ToolStripMenuItem? _syncNowMenuItem;
-    private System.Windows.Forms.ToolStripMenuItem? _lastSyncMenuItem;
+    private TrayMenuService? _trayMenuService;
     
     public static IServiceProvider ServiceProvider => _serviceProvider 
         ?? throw new InvalidOperationException("ServiceProvider not initialized");
@@ -52,9 +48,6 @@ public partial class App : Application
             _ => Models.ThemeMode.System
         };
         _themeService.SetThemeMode(themeMode);
-        
-        // Subscribe to theme changes for tray menu updates (Requirements 4.1)
-        _themeService.ThemeChanged += OnThemeChanged;
 
         // Initialize global hotkey service (Requirements 1.4)
         _hotkeyService = ServiceProvider.GetRequiredService<IHotkeyService>();
@@ -63,18 +56,14 @@ public partial class App : Application
         try
         {
             _cloudSyncService = ServiceProvider.GetRequiredService<ICloudSyncService>();
-            _cloudSyncService.SyncProgress += OnCloudSyncProgress;
         }
         catch
         {
             _cloudSyncService = null;
         }
 
-        // Setup system tray
+        // Setup system tray with TrayMenuService
         SetupSystemTray();
-        
-        // Apply initial theme to tray menu
-        ApplyThemeToTrayMenu();
 
         // Initialize main view model and load notes
         _mainViewModel = ServiceProvider.GetRequiredService<MainViewModel>();
@@ -85,6 +74,9 @@ public partial class App : Application
         _mainViewModel.OnShowTemplateSelection = ShowTemplateSelectionDialog;
         
         await _mainViewModel.LoadNotesAsync();
+        
+        // Configure tray menu actions now that MainViewModel is ready
+        ConfigureTrayMenuActions();
 
         // Register global hotkeys after main view model is ready (Requirements 1.4)
         RegisterGlobalHotkeys(settings);
@@ -133,11 +125,11 @@ public partial class App : Application
     private void NotifyHotkeyConflict(string hotkeyId, string hotkeyString)
     {
         // Show notification via system tray balloon
-        _notifyIcon?.ShowBalloonTip(
-            3000,
+        _trayMenuService?.ShowBalloonTip(
             L.Get("HotkeyConflictTitle"),
             string.Format(L.Get("HotkeyConflictMessage"), hotkeyId, hotkeyString),
-            System.Windows.Forms.ToolTipIcon.Warning);
+            System.Windows.Forms.ToolTipIcon.Warning,
+            3000);
     }
 
     /// <summary>
@@ -295,14 +287,34 @@ public partial class App : Application
                 sp.GetRequiredService<IStorageService>(),
                 sp.GetRequiredService<IEncryptionService>()));
         
+        // NoteWindowContext for dependency injection (Requirements 4.1, 4.2, 4.3)
+        services.AddSingleton<NoteWindowContext>(sp =>
+            new NoteWindowContext(
+                sp.GetRequiredService<IThemeService>(),
+                sp.GetRequiredService<IMonitorService>(),
+                sp.GetRequiredService<ISnippetService>(),
+                sp.GetRequiredService<IDebounceService>(),
+                sp.GetRequiredService<IMarkdownService>(),
+                sp.GetRequiredService<ILinkService>(),
+                sp.GetRequiredService<INoteService>()));
+        
         // ViewModels
-        services.AddSingleton<MainViewModel>();
+        services.AddSingleton<MainViewModel>(sp =>
+            new MainViewModel(
+                sp.GetRequiredService<INoteService>(),
+                sp.GetRequiredService<IStorageService>(),
+                sp.GetRequiredService<IFormatterService>(),
+                sp.GetRequiredService<ISearchService>(),
+                sp.GetRequiredService<IDebounceService>(),
+                sp.GetRequiredService<IWindowService>(),
+                sp.GetRequiredService<ITemplateService>()));
     }
 
     private static NoteWindow CreateNoteWindow(IServiceProvider sp, Note note)
     {
         NoteWindow? window = null;
         var mainVm = sp.GetRequiredService<MainViewModel>();
+        var context = sp.GetRequiredService<NoteWindowContext>();
         
         var vm = new NoteViewModel(
             note,
@@ -324,7 +336,7 @@ public partial class App : Application
             mainVm.OpenNoteById(noteId);
         });
         
-        window = new NoteWindow { DataContext = vm };
+        window = new NoteWindow(context) { DataContext = vm };
         return window;
     }
 
@@ -338,14 +350,32 @@ public partial class App : Application
             Visible = true
         };
 
-        _trayContextMenu = new System.Windows.Forms.ContextMenuStrip();
-        BuildTrayMenuItems();
-
-        _notifyIcon.ContextMenuStrip = _trayContextMenu;
-        _notifyIcon.DoubleClick += (_, _) => OpenDashboard();
+        // Create and configure TrayMenuService
+        _trayMenuService = new TrayMenuService(_themeService!, _cloudSyncService, Dispatcher);
+        _trayMenuService.Initialize(_notifyIcon);
         
-        // Subscribe to language changes to update menu text
-        LocalizationService.Instance.LanguageChanged += OnLanguageChanged;
+        _notifyIcon.DoubleClick += (_, _) => OpenDashboard();
+    }
+    
+    /// <summary>
+    /// Configure tray menu actions after MainViewModel is ready
+    /// </summary>
+    private void ConfigureTrayMenuActions()
+    {
+        if (_trayMenuService == null || _mainViewModel == null) return;
+        
+        _trayMenuService.ConfigureActions(
+            onOpenDashboard: OpenDashboard,
+            onCreateNewNote: () => _mainViewModel.CreateNewNote(),
+            onShowAll: () => _mainViewModel.TrayViewModel.ShowAllCommand.Execute(null),
+            onHideAll: () => _mainViewModel.TrayViewModel.HideAllCommand.Execute(null),
+            onOpenSettings: OpenSettings,
+            onExit: () => _mainViewModel.TrayViewModel.ExitCommand.Execute(null),
+            onSyncNow: TriggerManualSync
+        );
+        
+        _trayMenuService.BuildMenu();
+        _trayMenuService.ApplyTheme();
     }
     
     /// <summary>
@@ -377,98 +407,6 @@ public partial class App : Application
     }
     
     /// <summary>
-    /// Build tray menu items with current language strings
-    /// </summary>
-    private void BuildTrayMenuItems()
-    {
-        if (_trayContextMenu == null) return;
-        
-        _trayContextMenu.Items.Clear();
-        _trayContextMenu.Items.Add(Services.L.Get("TrayDashboard"), null, (_, _) => OpenDashboard());
-        _trayContextMenu.Items.Add("-");
-        _trayContextMenu.Items.Add(Services.L.Get("TrayNewNote"), null, (_, _) => _mainViewModel?.CreateNewNote());
-        _trayContextMenu.Items.Add(Services.L.Get("TrayShowAll"), null, (_, _) => _mainViewModel?.TrayViewModel.ShowAllCommand.Execute(null));
-        _trayContextMenu.Items.Add(Services.L.Get("TrayHideAll"), null, (_, _) => _mainViewModel?.TrayViewModel.HideAllCommand.Execute(null));
-        _trayContextMenu.Items.Add("-");
-        
-        // Cloud Sync Section (Requirements 5.5, 5.6)
-        AddCloudSyncMenuItems();
-        
-        _trayContextMenu.Items.Add(Services.L.Get("TraySettings"), null, (_, _) => OpenSettings());
-        _trayContextMenu.Items.Add(Services.L.Get("TrayExit"), null, (_, _) => _mainViewModel?.TrayViewModel.ExitCommand.Execute(null));
-        
-        // Re-apply theme to new menu items
-        ApplyThemeToTrayMenu();
-    }
-    
-    /// <summary>
-    /// Add cloud sync menu items to the tray context menu (Requirements 5.5, 5.6)
-    /// </summary>
-    private void AddCloudSyncMenuItems()
-    {
-        if (_trayContextMenu == null) return;
-        
-        // Sync status indicator
-        _syncStatusMenuItem = new System.Windows.Forms.ToolStripMenuItem
-        {
-            Text = GetSyncStatusText(),
-            Enabled = false // Status is display-only
-        };
-        _trayContextMenu.Items.Add(_syncStatusMenuItem);
-        
-        // Last sync time
-        _lastSyncMenuItem = new System.Windows.Forms.ToolStripMenuItem
-        {
-            Text = GetLastSyncText(),
-            Enabled = false // Status is display-only
-        };
-        _trayContextMenu.Items.Add(_lastSyncMenuItem);
-        
-        // Sync Now button
-        _syncNowMenuItem = new System.Windows.Forms.ToolStripMenuItem
-        {
-            Text = "🔄 " + Services.L.Get("SyncNow"),
-            Enabled = _cloudSyncService?.Status == SyncStatus.Idle
-        };
-        _syncNowMenuItem.Click += async (_, _) => await TriggerManualSync();
-        _trayContextMenu.Items.Add(_syncNowMenuItem);
-        
-        _trayContextMenu.Items.Add("-");
-    }
-    
-    /// <summary>
-    /// Get the sync status text for display
-    /// </summary>
-    private string GetSyncStatusText()
-    {
-        if (_cloudSyncService == null)
-            return "☁️ " + Services.L.Get("CloudSyncNotAvailable");
-        
-        return _cloudSyncService.Status switch
-        {
-            SyncStatus.Disconnected => "☁️ " + Services.L.Get("CloudStatusDisconnected"),
-            SyncStatus.Connecting => "🔄 " + Services.L.Get("CloudStatusConnecting"),
-            SyncStatus.Syncing => "🔄 " + Services.L.Get("CloudStatusSyncing"),
-            SyncStatus.Idle => "✅ " + Services.L.Get("CloudStatusConnected"),
-            SyncStatus.Error => "❌ " + Services.L.Get("CloudStatusError"),
-            _ => "☁️ " + Services.L.Get("CloudStatusDisconnected")
-        };
-    }
-    
-    /// <summary>
-    /// Get the last sync time text for display
-    /// </summary>
-    private string GetLastSyncText()
-    {
-        if (_cloudSyncService?.LastSyncResult?.CompletedAt != null)
-        {
-            var lastSync = _cloudSyncService.LastSyncResult.CompletedAt.ToLocalTime();
-            return "📅 " + string.Format(Services.L.Get("LastSyncTime"), lastSync.ToString("g"));
-        }
-        return "📅 " + Services.L.Get("NeverSynced");
-    }
-    
-    /// <summary>
     /// Trigger a manual sync operation (Requirements 5.5, 5.6)
     /// </summary>
     private async Task TriggerManualSync()
@@ -476,8 +414,7 @@ public partial class App : Application
         if (_cloudSyncService == null || _cloudSyncService.Status != SyncStatus.Idle)
             return;
         
-        // Update menu to show syncing
-        UpdateSyncStatusInTray();
+        _trayMenuService?.UpdateSyncStatus(_cloudSyncService.Status, null);
         
         try
         {
@@ -485,127 +422,38 @@ public partial class App : Application
             
             if (result.Success)
             {
-                _notifyIcon?.ShowBalloonTip(
-                    2000,
-                    Services.L.Get("CloudSync"),
+                _trayMenuService?.ShowBalloonTip(
+                    L.Get("CloudSync"),
                     $"✅ {result.NotesUploaded} uploaded, {result.NotesDownloaded} downloaded",
-                    System.Windows.Forms.ToolTipIcon.Info);
+                    System.Windows.Forms.ToolTipIcon.Info,
+                    2000);
             }
             else
             {
-                _notifyIcon?.ShowBalloonTip(
-                    3000,
-                    Services.L.Get("CloudSync"),
+                _trayMenuService?.ShowBalloonTip(
+                    L.Get("CloudSync"),
                     $"❌ {result.ErrorMessage}",
-                    System.Windows.Forms.ToolTipIcon.Warning);
+                    System.Windows.Forms.ToolTipIcon.Warning,
+                    3000);
             }
         }
         catch (Exception ex)
         {
-            _notifyIcon?.ShowBalloonTip(
-                3000,
-                Services.L.Get("Error"),
+            _trayMenuService?.ShowBalloonTip(
+                L.Get("Error"),
                 ex.Message,
-                System.Windows.Forms.ToolTipIcon.Error);
+                System.Windows.Forms.ToolTipIcon.Error,
+                3000);
         }
         finally
         {
-            UpdateSyncStatusInTray();
-        }
-    }
-    
-    /// <summary>
-    /// Update the sync status display in the tray menu
-    /// </summary>
-    private void UpdateSyncStatusInTray()
-    {
-        Dispatcher.Invoke(() =>
-        {
-            if (_syncStatusMenuItem != null)
-                _syncStatusMenuItem.Text = GetSyncStatusText();
-            
-            if (_lastSyncMenuItem != null)
-                _lastSyncMenuItem.Text = GetLastSyncText();
-            
-            if (_syncNowMenuItem != null)
-                _syncNowMenuItem.Enabled = _cloudSyncService?.Status == SyncStatus.Idle;
-        });
-    }
-    
-    /// <summary>
-    /// Handle cloud sync progress events (Requirements 5.5, 5.6)
-    /// </summary>
-    private void OnCloudSyncProgress(object? sender, SyncProgressEventArgs e)
-    {
-        UpdateSyncStatusInTray();
-        
-        // Update tray icon tooltip with progress
-        Dispatcher.Invoke(() =>
-        {
-            if (_notifyIcon != null)
-            {
-                _notifyIcon.Text = $"DevSticky - {e.Operation}: {e.ProgressPercent}%";
-            }
-        });
-    }
-    
-    /// <summary>
-    /// Handle language changes and update tray menu text
-    /// </summary>
-    private void OnLanguageChanged(object? sender, EventArgs e)
-    {
-        Dispatcher.Invoke(BuildTrayMenuItems);
-    }
-    
-    /// <summary>
-    /// Handle theme changes and update tray menu styling (Requirements 4.1)
-    /// </summary>
-    private void OnThemeChanged(object? sender, ThemeChangedEventArgs e)
-    {
-        // Update tray menu on UI thread
-        Dispatcher.Invoke(ApplyThemeToTrayMenu);
-    }
-    
-    /// <summary>
-    /// Apply current theme colors to the tray context menu (Requirements 4.1, 4.2, 4.3, 4.4)
-    /// </summary>
-    private void ApplyThemeToTrayMenu()
-    {
-        if (_trayContextMenu == null || _themeService == null)
-            return;
-        
-        // Get theme colors from resources
-        var backgroundColor = _themeService.GetColor("Base");
-        var textColor = _themeService.GetColor("Text");
-        var hoverColor = _themeService.GetColor("Surface1");
-        
-        // Convert WPF colors to WinForms colors
-        var winFormsBgColor = WinFormsColor.FromArgb(backgroundColor.A, backgroundColor.R, backgroundColor.G, backgroundColor.B);
-        var winFormsTextColor = WinFormsColor.FromArgb(textColor.A, textColor.R, textColor.G, textColor.B);
-        var winFormsHoverColor = WinFormsColor.FromArgb(hoverColor.A, hoverColor.R, hoverColor.G, hoverColor.B);
-        
-        // Apply custom renderer for themed appearance
-        _trayContextMenu.Renderer = new ThemedMenuRenderer(winFormsBgColor, winFormsTextColor, winFormsHoverColor);
-        
-        // Apply colors to menu items
-        foreach (System.Windows.Forms.ToolStripItem item in _trayContextMenu.Items)
-        {
-            if (item is System.Windows.Forms.ToolStripMenuItem menuItem)
-            {
-                menuItem.ForeColor = winFormsTextColor;
-                menuItem.BackColor = winFormsBgColor;
-            }
+            _trayMenuService?.UpdateSyncStatus(_cloudSyncService.Status, _cloudSyncService.LastSyncResult?.CompletedAt);
+            _trayMenuService?.ResetTooltip();
         }
     }
 
     protected override void OnExit(ExitEventArgs e)
     {
-        // Unsubscribe from theme changes
-        if (_themeService != null)
-        {
-            _themeService.ThemeChanged -= OnThemeChanged;
-        }
-        
         // Unsubscribe from hotkey events and unregister all hotkeys (Requirements 1.5)
         if (_hotkeyService != null)
         {
@@ -613,17 +461,10 @@ public partial class App : Application
             _hotkeyService.UnregisterAll();
         }
         
-        // Unsubscribe from cloud sync events
-        if (_cloudSyncService != null)
-        {
-            _cloudSyncService.SyncProgress -= OnCloudSyncProgress;
-        }
-        
-        // Unsubscribe from language changes
-        LocalizationService.Instance.LanguageChanged -= OnLanguageChanged;
+        // Dispose tray menu service (handles its own event unsubscription)
+        _trayMenuService?.Dispose();
         
         _notifyIcon?.Dispose();
-        _trayContextMenu?.Dispose();
         (ServiceProvider.GetService<IDebounceService>() as IDisposable)?.Dispose();
         (ServiceProvider.GetService<IThemeService>() as IDisposable)?.Dispose();
         (ServiceProvider.GetService<IHotkeyService>() as IDisposable)?.Dispose();
@@ -635,84 +476,4 @@ public partial class App : Application
     {
         return ServiceProvider.GetRequiredService<T>();
     }
-}
-
-/// <summary>
-/// Custom renderer for themed tray context menu (Requirements 4.1, 4.2, 4.3, 4.4)
-/// </summary>
-internal class ThemedMenuRenderer : System.Windows.Forms.ToolStripProfessionalRenderer
-{
-    private readonly WinFormsColor _backgroundColor;
-    private readonly WinFormsColor _textColor;
-    private readonly WinFormsColor _hoverColor;
-    
-    public ThemedMenuRenderer(WinFormsColor backgroundColor, WinFormsColor textColor, WinFormsColor hoverColor)
-        : base(new ThemedColorTable(backgroundColor, hoverColor))
-    {
-        _backgroundColor = backgroundColor;
-        _textColor = textColor;
-        _hoverColor = hoverColor;
-    }
-    
-    protected override void OnRenderMenuItemBackground(System.Windows.Forms.ToolStripItemRenderEventArgs e)
-    {
-        var rect = new System.Drawing.Rectangle(System.Drawing.Point.Empty, e.Item.Size);
-        var color = e.Item.Selected ? _hoverColor : _backgroundColor;
-        
-        using var brush = new System.Drawing.SolidBrush(color);
-        e.Graphics.FillRectangle(brush, rect);
-    }
-    
-    protected override void OnRenderItemText(System.Windows.Forms.ToolStripItemTextRenderEventArgs e)
-    {
-        e.TextColor = _textColor;
-        base.OnRenderItemText(e);
-    }
-    
-    protected override void OnRenderSeparator(System.Windows.Forms.ToolStripSeparatorRenderEventArgs e)
-    {
-        var rect = new System.Drawing.Rectangle(System.Drawing.Point.Empty, e.Item.Size);
-        using var brush = new System.Drawing.SolidBrush(_backgroundColor);
-        e.Graphics.FillRectangle(brush, rect);
-        
-        // Draw separator line
-        var separatorColor = WinFormsColor.FromArgb(
-            Math.Min(255, _hoverColor.R + 20),
-            Math.Min(255, _hoverColor.G + 20),
-            Math.Min(255, _hoverColor.B + 20));
-        using var pen = new System.Drawing.Pen(separatorColor);
-        var y = rect.Height / 2;
-        e.Graphics.DrawLine(pen, 4, y, rect.Width - 4, y);
-    }
-}
-
-/// <summary>
-/// Custom color table for themed tray menu
-/// </summary>
-internal class ThemedColorTable : System.Windows.Forms.ProfessionalColorTable
-{
-    private readonly WinFormsColor _backgroundColor;
-    private readonly WinFormsColor _hoverColor;
-    
-    public ThemedColorTable(WinFormsColor backgroundColor, WinFormsColor hoverColor)
-    {
-        _backgroundColor = backgroundColor;
-        _hoverColor = hoverColor;
-    }
-    
-    public override WinFormsColor ToolStripDropDownBackground => _backgroundColor;
-    public override WinFormsColor ImageMarginGradientBegin => _backgroundColor;
-    public override WinFormsColor ImageMarginGradientMiddle => _backgroundColor;
-    public override WinFormsColor ImageMarginGradientEnd => _backgroundColor;
-    public override WinFormsColor MenuBorder => _hoverColor;
-    public override WinFormsColor MenuItemBorder => WinFormsColor.Transparent;
-    public override WinFormsColor MenuItemSelected => _hoverColor;
-    public override WinFormsColor MenuItemSelectedGradientBegin => _hoverColor;
-    public override WinFormsColor MenuItemSelectedGradientEnd => _hoverColor;
-    public override WinFormsColor MenuStripGradientBegin => _backgroundColor;
-    public override WinFormsColor MenuStripGradientEnd => _backgroundColor;
-    public override WinFormsColor MenuItemPressedGradientBegin => _hoverColor;
-    public override WinFormsColor MenuItemPressedGradientEnd => _hoverColor;
-    public override WinFormsColor SeparatorDark => _hoverColor;
-    public override WinFormsColor SeparatorLight => _backgroundColor;
 }

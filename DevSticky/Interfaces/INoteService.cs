@@ -14,4 +14,9 @@ public interface INoteService
     Note? GetNoteById(Guid id);
     void TogglePin(Guid id);
     double AdjustOpacity(Guid id, double step);
+    
+    /// <summary>
+    /// Loads notes from external source (used during app startup)
+    /// </summary>
+    void LoadNotes(IEnumerable<Note> notes);
 }

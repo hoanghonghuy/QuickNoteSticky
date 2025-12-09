@@ -23,8 +23,8 @@ public class StorageService : IStorageService
     public StorageService()
     {
         var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-        var devStickyFolder = Path.Combine(appDataPath, "DevSticky");
-        _storagePath = Path.Combine(devStickyFolder, "notes.json");
+        var devStickyFolder = Path.Combine(appDataPath, AppConstants.AppDataFolderName);
+        _storagePath = Path.Combine(devStickyFolder, AppConstants.NotesFileName);
     }
 
     public string GetStoragePath() => _storagePath;
