@@ -18,7 +18,8 @@ public class LocalizeExtension : MarkupExtension
         var binding = new System.Windows.Data.Binding($"[{Key}]")
         {
             Source = LocalizationService.Instance,
-            Mode = System.Windows.Data.BindingMode.OneWay
+            Mode = System.Windows.Data.BindingMode.OneWay,
+            UpdateSourceTrigger = System.Windows.Data.UpdateSourceTrigger.PropertyChanged
         };
         
         return binding.ProvideValue(serviceProvider);

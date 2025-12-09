@@ -12,8 +12,6 @@ using DragDropEffects = System.Windows.DragDropEffects;
 using DragEventArgs = System.Windows.DragEventArgs;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using ListBoxItem = System.Windows.Controls.ListBoxItem;
-
-using Point = System.Windows.Point;
 using TextBox = System.Windows.Controls.TextBox;
 
 namespace DevSticky.Views;
@@ -47,6 +45,24 @@ public partial class DashboardWindow : Window
         
         RefreshNotesList();
         UpdateCloudSyncStatus();
+        
+        // Subscribe to language changes to update UI text
+        LocalizationService.Instance.LanguageChanged += OnLanguageChanged;
+    }
+    
+    /// <summary>
+    /// Handle language changes and refresh UI text
+    /// </summary>
+    private void OnLanguageChanged(object? sender, EventArgs e)
+    {
+        // Refresh notes list to update all localized text (Ungrouped, EmptyNote, NoteCount, etc.)
+        RefreshNotesList();
+        
+        // Update cloud sync status text
+        UpdateCloudSyncStatus();
+        
+        // Update group view button tooltip
+        BtnGroupView.ToolTip = _isGroupedView ? L.Get("SwitchToFlatView") : L.Get("SwitchToGroupedView");
     }
 
     public void RefreshNotesList()
@@ -573,14 +589,25 @@ public partial class DashboardWindow : Window
 
     protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
     {
+        // Just hide the window instead of closing
+        // Keep event subscriptions active so language changes still work
+        e.Cancel = true;
+        Hide();
+    }
+    
+    /// <summary>
+    /// Call this when the application is actually shutting down to clean up resources
+    /// </summary>
+    public void Shutdown()
+    {
         // Unsubscribe from cloud sync events
         if (_cloudSyncService != null)
         {
             _cloudSyncService.SyncProgress -= OnSyncProgress;
         }
         
-        e.Cancel = true;
-        Hide();
+        // Unsubscribe from language change events
+        LocalizationService.Instance.LanguageChanged -= OnLanguageChanged;
     }
 
     /// <summary>

@@ -108,6 +108,49 @@
         <Setter Property="Foreground" Value="{DynamicResource BaseBrush}"/>
     </Style>
     
+    <!-- Dialog Button Style - Base style for dialog buttons -->
+    <Style x:Key="DialogBtn" TargetType="Button">
+        <Setter Property="Background" Value="{DynamicResource Surface1Brush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="20,10"/>
+        <Setter Property="MinWidth" Value="100"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="bd" Background="{TemplateBinding Background}" 
+                            CornerRadius="4" Padding="{TemplateBinding Padding}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="bd" Property="Background" Value="{DynamicResource Surface2Brush}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    
+    <!-- Dialog Primary Button Style -->
+    <Style x:Key="DialogPrimaryBtn" TargetType="Button" BasedOn="{StaticResource DialogBtn}">
+        <Setter Property="Background" Value="{DynamicResource BlueBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource BaseBrush}"/>
+    </Style>
+    
+    <!-- Warning Button Style -->
+    <Style x:Key="WarningBtn" TargetType="Button" BasedOn="{StaticResource DialogBtn}">
+        <Setter Property="Background" Value="{DynamicResource YellowBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource BaseBrush}"/>
+    </Style>
+    
+    <!-- Danger Button Style -->
+    <Style x:Key="DangerBtn" TargetType="Button" BasedOn="{StaticResource DialogBtn}">
+        <Setter Property="Background" Value="{DynamicResource RedBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource BaseBrush}"/>
+    </Style>
+    
     <!-- Field Label Style - Reusable across dialogs -->
     <Style x:Key="FieldLabel" TargetType="TextBlock">
         <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>

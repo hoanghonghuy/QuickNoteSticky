@@ -19,10 +19,10 @@ public partial class SaveAsTemplateDialog : Window
     /// </summary>
     public NoteTemplate? CreatedTemplate { get; private set; }
 
-    public SaveAsTemplateDialog(Note sourceNote)
+    public SaveAsTemplateDialog(Note sourceNote, ITemplateService? templateService = null)
     {
         InitializeComponent();
-        _templateService = App.GetService<ITemplateService>();
+        _templateService = templateService ?? App.GetService<ITemplateService>();
         _sourceNote = sourceNote;
 
         InitializeForm();

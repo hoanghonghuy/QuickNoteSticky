@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:loc="clr-namespace:DevSticky.Services"
         xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit"
-        Title="Snippet Browser"
+        Title="{loc:Localize SnippetBrowserTitle}"
         Width="800" Height="550"
         WindowStartupLocation="CenterScreen"
         WindowStyle="None"
@@ -13,58 +13,12 @@
         MinWidth="600" MinHeight="400">
     
     <Window.Resources>
-        <Style x:Key="IconBtn" TargetType="Button">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="{DynamicResource SubtextBrush}"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Width" Value="28"/>
-            <Setter Property="Height" Value="28"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="bd" Background="{TemplateBinding Background}" CornerRadius="4">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="bd" Property="Background" Value="{DynamicResource Surface1Brush}"/>
-                                <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-        
-        <Style x:Key="ActionBtn" TargetType="Button">
-            <Setter Property="Background" Value="{DynamicResource Surface1Brush}"/>
-            <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding" Value="16,8"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="bd" Background="{TemplateBinding Background}" 
-                                CornerRadius="4" Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="bd" Property="Background" Value="{DynamicResource Surface2Brush}"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-        
-        <Style x:Key="PrimaryBtn" TargetType="Button" BasedOn="{StaticResource ActionBtn}">
-            <Setter Property="Background" Value="{DynamicResource BlueBrush}"/>
-            <Setter Property="Foreground" Value="{DynamicResource BaseBrush}"/>
-        </Style>
-        <!-- TreeView Style -->
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Resources/SharedStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            
+            <!-- TreeView Style -->
         <Style x:Key="CategoryTreeView" TargetType="TreeView">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
@@ -128,7 +82,8 @@
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
-        </Style>
+            </Style>
+        </ResourceDictionary>
     </Window.Resources>
     
     <Border Background="{DynamicResource BaseBrush}" CornerRadius="8" 
@@ -146,7 +101,7 @@
                 <Grid Margin="12,0">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <TextBlock Text="📋 " Foreground="{DynamicResource TextBrush}" FontSize="14"/>
-                        <TextBlock Text="Snippet Browser" Foreground="{DynamicResource TextBrush}" 
+                        <TextBlock Text="{loc:Localize SnippetBrowserTitle}" Foreground="{DynamicResource TextBrush}" 
                                    FontSize="14" FontWeight="SemiBold"/>
                     </StackPanel>
                     <Button Content="✕" Style="{StaticResource IconBtn}" 
@@ -209,7 +164,7 @@
                     <Border Grid.Row="0" Background="{DynamicResource Surface0Brush}" 
                             CornerRadius="4" Padding="12,8" Margin="0,0,0,8">
                         <StackPanel>
-                            <TextBlock x:Name="SnippetNameText" Text="Select a snippet" 
+                            <TextBlock x:Name="SnippetNameText" Text="{loc:Localize SelectASnippet}" 
                                        Foreground="{DynamicResource TextBrush}" 
                                        FontSize="16" FontWeight="SemiBold"/>
                             <TextBlock x:Name="SnippetDescText" Text="" 
@@ -261,7 +216,7 @@
                             Background="{DynamicResource Surface0Brush}" 
                             CornerRadius="4" Padding="8" Margin="0,8,0,0" Visibility="Collapsed">
                         <StackPanel>
-                            <TextBlock Text="Placeholders:" Foreground="{DynamicResource SubtextBrush}" 
+                            <TextBlock Text="{loc:Localize Placeholders}" Foreground="{DynamicResource SubtextBrush}" 
                                        FontSize="11" FontWeight="SemiBold" Margin="0,0,0,4"/>
                             <ItemsControl x:Name="PlaceholdersList">
                                 <ItemsControl.ItemsPanel>
@@ -290,15 +245,15 @@
                     CornerRadius="0,0,8,8" Padding="12,8">
                 <Grid>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                        <Button x:Name="BtnExport" Content="Export" Style="{StaticResource ActionBtn}" 
+                        <Button x:Name="BtnExport" Content="{loc:Localize Export}" Style="{StaticResource ActionBtn}" 
                                 Click="BtnExport_Click" Margin="0,0,8,0"/>
-                        <Button x:Name="BtnImport" Content="Import" Style="{StaticResource ActionBtn}" 
+                        <Button x:Name="BtnImport" Content="{loc:Localize Import}" Style="{StaticResource ActionBtn}" 
                                 Click="BtnImport_Click"/>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                        <Button x:Name="BtnDelete" Content="Delete" Style="{StaticResource ActionBtn}" 
+                        <Button x:Name="BtnDelete" Content="{loc:Localize Delete}" Style="{StaticResource ActionBtn}" 
                                 Click="BtnDelete_Click" Margin="0,0,8,0" IsEnabled="False"/>
-                        <Button x:Name="BtnInsert" Content="Insert" Style="{StaticResource PrimaryBtn}" 
+                        <Button x:Name="BtnInsert" Content="{loc:Localize Insert}" Style="{StaticResource PrimaryBtn}" 
                                 Click="BtnInsert_Click" IsEnabled="False"/>
                     </StackPanel>
                 </Grid>

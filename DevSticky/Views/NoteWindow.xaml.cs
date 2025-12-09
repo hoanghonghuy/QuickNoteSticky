@@ -6,6 +6,7 @@ using DevSticky.Handlers;
 using DevSticky.Interfaces;
 using DevSticky.Models;
 using DevSticky.Resources;
+using DevSticky.Services;
 using DevSticky.ViewModels;
 using ICSharpCode.AvalonEdit.Highlighting;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
@@ -73,7 +74,8 @@ public partial class NoteWindow : Window
         _monitorService.MonitorsChanged += OnMonitorsChanged;
         
         // Initialize markdown preview handler (Requirements 2.2)
-        _markdownPreviewHandler = new MarkdownPreviewHandler(_debounceService);
+        _markdownPreviewHandler = new MarkdownPreviewHandler(
+            _debounceService, _markdownService, _themeService, _noteService);
         _markdownPreviewHandler.Initialize(
             Editor,
             MarkdownPreview,
@@ -95,6 +97,7 @@ public partial class NoteWindow : Window
         _snippetHandler.Initialize(Editor, this);
         
         // Initialize backlinks panel (Requirements 7.6, 7.7)
+        BacklinksPanel.Initialize(_linkService, _noteService);
         BacklinksPanel.BacklinkClicked += OnBacklinkClicked;
         
         // Populate monitor menu
@@ -140,7 +143,7 @@ public partial class NoteWindow : Window
             BacklinksColumn.Width = new GridLength(200);
             BacklinksSplitter.Visibility = Visibility.Visible;
             BacklinksPanel.Visibility = Visibility.Visible;
-            BtnBacklinks.ToolTip = "Hide Backlinks";
+            BtnBacklinks.ToolTip = L.Get("HideBacklinks");
         }
         else
         {
@@ -148,7 +151,7 @@ public partial class NoteWindow : Window
             BacklinksColumn.Width = new GridLength(0);
             BacklinksSplitter.Visibility = Visibility.Collapsed;
             BacklinksPanel.Visibility = Visibility.Collapsed;
-            BtnBacklinks.ToolTip = "Show Backlinks";
+            BtnBacklinks.ToolTip = L.Get("ShowBacklinks");
         }
     }
     

@@ -1,7 +1,8 @@
 <Window x:Class="DevSticky.Views.ConflictResolutionDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Sync Conflict"
+        xmlns:loc="clr-namespace:DevSticky.Services"
+        Title="{loc:Localize SyncConflictTitle}"
         Width="700" Height="500"
         WindowStartupLocation="CenterOwner"
         WindowStyle="None"
@@ -11,39 +12,11 @@
         ShowInTaskbar="False">
     
     <Window.Resources>
-        <Style x:Key="DialogBtn" TargetType="Button">
-            <Setter Property="Background" Value="{DynamicResource Surface1Brush}"/>
-            <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding" Value="20,10"/>
-            <Setter Property="MinWidth" Value="100"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="bd" Background="{TemplateBinding Background}" 
-                                CornerRadius="4" Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="bd" Property="Background" Value="{DynamicResource Surface2Brush}"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-        
-        <Style x:Key="PrimaryBtn" TargetType="Button" BasedOn="{StaticResource DialogBtn}">
-            <Setter Property="Background" Value="{DynamicResource BlueBrush}"/>
-            <Setter Property="Foreground" Value="{DynamicResource BaseBrush}"/>
-        </Style>
-        
-        <Style x:Key="WarningBtn" TargetType="Button" BasedOn="{StaticResource DialogBtn}">
-            <Setter Property="Background" Value="{DynamicResource YellowBrush}"/>
-            <Setter Property="Foreground" Value="{DynamicResource BaseBrush}"/>
-        </Style>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Resources/SharedStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
     </Window.Resources>
     
     <Border Background="{DynamicResource BaseBrush}" CornerRadius="8" 
@@ -61,7 +34,7 @@
                     CornerRadius="8,8,0,0" Padding="16,12">
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Text="⚠️" FontSize="20" Margin="0,0,10,0" VerticalAlignment="Center"/>
-                    <TextBlock Text="Sync Conflict Detected" Foreground="{DynamicResource TextBrush}" 
+                    <TextBlock Text="{loc:Localize SyncConflictDetected}" Foreground="{DynamicResource TextBrush}" 
                                FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
                 </StackPanel>
             </Border>
@@ -161,17 +134,17 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     
-                    <Button x:Name="CancelBtn" Grid.Column="0" Content="Cancel" 
+                    <Button x:Name="CancelBtn" Grid.Column="0" Content="{loc:Localize Cancel}" 
                             Style="{StaticResource DialogBtn}" Click="CancelBtn_Click"/>
                     
                     <StackPanel Grid.Column="2" Orientation="Horizontal">
-                        <Button x:Name="KeepLocalBtn" Content="Keep Local" 
+                        <Button x:Name="KeepLocalBtn" Content="{loc:Localize KeepLocal}" 
                                 Style="{StaticResource DialogBtn}" Margin="0,0,8,0"
                                 Click="KeepLocalBtn_Click"/>
-                        <Button x:Name="KeepRemoteBtn" Content="Keep Remote" 
+                        <Button x:Name="KeepRemoteBtn" Content="{loc:Localize KeepRemote}" 
                                 Style="{StaticResource DialogBtn}" Margin="0,0,8,0"
                                 Click="KeepRemoteBtn_Click"/>
-                        <Button x:Name="MergeBtn" Content="Merge Both" 
+                        <Button x:Name="MergeBtn" Content="{loc:Localize MergeBoth}" 
                                 Style="{StaticResource WarningBtn}"
                                 Click="MergeBtn_Click"/>
                     </StackPanel>

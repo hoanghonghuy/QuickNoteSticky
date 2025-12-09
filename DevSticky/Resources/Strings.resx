@@ -711,4 +711,119 @@ This tag will be removed from {1} note(s).</value>
   <data name="LastModified" xml:space="preserve">
     <value>Last modified: {0}</value>
   </data>
+  
+  <!-- Window Controls -->
+  <data name="Minimize" xml:space="preserve">
+    <value>Minimize</value>
+  </data>
+  <data name="Maximize" xml:space="preserve">
+    <value>Maximize</value>
+  </data>
+  <data name="ZoomIn" xml:space="preserve">
+    <value>Zoom In</value>
+  </data>
+  <data name="ZoomOut" xml:space="preserve">
+    <value>Zoom Out</value>
+  </data>
+  <data name="ResetView" xml:space="preserve">
+    <value>Reset View</value>
+  </data>
+  <data name="RefreshGraph" xml:space="preserve">
+    <value>Refresh Graph</value>
+  </data>
+  <data name="Export" xml:space="preserve">
+    <value>Export</value>
+  </data>
+  <data name="Import" xml:space="preserve">
+    <value>Import</value>
+  </data>
+  <data name="Insert" xml:space="preserve">
+    <value>Insert</value>
+  </data>
+  <data name="UseTemplate" xml:space="preserve">
+    <value>Use Template</value>
+  </data>
+  <data name="SaveTemplate" xml:space="preserve">
+    <value>Save Template</value>
+  </data>
+  <data name="HideBacklinks" xml:space="preserve">
+    <value>Hide Backlinks</value>
+  </data>
+  <data name="OpenGraphView" xml:space="preserve">
+    <value>Open Graph View</value>
+  </data>
+  <data name="MergeBoth" xml:space="preserve">
+    <value>Merge Both</value>
+  </data>
+  
+  <!-- Additional UI Strings -->
+  <data name="SelectASnippet" xml:space="preserve">
+    <value>Select a snippet</value>
+  </data>
+  <data name="NoTemplateSelected" xml:space="preserve">
+    <value>No template selected</value>
+  </data>
+  <data name="LoadingPreview" xml:space="preserve">
+    <value>Loading preview...</value>
+  </data>
+  <data name="PreviewUnavailable" xml:space="preserve">
+    <value>Preview unavailable</value>
+  </data>
+  <data name="WebView2NotAvailable" xml:space="preserve">
+    <value>WebView2 not available</value>
+  </data>
+  <data name="LoadingGraph" xml:space="preserve">
+    <value>Loading graph...</value>
+  </data>
+  <data name="BuildingGraph" xml:space="preserve">
+    <value>Building graph...</value>
+  </data>
+  <data name="LinkServiceNotAvailable" xml:space="preserve">
+    <value>Link service not available</value>
+  </data>
+  <data name="NoNotesToDisplay" xml:space="preserve">
+    <value>No notes to display</value>
+  </data>
+  <data name="SyncConflictDetected" xml:space="preserve">
+    <value>Sync Conflict Detected</value>
+  </data>
+  <data name="Placeholders" xml:space="preserve">
+    <value>Placeholders:</value>
+  </data>
+  <data name="DetectedPlaceholders" xml:space="preserve">
+    <value>Detected Placeholders:</value>
+  </data>
+  <data name="PlaceholderTip" xml:space="preserve">
+    <value>Tip: Use {{date}}, {{datetime}}, or {{author}} for auto-fill placeholders</value>
+  </data>
+  <data name="NameRequired" xml:space="preserve">
+    <value>Name *</value>
+  </data>
+  <data name="Description" xml:space="preserve">
+    <value>Description</value>
+  </data>
+  <data name="TagsCommaSeparated" xml:space="preserve">
+    <value>Tags (comma-separated)</value>
+  </data>
+  <data name="TemplateNameRequired" xml:space="preserve">
+    <value>Template Name *</value>
+  </data>
+  <data name="DefaultLanguage" xml:space="preserve">
+    <value>Default Language</value>
+  </data>
+  <data name="Category" xml:space="preserve">
+    <value>Category</value>
+  </data>
+  <data name="ShowPreview" xml:space="preserve">
+    <value>Show Preview</value>
+  </data>
+  <data name="HidePreview" xml:space="preserve">
+    <value>Hide Preview</value>
+  </data>
+  <data name="DialogTitle" xml:space="preserve">
+    <value>Dialog</value>
+  </data>
+  <data name="DashboardTitle" xml:space="preserve">
+    <value>DevSticky - Dashboard</value>
+  </data>
 </root>

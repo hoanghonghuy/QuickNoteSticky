@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:avalonedit="http://icsharpcode.net/sharpdevelop/avalonedit"
         xmlns:local="clr-namespace:DevSticky.Views"
+        xmlns:loc="clr-namespace:DevSticky.Services"
         WindowStyle="None"
         AllowsTransparency="True"
         Background="Transparent"
@@ -12,8 +13,13 @@
         ShowInTaskbar="False">
     
     <Window.Resources>
-        <!-- Dark ComboBox Style -->
-        <Style x:Key="DarkCombo" TargetType="ComboBox">
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/Resources/SharedStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            
+            <!-- Dark ComboBox Style -->
+            <Style x:Key="DarkCombo" TargetType="ComboBox">
             <Setter Property="Background" Value="{DynamicResource Surface1Brush}"/>
             <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
             <Setter Property="BorderThickness" Value="0"/>
@@ -107,35 +113,16 @@
             </Setter>
         </Style>
         
-        <!-- Icon Button -->
-        <Style x:Key="IconBtn" TargetType="Button">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="{DynamicResource SubtextBrush}"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Width" Value="30"/>
-            <Setter Property="Height" Value="30"/>
-            <Setter Property="FontSize" Value="13"/>
-            <Setter Property="FontFamily" Value="Segoe UI Symbol"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="bd" Background="{TemplateBinding Background}" CornerRadius="4">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="bd" Property="Background" Value="{DynamicResource Surface1Brush}"/>
-                                <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
+        <!-- Note Window Icon Button (slightly larger than shared) -->
+            <Style x:Key="NoteIconBtn" TargetType="Button" BasedOn="{StaticResource IconBtn}">
+                <Setter Property="Width" Value="30"/>
+                <Setter Property="Height" Value="30"/>
+                <Setter Property="FontSize" Value="13"/>
+                <Setter Property="FontFamily" Value="Segoe UI Symbol"/>
+            </Style>
         
-        <!-- Close Button -->
-        <Style x:Key="CloseBtn" TargetType="Button" BasedOn="{StaticResource IconBtn}">
+            <!-- Close Button -->
+            <Style x:Key="CloseBtn" TargetType="Button" BasedOn="{StaticResource NoteIconBtn}">
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
                     <Setter Property="Foreground" Value="{DynamicResource RedBrush}"/>
@@ -172,7 +159,8 @@
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
-        </Style>
+            </Style>
+        </ResourceDictionary>
     </Window.Resources>
     
     <Border Background="{DynamicResource BaseBrush}" 
@@ -198,14 +186,14 @@
                                  Background="{DynamicResource Surface0Brush}"
                                  Foreground="{DynamicResource TextBrush}"
                                  BorderBrush="{DynamicResource Surface2Brush}">
-                        <MenuItem x:Name="MoveToMonitorMenuItem" Header="Move to Monitor">
+                        <MenuItem x:Name="MoveToMonitorMenuItem" Header="{loc:Localize MoveToMonitor}">
                             <!-- Items will be populated dynamically -->
                         </MenuItem>
                         <Separator/>
-                        <MenuItem Header="Show Backlinks" Click="ShowBacklinks_Click"/>
-                        <MenuItem Header="Open Graph View" Click="OpenGraphView_Click"/>
+                        <MenuItem Header="{loc:Localize ShowBacklinks}" Click="ShowBacklinks_Click"/>
+                        <MenuItem Header="{loc:Localize OpenGraphView}" Click="OpenGraphView_Click"/>
                         <Separator/>
-                        <MenuItem Header="Save as Template" Click="SaveAsTemplate_Click"/>
+                        <MenuItem Header="{loc:Localize SaveAsTemplate}" Click="SaveAsTemplate_Click"/>
                     </ContextMenu>
                 </Border.ContextMenu>
                 <Grid Margin="6,0">
@@ -224,31 +212,31 @@
                     
                     <!-- Buttons -->
                     <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                        <Button x:Name="BtnBacklinks" Content="🔗" Style="{StaticResource IconBtn}" 
-                                Click="BtnBacklinks_Click" ToolTip="Show Backlinks"/>
-                        <Button x:Name="BtnPreview" Content="👁" Style="{StaticResource IconBtn}" 
-                                Click="BtnPreview_Click" ToolTip="Toggle Preview"
+                        <Button x:Name="BtnBacklinks" Content="🔗" Style="{StaticResource NoteIconBtn}" 
+                                Click="BtnBacklinks_Click" ToolTip="{loc:Localize ShowBacklinks}"/>
+                        <Button x:Name="BtnPreview" Content="👁" Style="{StaticResource NoteIconBtn}" 
+                                Click="BtnPreview_Click" ToolTip="{loc:Localize TogglePreview}"
                                 Visibility="Collapsed"/>
-                        <Button x:Name="BtnExport" Content="📤" Style="{StaticResource IconBtn}" 
-                                Click="BtnExport_Click" ToolTip="Export"
+                        <Button x:Name="BtnExport" Content="📤" Style="{StaticResource NoteIconBtn}" 
+                                Click="BtnExport_Click" ToolTip="{loc:Localize Export}"
                                 Visibility="Collapsed">
                             <Button.ContextMenu>
                                 <ContextMenu x:Name="ExportContextMenu"
                                              Background="{DynamicResource Surface0Brush}"
                                              Foreground="{DynamicResource TextBrush}"
                                              BorderBrush="{DynamicResource Surface2Brush}">
-                                    <MenuItem Header="Export as HTML" Click="ExportHtml_Click"/>
-                                    <MenuItem Header="Export as PDF" Click="ExportPdf_Click"/>
-                                    <MenuItem Header="Export as Markdown" Click="ExportMarkdown_Click"/>
+                                    <MenuItem Header="{loc:Localize ExportAsHtml}" Click="ExportHtml_Click"/>
+                                    <MenuItem Header="{loc:Localize ExportAsPdf}" Click="ExportPdf_Click"/>
+                                    <MenuItem Header="{loc:Localize ExportAsMarkdown}" Click="ExportMarkdown_Click"/>
                                 </ContextMenu>
                             </Button.ContextMenu>
                         </Button>
-                        <Button x:Name="BtnPin" Content="●" Style="{StaticResource IconBtn}" 
-                                Click="BtnPin_Click" ToolTip="Pin"/>
-                        <Button Content="🔎" Style="{StaticResource IconBtn}" 
-                                Click="BtnSearch_Click" ToolTip="Search"/>
+                        <Button x:Name="BtnPin" Content="●" Style="{StaticResource NoteIconBtn}" 
+                                Click="BtnPin_Click" ToolTip="{loc:Localize Pin}"/>
+                        <Button Content="🔎" Style="{StaticResource NoteIconBtn}" 
+                                Click="BtnSearch_Click" ToolTip="{loc:Localize Search}"/>
                         <Button Content="✕" Style="{StaticResource CloseBtn}" 
-                                Click="BtnClose_Click" ToolTip="Close"/>
+                                Click="BtnClose_Click" ToolTip="{loc:Localize Close}"/>
                     </StackPanel>
                 </Grid>
             </Border>
@@ -269,9 +257,9 @@
                              CaretBrush="{DynamicResource TextBrush}"
                              BorderThickness="0" Padding="6,3" FontSize="12"/>
                     <StackPanel Grid.Column="1" Orientation="Horizontal">
-                        <Button Content="◀" Style="{StaticResource IconBtn}" Width="24"
+                        <Button Content="◀" Style="{StaticResource NoteIconBtn}" Width="24"
                                 Click="BtnPrevMatch_Click"/>
-                        <Button Content="▶" Style="{StaticResource IconBtn}" Width="24"
+                        <Button Content="▶" Style="{StaticResource NoteIconBtn}" Width="24"
                                 Click="BtnNextMatch_Click"/>
                     </StackPanel>
                 </Grid>

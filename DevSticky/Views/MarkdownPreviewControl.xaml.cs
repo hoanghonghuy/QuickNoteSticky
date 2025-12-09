@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Windows;
 using DevSticky.Interfaces;
 using DevSticky.Models;
+using DevSticky.Services;
 using Microsoft.Web.WebView2.Core;
 
 namespace DevSticky.Views;
@@ -34,18 +35,39 @@ public partial class MarkdownPreviewControl : System.Windows.Controls.UserContro
         Loaded += OnLoaded;
         Unloaded += OnUnloaded;
     }
+    
+    /// <summary>
+    /// Initialize services for the markdown preview control.
+    /// Call this method after construction to inject services.
+    /// </summary>
+    public void Initialize(IMarkdownService markdownService, IThemeService themeService, INoteService noteService)
+    {
+        _markdownService = markdownService;
+        _themeService = themeService;
+        _noteService = noteService;
+        
+        if (_themeService != null)
+        {
+            _themeService.ThemeChanged += OnThemeChanged;
+        }
+    }
 
     private async void OnLoaded(object sender, RoutedEventArgs e)
     {
         try
         {
-            _markdownService = App.GetService<IMarkdownService>();
-            _themeService = App.GetService<IThemeService>();
-            _noteService = App.GetService<INoteService>();
-
-            if (_themeService != null)
+            // Services should be initialized via Initialize() method
+            // Fall back to service locator for backward compatibility
+            if (_markdownService == null)
             {
-                _themeService.ThemeChanged += OnThemeChanged;
+                _markdownService = App.GetService<IMarkdownService>();
+                _themeService = App.GetService<IThemeService>();
+                _noteService = App.GetService<INoteService>();
+
+                if (_themeService != null)
+                {
+                    _themeService.ThemeChanged += OnThemeChanged;
+                }
             }
 
             await InitializeWebViewAsync();
@@ -53,7 +75,7 @@ public partial class MarkdownPreviewControl : System.Windows.Controls.UserContro
         catch (Exception ex)
         {
             Debug.WriteLine($"Failed to initialize MarkdownPreviewControl: {ex.Message}");
-            LoadingText.Text = "Preview unavailable";
+            LoadingText.Text = L.Get("PreviewUnavailable");
         }
     }
 
@@ -96,7 +118,7 @@ public partial class MarkdownPreviewControl : System.Windows.Controls.UserContro
         catch (Exception ex)
         {
             Debug.WriteLine($"WebView2 initialization failed: {ex.Message}");
-            LoadingText.Text = "WebView2 not available";
+            LoadingText.Text = L.Get("WebView2NotAvailable");
         }
     }
 

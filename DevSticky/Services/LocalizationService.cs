@@ -46,6 +46,8 @@ public class LocalizationService : INotifyPropertyChanged
             {
                 _currentCulture = value;
                 CultureInfo.CurrentUICulture = value;
+                // Notify all bindings to refresh by using "Item[]" for indexer
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Item[]"));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
                 LanguageChanged?.Invoke(this, EventArgs.Empty);
             }

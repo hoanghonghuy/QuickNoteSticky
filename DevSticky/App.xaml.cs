@@ -464,6 +464,9 @@ public partial class App : Application
         // Dispose tray menu service (handles its own event unsubscription)
         _trayMenuService?.Dispose();
         
+        // Clean up dashboard window event subscriptions
+        _dashboardWindow?.Shutdown();
+        
         _notifyIcon?.Dispose();
         (ServiceProvider.GetService<IDebounceService>() as IDisposable)?.Dispose();
         (ServiceProvider.GetService<IThemeService>() as IDisposable)?.Dispose();

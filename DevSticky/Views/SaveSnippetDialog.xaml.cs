@@ -19,10 +19,10 @@ public partial class SaveSnippetDialog : Window
     /// </summary>
     public Snippet? CreatedSnippet { get; private set; }
 
-    public SaveSnippetDialog(string content, string defaultLanguage = "PlainText")
+    public SaveSnippetDialog(string content, string defaultLanguage = "PlainText", ISnippetService? snippetService = null)
     {
         InitializeComponent();
-        _snippetService = App.GetService<ISnippetService>();
+        _snippetService = snippetService ?? App.GetService<ISnippetService>();
         _content = content;
         
         InitializeForm(defaultLanguage);

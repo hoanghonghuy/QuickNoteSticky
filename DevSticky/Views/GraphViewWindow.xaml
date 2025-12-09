@@ -1,7 +1,8 @@
 <Window x:Class="DevSticky.Views.GraphViewWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Note Graph"
+        xmlns:loc="clr-namespace:DevSticky.Services"
+        Title="{loc:Localize GraphViewTitle}"
         Width="800" Height="600"
         MinWidth="400" MinHeight="300"
         WindowStartupLocation="CenterScreen"
@@ -34,13 +35,13 @@
                 <Grid Margin="12,0">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <TextBlock Text="🔗 " Foreground="{DynamicResource TextBrush}" FontSize="14"/>
-                        <TextBlock Text="Note Graph" Foreground="{DynamicResource TextBrush}" 
+                        <TextBlock Text="{loc:Localize GraphViewTitle}" Foreground="{DynamicResource TextBrush}" 
                                    FontSize="14" FontWeight="SemiBold"/>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-                        <Button Content="─" Style="{StaticResource IconBtn}" Click="BtnMinimize_Click" ToolTip="Minimize"/>
-                        <Button x:Name="BtnMaximize" Content="☐" Style="{StaticResource IconBtn}" Click="BtnMaximize_Click" ToolTip="Maximize"/>
-                        <Button Content="✕" Style="{StaticResource IconBtn}" Click="BtnClose_Click" ToolTip="Close"/>
+                        <Button Content="─" Style="{StaticResource IconBtn}" Click="BtnMinimize_Click" ToolTip="{loc:Localize Minimize}"/>
+                        <Button x:Name="BtnMaximize" Content="☐" Style="{StaticResource IconBtn}" Click="BtnMaximize_Click" ToolTip="{loc:Localize Maximize}"/>
+                        <Button Content="✕" Style="{StaticResource IconBtn}" Click="BtnClose_Click" ToolTip="{loc:Localize Close}"/>
                     </StackPanel>
                 </Grid>
             </Border>
@@ -51,14 +52,14 @@
                     Padding="8">
                 <StackPanel Orientation="Horizontal">
                     <Button Content="➕" Style="{StaticResource IconBtn}" Width="32" Height="32"
-                            Click="BtnZoomIn_Click" ToolTip="Zoom In"/>
+                            Click="BtnZoomIn_Click" ToolTip="{loc:Localize ZoomIn}"/>
                     <Button Content="➖" Style="{StaticResource IconBtn}" Width="32" Height="32"
-                            Click="BtnZoomOut_Click" ToolTip="Zoom Out"/>
+                            Click="BtnZoomOut_Click" ToolTip="{loc:Localize ZoomOut}"/>
                     <Button Content="⟲" Style="{StaticResource IconBtn}" Width="32" Height="32"
-                            Click="BtnResetView_Click" ToolTip="Reset View"/>
+                            Click="BtnResetView_Click" ToolTip="{loc:Localize ResetView}"/>
                     <Separator Margin="8,4" Background="{DynamicResource Surface2Brush}"/>
                     <Button Content="🔄" Style="{StaticResource IconBtn}" Width="32" Height="32"
-                            Click="BtnRefresh_Click" ToolTip="Refresh Graph"/>
+                            Click="BtnRefresh_Click" ToolTip="{loc:Localize RefreshGraph}"/>
                 </StackPanel>
             </Border>
             
@@ -87,7 +88,7 @@
                     Padding="8,4">
                 <StackPanel Orientation="Horizontal">
                     <TextBlock x:Name="StatusText"
-                               Text="Loading graph..."
+                               Text="{loc:Localize LoadingGraph}"
                                Foreground="{DynamicResource SubtextBrush}"
                                FontSize="12"/>
                 </StackPanel>

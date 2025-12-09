@@ -5,6 +5,7 @@ using System.Windows.Media;
 using System.Windows.Shapes;
 using DevSticky.Interfaces;
 using DevSticky.Models;
+using DevSticky.Services;
 
 namespace DevSticky.Views;
 
@@ -37,14 +38,14 @@ public partial class GraphViewWindow : Window
     private const double NodeRadius = 25;
     private const double NodeSpacing = 100;
 
-    public GraphViewWindow()
+    public GraphViewWindow(ILinkService? linkService = null, INoteService? noteService = null)
     {
         InitializeComponent();
         
         try
         {
-            _linkService = App.GetService<ILinkService>();
-            _noteService = App.GetService<INoteService>();
+            _linkService = linkService ?? App.GetService<ILinkService>();
+            _noteService = noteService ?? App.GetService<INoteService>();
         }
         catch
         {
@@ -74,11 +75,11 @@ public partial class GraphViewWindow : Window
     {
         if (_linkService == null)
         {
-            StatusText.Text = "Link service not available";
+            StatusText.Text = L.Get("LinkServiceNotAvailable");
             return;
         }
 
-        StatusText.Text = "Building graph...";
+        StatusText.Text = L.Get("BuildingGraph");
         
         try
         {
@@ -103,7 +104,7 @@ public partial class GraphViewWindow : Window
 
         if (_graph == null || _graph.Nodes.Count == 0)
         {
-            StatusText.Text = "No notes to display";
+            StatusText.Text = L.Get("NoNotesToDisplay");
             return;
         }
 

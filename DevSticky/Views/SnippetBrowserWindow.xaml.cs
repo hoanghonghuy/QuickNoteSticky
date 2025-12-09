@@ -4,6 +4,7 @@ using System.Windows.Input;
 using DevSticky.Interfaces;
 using DevSticky.Models;
 using DevSticky.Resources;
+using DevSticky.Services;
 using ICSharpCode.AvalonEdit.Highlighting;
 using Microsoft.Win32;
 
@@ -26,15 +27,18 @@ public partial class SnippetBrowserWindow : Window
     /// </summary>
     public event EventHandler<Snippet>? SnippetInsertRequested;
 
-    public SnippetBrowserWindow()
+    public SnippetBrowserWindow(ISnippetService? snippetService = null, IThemeService? themeService = null)
     {
         InitializeComponent();
-        _snippetService = App.GetService<ISnippetService>();
+        _snippetService = snippetService ?? App.GetService<ISnippetService>();
         
         try
         {
-            _themeService = App.GetService<IThemeService>();
-            _themeService.ThemeChanged += OnThemeChanged;
+            _themeService = themeService ?? App.GetService<IThemeService>();
+            if (_themeService != null)
+            {
+                _themeService.ThemeChanged += OnThemeChanged;
+            }
         }
         catch { /* Service not available during design time */ }
         
@@ -161,7 +165,7 @@ public partial class SnippetBrowserWindow : Window
     private void ClearSelection()
     {
         _selectedSnippet = null;
-        SnippetNameText.Text = "Select a snippet";
+        SnippetNameText.Text = L.Get("SelectASnippet");
         SnippetDescText.Text = "";
         SnippetLangText.Text = "";
         TagsPanel.ItemsSource = null;

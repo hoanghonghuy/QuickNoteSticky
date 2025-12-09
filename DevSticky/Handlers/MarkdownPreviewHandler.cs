@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using DevSticky.Interfaces;
+using DevSticky.Services;
 using DevSticky.Views;
 using ICSharpCode.AvalonEdit;
 using Button = System.Windows.Controls.Button;
@@ -14,6 +15,9 @@ namespace DevSticky.Handlers;
 public class MarkdownPreviewHandler : IDisposable
 {
     private readonly IDebounceService _debounceService;
+    private readonly IMarkdownService? _markdownService;
+    private readonly IThemeService? _themeService;
+    private readonly INoteService? _noteService;
     
     private TextEditor? _editor;
     private MarkdownPreviewControl? _previewControl;
@@ -51,9 +55,19 @@ public class MarkdownPreviewHandler : IDisposable
     /// Creates a new MarkdownPreviewHandler
     /// </summary>
     /// <param name="debounceService">Service for debouncing preview updates</param>
-    public MarkdownPreviewHandler(IDebounceService debounceService)
+    /// <param name="markdownService">Service for rendering markdown (optional, for injection into preview control)</param>
+    /// <param name="themeService">Service for theme management (optional, for injection into preview control)</param>
+    /// <param name="noteService">Service for note operations (optional, for injection into preview control)</param>
+    public MarkdownPreviewHandler(
+        IDebounceService debounceService,
+        IMarkdownService? markdownService = null,
+        IThemeService? themeService = null,
+        INoteService? noteService = null)
     {
         _debounceService = debounceService;
+        _markdownService = markdownService;
+        _themeService = themeService;
+        _noteService = noteService;
     }
 
     
@@ -86,6 +100,12 @@ public class MarkdownPreviewHandler : IDisposable
         _editorColumn = editorColumn;
         _splitterColumn = splitterColumn;
         _previewColumn = previewColumn;
+        
+        // Initialize preview control with services if available
+        if (_markdownService != null && _themeService != null && _noteService != null)
+        {
+            _previewControl.Initialize(_markdownService, _themeService, _noteService);
+        }
         
         // Wire up preview control events
         _previewControl.NoteLinkClicked += OnPreviewNoteLinkClicked;
@@ -166,7 +186,7 @@ public class MarkdownPreviewHandler : IDisposable
             _previewColumn.Width = new GridLength(1, GridUnitType.Star);
             _splitter.Visibility = Visibility.Visible;
             _previewControl.Visibility = Visibility.Visible;
-            _previewButton.ToolTip = "Hide Preview";
+            _previewButton.ToolTip = L.Get("HidePreview");
         }
         else
         {
@@ -176,7 +196,7 @@ public class MarkdownPreviewHandler : IDisposable
             _previewColumn.Width = new GridLength(0);
             _splitter.Visibility = Visibility.Collapsed;
             _previewControl.Visibility = Visibility.Collapsed;
-            _previewButton.ToolTip = "Show Preview";
+            _previewButton.ToolTip = L.Get("ShowPreview");
         }
     }
     

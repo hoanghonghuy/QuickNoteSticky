@@ -22,16 +22,16 @@ public partial class BacklinksPanel : System.Windows.Controls.UserControl
     public BacklinksPanel()
     {
         InitializeComponent();
-        
-        try
-        {
-            _linkService = App.GetService<ILinkService>();
-            _noteService = App.GetService<INoteService>();
-        }
-        catch
-        {
-            // Services not available during design time
-        }
+    }
+    
+    /// <summary>
+    /// Initialize services for the backlinks panel.
+    /// Call this method after construction to inject services.
+    /// </summary>
+    public void Initialize(ILinkService linkService, INoteService noteService)
+    {
+        _linkService = linkService;
+        _noteService = noteService;
     }
 
     /// <summary>

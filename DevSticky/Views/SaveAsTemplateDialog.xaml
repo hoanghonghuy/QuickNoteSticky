@@ -1,7 +1,8 @@
 <Window x:Class="DevSticky.Views.SaveAsTemplateDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Save as Template"
+        xmlns:loc="clr-namespace:DevSticky.Services"
+        Title="{loc:Localize SaveAsTemplateTitle}"
         Width="480" Height="Auto" SizeToContent="Height"
         WindowStartupLocation="CenterOwner"
         WindowStyle="None"
@@ -32,7 +33,7 @@
                     CornerRadius="8,8,0,0" Padding="16,12">
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Text="📝 " FontSize="16" VerticalAlignment="Center"/>
-                    <TextBlock Text="Save as Template" Foreground="{DynamicResource TextBrush}" 
+                    <TextBlock Text="{loc:Localize SaveAsTemplateTitle}" Foreground="{DynamicResource TextBrush}" 
                                FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
                 </StackPanel>
             </Border>
@@ -41,28 +42,28 @@
             <Border Grid.Row="1" Padding="16,16,16,8">
                 <StackPanel>
                     <!-- Name -->
-                    <TextBlock Style="{StaticResource FieldLabel}" Text="Template Name *"/>
+                    <TextBlock Style="{StaticResource FieldLabel}" Text="{loc:Localize TemplateNameRequired}"/>
                     <TextBox x:Name="NameBox" Style="{StaticResource FieldInput}"/>
                     
                     <!-- Description -->
-                    <TextBlock Style="{StaticResource FieldLabel}" Text="Description"/>
+                    <TextBlock Style="{StaticResource FieldLabel}" Text="{loc:Localize Description}"/>
                     <TextBox x:Name="DescriptionBox" Style="{StaticResource FieldInput}" 
                              TextWrapping="Wrap" AcceptsReturn="True" Height="60"/>
                     
                     <!-- Category -->
-                    <TextBlock Style="{StaticResource FieldLabel}" Text="Category"/>
+                    <TextBlock Style="{StaticResource FieldLabel}" Text="{loc:Localize Category}"/>
                     <ComboBox x:Name="CategoryCombo" Style="{StaticResource FieldCombo}" 
                               IsEditable="True"/>
                     
                     <!-- Default Language -->
-                    <TextBlock Style="{StaticResource FieldLabel}" Text="Default Language"/>
+                    <TextBlock Style="{StaticResource FieldLabel}" Text="{loc:Localize DefaultLanguage}"/>
                     <ComboBox x:Name="LanguageCombo" Style="{StaticResource FieldCombo}"/>
                     
                     <!-- Placeholder Preview -->
                     <Border x:Name="PlaceholderPreview" Background="{DynamicResource Surface0Brush}" 
                             CornerRadius="4" Padding="12" Margin="0,4,0,0" Visibility="Collapsed">
                         <StackPanel>
-                            <TextBlock Text="Detected Placeholders:" 
+                            <TextBlock Text="{loc:Localize DetectedPlaceholders}" 
                                        Foreground="{DynamicResource SubtextBrush}" 
                                        FontSize="11" FontWeight="SemiBold" Margin="0,0,0,8"/>
                             <ItemsControl x:Name="PlaceholderList">
@@ -86,7 +87,7 @@
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
-                            <TextBlock Text="Tip: Use {}{{}date{}{}}, {}{{}datetime{}{}}, or {}{{}author{}{}} for auto-fill placeholders" 
+                            <TextBlock Text="{loc:Localize PlaceholderTip}" 
                                        Foreground="{DynamicResource SubtextBrush}" 
                                        FontSize="10" FontStyle="Italic" Margin="0,4,0,0"/>
                         </StackPanel>
@@ -98,9 +99,9 @@
             <Border Grid.Row="2" Background="{DynamicResource Surface0Brush}" 
                     CornerRadius="0,0,8,8" Padding="16,12">
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                    <Button Content="Cancel" Style="{StaticResource ActionBtn}" 
+                    <Button Content="{loc:Localize Cancel}" Style="{StaticResource ActionBtn}" 
                             Click="BtnCancel_Click" Margin="0,0,8,0"/>
-                    <Button Content="Save Template" Style="{StaticResource PrimaryBtn}" 
+                    <Button Content="{loc:Localize SaveTemplate}" Style="{StaticResource PrimaryBtn}" 
                             Click="BtnSave_Click"/>
                 </StackPanel>
             </Border>

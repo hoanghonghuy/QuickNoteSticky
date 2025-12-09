@@ -43,10 +43,10 @@ public partial class TemplateSelectionDialog : Window
     /// </summary>
     public bool CreateBlankNote { get; private set; }
 
-    public TemplateSelectionDialog()
+    public TemplateSelectionDialog(ITemplateService? templateService = null)
     {
         InitializeComponent();
-        _templateService = App.GetService<ITemplateService>();
+        _templateService = templateService ?? App.GetService<ITemplateService>();
         Loaded += async (_, _) => await LoadTemplatesAsync();
     }
 
