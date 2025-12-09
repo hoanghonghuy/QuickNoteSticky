@@ -22,47 +22,67 @@ A lightweight sticky notes application for developers with syntax highlighting, 
 - **Ctrl+Shift+D** - Toggle visibility of all notes
 - **Ctrl+Shift+Q** - Quick capture with clipboard content
 - **Ctrl+Shift+I** - Open snippet browser
+- Configurable hotkeys in Settings
+- Hotkey conflict detection with alternative suggestions
 
 #### Multi-Monitor Support
 - Notes remember which monitor they belong to
 - Automatic restoration to correct monitor on startup
 - "Move to Monitor" context menu option
-- Fallback to primary monitor if assigned monitor unavailable
+- Fallback to primary monitor when assigned monitor is unavailable
+- Monitor change detection while application is running
+- Automatic repositioning of notes outside visible screen bounds
 
 #### Code Snippet Library
 - Save and organize reusable code snippets
-- Placeholder support with tab navigation (${1:name})
+- Snippet metadata: name, description, language, category, tags
+- Placeholder syntax support (${1:variableName}) with tab navigation
+- Snippet browser with search and category filtering
+- Tree view organization by category
 - Search across name, description, content, and tags
-- Import/Export snippets as JSON
+- Import/Export snippets as JSON with conflict resolution
 - Keyboard shortcuts: Ctrl+Shift+S (save), Ctrl+Shift+I (browse)
 
 #### Markdown Preview
 - Real-time split-view preview for Markdown notes
-- Syntax highlighting in code blocks
-- Support for tables, task lists, and more
-- Export as HTML, PDF, or plain Markdown
+- Support for standard Markdown syntax (headers, lists, code blocks, links, images, tables, blockquotes)
+- Syntax highlighting in code blocks with language specification
 - Internal note link support
+- External link handling (opens in default browser)
+- Relative image path resolution
+- Export options: HTML, PDF, plain Markdown
+- 300ms debounced preview updates
 
 #### Note Templates
 - Create notes from predefined templates
 - Built-in templates: Meeting Notes, Code Review, Bug Report, Daily Standup, TODO List
-- Custom template creation with placeholders
-- Date/time and user placeholder auto-replacement
-- Import/Export templates
+- Custom template creation with placeholder support
+- Placeholder types: Text, Date, DateTime, User, Custom
+- Auto-replacement of date/time and user placeholders
+- "Save as Template" option for existing notes
+- Import/Export templates as JSON
 
 #### Note Linking
 - Create links between notes with [[note-title]] syntax
 - Autocomplete dropdown when typing [[
 - Backlinks panel showing all notes linking to current note
-- Graph view visualization of note connections
+- Graph view visualization of note connections with zoom and pan
 - Broken link detection when notes are deleted
+- Automatic display text update when note title changes
 
 #### Cloud Synchronization
 - Sync notes across devices via OneDrive or Google Drive
-- AES-256 encryption with user passphrase
-- Automatic conflict detection and resolution
+- OAuth 2.0 authentication with secure token storage
+- AES-256 encryption with user-provided passphrase
+- Automatic sync within 5 seconds of note changes
+- Conflict detection and resolution:
+  - Keep local version
+  - Keep remote version
+  - Merge with conflict markers
+- Exponential backoff retry on network failures
 - Configurable sync interval
 - Offline support with sync queue
+- Sync status indicator in system tray and dashboard
 
 ## Keyboard Shortcuts
 

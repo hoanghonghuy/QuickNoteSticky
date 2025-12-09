@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.1] - TBD
+
+### Fixed
+- Fixed i18n: Implement dynamic language switching for Dashboard and persistent windows
+  - Dashboard now updates all localized text when language changes in Settings
+  - SettingsWindow and NoteWindow also refresh their UI text on language change
+  - Persistent windows maintain event subscriptions while hidden, only cleanup on app exit
+  - XAML bindings refresh via PropertyChanged with "Item[]" for indexer updates
+  - Improved LocalizationExtension with UpdateSourceTrigger.PropertyChanged
+
 ## [2.0.0] - 2025-12-07
 
 ### Added
@@ -123,6 +133,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - MVVM Architecture with Dependency Injection
 - JSON-based local storage
 
-[Unreleased]: https://github.com/hoanghonghuy/QuickNoteSticky/compare/v2.0.0...HEAD
+[Unreleased]: https://github.com/hoanghonghuy/QuickNoteSticky/compare/v2.0.1...HEAD
+[2.0.1]: https://github.com/hoanghonghuy/QuickNoteSticky/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/hoanghonghuy/QuickNoteSticky/compare/v1.0.0...v2.0.0
 [1.0.0]: https://github.com/hoanghonghuy/QuickNoteSticky/releases/tag/v1.0.0
