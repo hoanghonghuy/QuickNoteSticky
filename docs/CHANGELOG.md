@@ -7,29 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
-- Comprehensive crash detection and recovery system
-- Automatic startup validation and issue resolution
-- Safe Mode for recovery from configuration problems
-- Detailed diagnostic logging and crash analytics
-- Windows Event Log integration for crash tracking
-- Automatic configuration backup and restore
-- Service fallback mechanisms for failed components
-- User-friendly error dialogs with troubleshooting guidance
+## [2.0.2] - 2025-12-12
 
-### Changed
-- Enhanced startup sequence with validation checkpoints
-- Improved error handling with contextual information
-- Added recovery options to crash dialogs
-- Enhanced logging with dual output (file + event log)
+### Fixed
+- Fixed STA thread and WPF threading issues
+- Improved localization handling
 
-### Technical
-- Added comprehensive property-based testing for crash scenarios
-- Implemented startup diagnostics and performance monitoring
-- Added crash pattern analysis and frequency tracking
-- Enhanced exception logging with context and categorization
-
-## [2.0.1] - TBD
+## [2.0.1] - 2025-12-09
 
 ### Fixed
 - Fixed i18n: Implement dynamic language switching for Dashboard and persistent windows
@@ -155,7 +139,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - MVVM Architecture with Dependency Injection
 - JSON-based local storage
 
-[Unreleased]: https://github.com/hoanghonghuy/QuickNoteSticky/compare/v2.0.1...HEAD
+[Unreleased]: https://github.com/hoanghonghuy/QuickNoteSticky/compare/v2.0.2...HEAD
+[2.0.2]: https://github.com/hoanghonghuy/QuickNoteSticky/compare/v2.0.1...v2.0.2
 [2.0.1]: https://github.com/hoanghonghuy/QuickNoteSticky/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/hoanghonghuy/QuickNoteSticky/compare/v1.0.0...v2.0.0
 [1.0.0]: https://github.com/hoanghonghuy/QuickNoteSticky/releases/tag/v1.0.0
