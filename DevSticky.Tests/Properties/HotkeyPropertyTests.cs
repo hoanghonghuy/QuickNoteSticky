@@ -74,6 +74,7 @@ public class MockWindowService : IWindowService
     public string? GetMonitorDeviceIdForNote(Guid noteId) => null;
     public void MoveNoteToMonitor(Guid noteId, string monitorDeviceId) { }
     public void EnsureNoteVisible(Guid noteId) { }
+    public void Dispose() { }
 }
 
 /// <summary>

@@ -2,6 +2,7 @@ using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
+using DevSticky.Helpers;
 using DevSticky.Interfaces;
 using DevSticky.Models;
 
@@ -28,24 +29,27 @@ public partial class TemplateService : ITemplateService
     private readonly List<NoteTemplate> _templates = new();
     private readonly List<NoteTemplate> _builtInTemplates;
     private readonly AppSettings _settings;
+    private readonly IErrorHandler _errorHandler;
     private bool _isLoaded;
 
-    public TemplateService(AppSettings settings)
+    public TemplateService(AppSettings settings, IErrorHandler errorHandler)
     {
         _settings = settings;
-        var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-        var devStickyFolder = Path.Combine(appDataPath, AppConstants.AppDataFolderName);
-        _storagePath = Path.Combine(devStickyFolder, AppConstants.TemplatesFileName);
+        _errorHandler = errorHandler ?? throw new ArgumentNullException(nameof(errorHandler));
+        _storagePath = PathHelper.Combine(
+            PathHelper.GetAppDataPath(AppConstants.AppDataFolderName),
+            AppConstants.TemplatesFileName);
         _builtInTemplates = CreateBuiltInTemplates();
     }
 
     /// <summary>
     /// Constructor for testing with custom storage path
     /// </summary>
-    public TemplateService(string storagePath, AppSettings? settings = null)
+    public TemplateService(string storagePath, AppSettings? settings = null, IErrorHandler? errorHandler = null)
     {
         _storagePath = storagePath;
         _settings = settings ?? new AppSettings();
+        _errorHandler = errorHandler ?? new ErrorHandler();
         _builtInTemplates = CreateBuiltInTemplates();
     }
 
@@ -253,11 +257,11 @@ Date:
 
     private async Task LoadTemplatesAsync()
     {
-        try
+        await _errorHandler.HandleWithFallbackAsync(async () =>
         {
             if (File.Exists(_storagePath))
             {
-                var json = await File.ReadAllTextAsync(_storagePath);
+                var json = await File.ReadAllTextAsync(_storagePath).ConfigureAwait(false);
                 var templates = JsonSerializer.Deserialize<List<NoteTemplate>>(json, JsonOptions);
                 if (templates != null)
                 {
@@ -265,26 +269,30 @@ Date:
                     _templates.AddRange(templates);
                 }
             }
-        }
-        catch (JsonException)
-        {
-            // If file is corrupted, start fresh
-            _templates.Clear();
-        }
+            return true;
+        }, 
+        false, 
+        "TemplateService.LoadTemplatesAsync - Loading templates from storage");
     }
 
     private async Task SaveTemplatesAsync()
     {
-        var directory = Path.GetDirectoryName(_storagePath);
-        if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+        await _errorHandler.HandleWithFallbackAsync(async () =>
         {
-            Directory.CreateDirectory(directory);
-        }
+            var directory = PathHelper.GetDirectoryName(_storagePath);
+            if (!StringHelper.IsNullOrEmpty(directory))
+            {
+                PathHelper.EnsureDirectoryExists(directory);
+            }
 
-        // Only save user templates, not built-in ones
-        var userTemplates = _templates.Where(t => !t.IsBuiltIn).ToList();
-        var json = JsonSerializer.Serialize(userTemplates, JsonOptions);
-        await File.WriteAllTextAsync(_storagePath, json);
+            // Only save user templates, not built-in ones
+            var userTemplates = _templates.Where(t => !t.IsBuiltIn).ToList();
+            var json = JsonSerializer.Serialize(userTemplates, JsonOptions);
+            await File.WriteAllTextAsync(_storagePath, json).ConfigureAwait(false);
+            return true;
+        }, 
+        false, 
+        "TemplateService.SaveTemplatesAsync - Saving templates to storage");
     }
 
     public async Task<IReadOnlyList<NoteTemplate>> GetAllTemplatesAsync()
@@ -389,16 +397,16 @@ Date:
     {
         await EnsureLoadedAsync();
 
-        var directory = Path.GetDirectoryName(filePath);
-        if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+        var directory = PathHelper.GetDirectoryName(filePath);
+        if (!StringHelper.IsNullOrEmpty(directory))
         {
-            Directory.CreateDirectory(directory);
+            PathHelper.EnsureDirectoryExists(directory);
         }
 
         // Export only user templates
         var userTemplates = _templates.Where(t => !t.IsBuiltIn).ToList();
         var json = JsonSerializer.Serialize(userTemplates, JsonOptions);
-        await File.WriteAllTextAsync(filePath, json);
+        await File.WriteAllTextAsync(filePath, json).ConfigureAwait(false);
     }
 
     public async Task ImportTemplatesAsync(string filePath)
@@ -410,7 +418,7 @@ Date:
             throw new FileNotFoundException("Import file not found", filePath);
         }
 
-        var json = await File.ReadAllTextAsync(filePath);
+        var json = await File.ReadAllTextAsync(filePath).ConfigureAwait(false);
         var importedTemplates = JsonSerializer.Deserialize<List<NoteTemplate>>(json, JsonOptions);
 
         if (importedTemplates == null || importedTemplates.Count == 0)
@@ -582,6 +590,6 @@ Date:
         // Convert camelCase or snake_case to Title Case
         var result = System.Text.RegularExpressions.Regex.Replace(name, "([a-z])([A-Z])", "$1 $2");
         result = result.Replace("_", " ");
-        return System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(result.ToLower());
+        return StringHelper.ToTitleCase(result);
     }
 }

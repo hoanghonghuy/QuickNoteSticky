@@ -2,7 +2,7 @@ using System.Collections.Concurrent;
 using System.IO;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
+using DevSticky.Helpers;
 using DevSticky.Interfaces;
 using DevSticky.Models;
 
@@ -12,14 +12,9 @@ namespace DevSticky.Services;
 /// Service for synchronizing notes with cloud storage providers.
 /// Implements sync queue, conflict detection, and exponential backoff retry.
 /// </summary>
-public class CloudSyncService : ICloudSyncService
+public class CloudSyncService : ICloudSyncService, ICloudConnection, ICloudSync, ICloudConflictResolver, ICloudEncryption
 {
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        WriteIndented = true,
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-    };
+    private static readonly JsonSerializerOptions JsonOptions = JsonSerializerOptionsFactory.Default;
 
     // Exponential backoff constants
     private const int InitialRetryDelaySeconds = 1;
@@ -29,7 +24,8 @@ public class CloudSyncService : ICloudSyncService
     private readonly INoteService _noteService;
     private readonly IStorageService _storageService;
     private readonly IEncryptionService _encryptionService;
-    private readonly Func<CloudProvider, ICloudStorageProvider> _providerFactory;
+    private readonly ICloudProviderRegistry _providerRegistry;
+    private readonly IErrorHandler _errorHandler;
     
     private ICloudStorageProvider? _cloudProvider;
     private string? _encryptionPassphrase;
@@ -73,22 +69,14 @@ public class CloudSyncService : ICloudSyncService
         INoteService noteService,
         IStorageService storageService,
         IEncryptionService encryptionService,
-        Func<CloudProvider, ICloudStorageProvider>? providerFactory = null)
+        ICloudProviderRegistry providerRegistry,
+        IErrorHandler errorHandler)
     {
         _noteService = noteService ?? throw new ArgumentNullException(nameof(noteService));
         _storageService = storageService ?? throw new ArgumentNullException(nameof(storageService));
         _encryptionService = encryptionService ?? throw new ArgumentNullException(nameof(encryptionService));
-        _providerFactory = providerFactory ?? CreateDefaultProvider;
-    }
-
-    private static ICloudStorageProvider CreateDefaultProvider(CloudProvider provider)
-    {
-        return provider switch
-        {
-            CloudProvider.OneDrive => new OneDriveStorageProvider(),
-            CloudProvider.GoogleDrive => new GoogleDriveStorageProvider(),
-            _ => throw new ArgumentException($"Unknown cloud provider: {provider}", nameof(provider))
-        };
+        _providerRegistry = providerRegistry ?? throw new ArgumentNullException(nameof(providerRegistry));
+        _errorHandler = errorHandler ?? throw new ArgumentNullException(nameof(errorHandler));
     }
 
     /// <inheritdoc />
@@ -97,10 +85,10 @@ public class CloudSyncService : ICloudSyncService
         if (Status == SyncStatus.Connecting || Status == SyncStatus.Syncing)
             return false;
 
-        try
+        return await _errorHandler.HandleWithFallbackAsync(async () =>
         {
             Status = SyncStatus.Connecting;
-            RaiseProgress("Connecting", 0, 0, 1, "Authenticating with cloud provider...");
+            RaiseProgress(L.Get("CloudStatusConnecting"), 0, 0, 1, L.Get("CloudAuthenticating"));
 
             // Disconnect from current provider if any
             if (_cloudProvider != null)
@@ -108,14 +96,14 @@ public class CloudSyncService : ICloudSyncService
                 await DisconnectAsync();
             }
 
-            _cloudProvider = _providerFactory(provider);
+            _cloudProvider = _providerRegistry.CreateProvider(provider);
             var authenticated = await _cloudProvider.AuthenticateAsync();
 
             if (authenticated)
             {
                 CurrentProvider = provider;
                 Status = SyncStatus.Idle;
-                RaiseProgress("Connected", 100, 1, 1, "Successfully connected to cloud provider.");
+                RaiseProgress(L.Get("CloudStatusConnected"), 100, 1, 1, L.Get("CloudConnectSuccess"));
                 return true;
             }
             else
@@ -125,17 +113,9 @@ public class CloudSyncService : ICloudSyncService
                 Status = SyncStatus.Disconnected;
                 return false;
             }
-        }
-        catch (Exception ex)
-        {
-            Status = SyncStatus.Error;
-            LastSyncResult = new SyncResult
-            {
-                Success = false,
-                ErrorMessage = ex.Message
-            };
-            return false;
-        }
+        }, 
+        false, 
+        $"CloudSyncService.ConnectAsync - Connecting to {provider}");
     }
 
     /// <inheritdoc />
@@ -192,7 +172,7 @@ public class CloudSyncService : ICloudSyncService
             return new SyncResult
             {
                 Success = false,
-                ErrorMessage = "Not connected to cloud provider"
+                ErrorMessage = L.Get("CloudNotConnected")
             };
         }
 
@@ -201,29 +181,30 @@ public class CloudSyncService : ICloudSyncService
             return new SyncResult
             {
                 Success = false,
-                ErrorMessage = "Sync already in progress"
+                ErrorMessage = L.Get("CloudSyncInProgress")
             };
         }
 
         Status = SyncStatus.Syncing;
-        var result = new SyncResult();
-
-        try
+        
+        return await _errorHandler.HandleWithFallbackAsync(async () =>
         {
+            var result = new SyncResult();
+            
             // Get local notes
             var localNotes = _noteService.GetAllNotes().ToList();
             
             // Get remote notes list
-            var remoteFiles = await _cloudProvider.ListFilesAsync("notes");
+            var remoteFiles = await _cloudProvider!.ListFilesAsync("notes");
             var remoteNoteIds = new HashSet<Guid>();
 
-            RaiseProgress("Syncing", 10, 0, localNotes.Count + remoteFiles.Count, "Checking remote notes...");
+            RaiseProgress(L.Get("CloudStatusSyncing"), 10, 0, localNotes.Count + remoteFiles.Count, L.Get("CloudCheckingRemoteNotes"));
 
             // Download and check remote notes
             int processed = 0;
             foreach (var file in remoteFiles.Where(f => !f.IsFolder && f.Name.EndsWith(".json")))
             {
-                try
+                await _errorHandler.HandleWithFallbackAsync(async () =>
                 {
                     if (Guid.TryParse(Path.GetFileNameWithoutExtension(file.Name), out var noteId))
                     {
@@ -265,21 +246,20 @@ public class CloudSyncService : ICloudSyncService
                             }
                         }
                     }
-                }
-                catch
-                {
-                    // Continue with other files
-                }
+                    return true;
+                }, 
+                false, 
+                $"CloudSyncService.SyncAsync - Processing remote note {file.Name}");
 
                 processed++;
-                RaiseProgress("Syncing", 10 + (processed * 40 / Math.Max(1, remoteFiles.Count)), 
-                    processed, localNotes.Count + remoteFiles.Count, $"Processing remote notes...");
+                RaiseProgress(L.Get("CloudStatusSyncing"), 10 + (processed * 40 / Math.Max(1, remoteFiles.Count)), 
+                    processed, localNotes.Count + remoteFiles.Count, L.Get("CloudProcessingRemoteNotes"));
             }
 
             // Upload local notes that are newer or don't exist remotely
             foreach (var localNote in localNotes)
             {
-                try
+                await _errorHandler.HandleWithFallbackAsync(async () =>
                 {
                     var shouldUpload = !remoteNoteIds.Contains(localNote.Id) ||
                                        localNote.ModifiedDate > (localNote.LastSyncedDate ?? DateTime.MinValue);
@@ -292,15 +272,14 @@ public class CloudSyncService : ICloudSyncService
                             result.NotesUploaded++;
                         }
                     }
-                }
-                catch
-                {
-                    // Continue with other notes
-                }
+                    return true;
+                }, 
+                false, 
+                $"CloudSyncService.SyncAsync - Uploading local note {localNote.Id}");
 
                 processed++;
-                RaiseProgress("Syncing", 50 + (processed * 40 / Math.Max(1, localNotes.Count)), 
-                    processed, localNotes.Count + remoteFiles.Count, $"Uploading local notes...");
+                RaiseProgress(L.Get("CloudStatusSyncing"), 50 + (processed * 40 / Math.Max(1, localNotes.Count)), 
+                    processed, localNotes.Count + remoteFiles.Count, L.Get("CloudUploadingLocalNotes"));
             }
 
             // Process pending changes with retry logic
@@ -308,17 +287,11 @@ public class CloudSyncService : ICloudSyncService
 
             result.Success = true;
             Status = SyncStatus.Idle;
-            RaiseProgress("Complete", 100, processed, processed, "Sync completed successfully.");
-        }
-        catch (Exception ex)
-        {
-            result.Success = false;
-            result.ErrorMessage = ex.Message;
-            Status = SyncStatus.Error;
-        }
-
-        LastSyncResult = result;
-        return result;
+            RaiseProgress(L.Get("CloudSyncComplete"), 100, processed, processed, L.Get("CloudSyncCompletedSuccess"));
+            return result;
+        }, 
+        new SyncResult { Success = false, ErrorMessage = L.Get("CloudSyncOperationFailed") }, 
+        "CloudSyncService.SyncAsync - Full sync operation");
     }
 
 
@@ -330,25 +303,25 @@ public class CloudSyncService : ICloudSyncService
             return new SyncResult
             {
                 Success = false,
-                ErrorMessage = "Not connected to cloud provider"
+                ErrorMessage = L.Get("CloudNotConnected")
             };
         }
 
-        var result = new SyncResult();
-
-        try
+        return await _errorHandler.HandleWithFallbackAsync(async () =>
         {
+            var result = new SyncResult();
+            
             var localNote = _noteService.GetNoteById(noteId);
             if (localNote == null)
             {
                 // Note was deleted locally, delete from cloud
-                await _cloudProvider.DeleteFileAsync($"notes/{noteId}.json");
+                await _cloudProvider!.DeleteFileAsync($"notes/{noteId}.json");
                 result.Success = true;
                 return result;
             }
 
             // Check if remote version exists
-            var remoteInfo = await _cloudProvider.GetFileInfoAsync($"notes/{noteId}.json");
+            var remoteInfo = await _cloudProvider!.GetFileInfoAsync($"notes/{noteId}.json");
             
             if (remoteInfo != null)
             {
@@ -388,14 +361,10 @@ public class CloudSyncService : ICloudSyncService
             }
 
             result.Success = true;
-        }
-        catch (Exception ex)
-        {
-            result.Success = false;
-            result.ErrorMessage = ex.Message;
-        }
-
-        return result;
+            return result;
+        }, 
+        new SyncResult { Success = false, ErrorMessage = L.Get("CloudFailedToSyncNote") }, 
+        $"CloudSyncService.SyncNoteAsync - Syncing note {noteId}");
     }
 
     /// <inheritdoc />
@@ -433,11 +402,11 @@ public class CloudSyncService : ICloudSyncService
     public static Note MergeNotes(Note localNote, Note remoteNote)
     {
         var mergedContent = new StringBuilder();
-        mergedContent.AppendLine("<<<<<<< LOCAL");
+        mergedContent.AppendLine(L.Get("ConflictMarkerLocal"));
         mergedContent.AppendLine(localNote.Content);
-        mergedContent.AppendLine("=======");
+        mergedContent.AppendLine(L.Get("ConflictMarkerSeparator"));
         mergedContent.AppendLine(remoteNote.Content);
-        mergedContent.AppendLine(">>>>>>> REMOTE");
+        mergedContent.AppendLine(L.Get("ConflictMarkerRemote"));
 
         return new Note
         {
@@ -503,41 +472,39 @@ public class CloudSyncService : ICloudSyncService
 
         foreach (var change in changesToProcess)
         {
-            try
+            var success = await _errorHandler.HandleWithFallbackAsync(async () =>
             {
-                bool success;
                 if (change.ChangeType == SyncChangeType.Delete)
                 {
-                    success = await _cloudProvider!.DeleteFileAsync($"notes/{change.NoteId}.json");
+                    return await _cloudProvider!.DeleteFileAsync($"notes/{change.NoteId}.json");
                 }
                 else
                 {
                     var note = _noteService.GetNoteById(change.NoteId);
                     if (note != null)
                     {
-                        success = await UploadNoteAsync(note);
-                        if (success) result.NotesUploaded++;
+                        var uploaded = await UploadNoteAsync(note);
+                        if (uploaded) result.NotesUploaded++;
+                        return uploaded;
                     }
                     else
                     {
                         // Note no longer exists, remove from queue
-                        success = true;
+                        return true;
                     }
                 }
+            }, 
+            false, 
+            $"CloudSyncService.ProcessPendingChangesAsync - Processing change for note {change.NoteId}");
 
-                if (success)
+            if (success)
+            {
+                lock (_pendingChangesLock)
                 {
-                    lock (_pendingChangesLock)
-                    {
-                        _pendingChanges.Remove(change);
-                    }
-                }
-                else
-                {
-                    HandleRetry(change);
+                    _pendingChanges.Remove(change);
                 }
             }
-            catch
+            else
             {
                 HandleRetry(change);
             }
@@ -566,26 +533,24 @@ public class CloudSyncService : ICloudSyncService
 
     private async Task<Note?> DownloadNoteAsync(Guid noteId)
     {
-        if (_cloudProvider == null) return null;
-
-        var data = await _cloudProvider.DownloadFileAsync($"notes/{noteId}.json");
-        if (data == null) return null;
-
-        // Decrypt if encryption is enabled
-        if (!string.IsNullOrEmpty(_encryptionPassphrase))
+        return await _errorHandler.HandleWithFallbackAsync(async () =>
         {
-            try
+            if (_cloudProvider == null) return null;
+
+            var data = await _cloudProvider.DownloadFileAsync($"notes/{noteId}.json");
+            if (data == null) return null;
+
+            // Decrypt if encryption is enabled
+            if (!string.IsNullOrEmpty(_encryptionPassphrase))
             {
                 data = _encryptionService.Decrypt(data, _encryptionPassphrase);
             }
-            catch
-            {
-                return null; // Decryption failed
-            }
-        }
 
-        var json = Encoding.UTF8.GetString(data);
-        return JsonSerializer.Deserialize<Note>(json, JsonOptions);
+            var json = Encoding.UTF8.GetString(data);
+            return JsonSerializer.Deserialize<Note>(json, JsonOptions);
+        }, 
+        null, 
+        $"CloudSyncService.DownloadNoteAsync - Downloading note {noteId}");
     }
 
     private async Task<bool> UploadNoteAsync(Note note)
@@ -658,10 +623,37 @@ public class CloudSyncService : ICloudSyncService
 
     public void Dispose()
     {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// Protected implementation of Dispose pattern.
+    /// </summary>
+    /// <param name="disposing">True if disposing managed resources</param>
+    protected virtual void Dispose(bool disposing)
+    {
         if (_disposed) return;
         _disposed = true;
 
-        _cloudProvider?.Dispose();
-        _cloudProvider = null;
+        if (disposing)
+        {
+            // Clear all event subscriptions to prevent memory leaks
+            SyncProgress = null;
+            SyncConflict = null;
+            
+            // Dispose cloud provider
+            _cloudProvider?.Dispose();
+            _cloudProvider = null;
+            
+            // Clear pending changes
+            lock (_pendingChangesLock)
+            {
+                _pendingChanges.Clear();
+            }
+            
+            // Clear sync queue
+            while (_syncQueue.TryDequeue(out _)) { }
+        }
     }
 }

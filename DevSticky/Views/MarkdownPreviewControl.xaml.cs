@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Windows;
+using DevSticky.Helpers;
 using DevSticky.Interfaces;
 using DevSticky.Models;
 using DevSticky.Services;
@@ -11,13 +12,14 @@ namespace DevSticky.Views;
 /// UserControl for rendering markdown content as HTML using WebView2
 /// Requirements: 4.2, 4.4
 /// </summary>
-public partial class MarkdownPreviewControl : System.Windows.Controls.UserControl
+public partial class MarkdownPreviewControl : System.Windows.Controls.UserControl, IDisposable
 {
     private IMarkdownService? _markdownService;
     private IThemeService? _themeService;
     private INoteService? _noteService;
     private bool _isInitialized;
     private string _pendingHtml = string.Empty;
+    private bool _disposed;
 
     /// <summary>
     /// Event raised when an external link is clicked
@@ -242,5 +244,40 @@ public partial class MarkdownPreviewControl : System.Windows.Controls.UserContro
     public string GetCurrentHtml()
     {
         return _pendingHtml;
+    }
+
+    /// <summary>
+    /// Dispose of WebView2 and other resources
+    /// </summary>
+    public void Dispose()
+    {
+        if (_disposed) return;
+        _disposed = true;
+
+        try
+        {
+            // Unsubscribe from theme changes
+            if (_themeService != null)
+            {
+                _themeService.ThemeChanged -= OnThemeChanged;
+            }
+
+            // Clean up WebView2 resources
+            if (WebView?.CoreWebView2 != null)
+            {
+                WebView.CoreWebView2.NavigationStarting -= OnNavigationStarting;
+            }
+            WpfResourceHelper.DisposeWebView2(WebView);
+
+            // Unsubscribe from control events
+            Loaded -= OnLoaded;
+            Unloaded -= OnUnloaded;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error disposing MarkdownPreviewControl: {ex.Message}");
+        }
+
+        GC.SuppressFinalize(this);
     }
 }

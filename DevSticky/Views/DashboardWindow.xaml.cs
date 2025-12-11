@@ -19,7 +19,8 @@ namespace DevSticky.Views;
 public partial class DashboardWindow : Window
 {
     private readonly MainViewModel _mainViewModel;
-    private ICloudSyncService? _cloudSyncService;
+    private ICloudConnection? _cloudConnection;
+    private ICloudSync? _cloudSync;
     private Guid? _editingNoteId;
     private Guid? _filterTagId;
     private bool _isGroupedView;
@@ -32,10 +33,11 @@ public partial class DashboardWindow : Window
         // Try to get cloud sync service for status display
         try
         {
-            _cloudSyncService = App.GetService<ICloudSyncService>();
-            if (_cloudSyncService != null)
+            _cloudConnection = App.GetService<ICloudConnection>();
+            _cloudSync = App.GetService<ICloudSync>();
+            if (_cloudSync != null)
             {
-                _cloudSyncService.SyncProgress += OnSyncProgress;
+                _cloudSync.SyncProgress += OnSyncProgress;
             }
         }
         catch
@@ -148,7 +150,7 @@ public partial class DashboardWindow : Window
                 ? L.Get("EmptyNote") 
                 : (n.Content.Length > 50 ? n.Content[..50] + "..." : n.Content).Replace("\n", " ").Replace("\r", ""),
             Language = n.Language,
-            CreatedDate = n.CreatedDate.ToString("MMM dd, HH:mm"),
+            CreatedDate = n.CreatedDate.ToString("MMM dd, HH:mm", LocalizationService.Instance.CurrentCulture),
             PinStatus = n.IsPinned ? "●" : "",
             GroupId = n.GroupId,
             GroupOptions = groupOptions,
@@ -286,7 +288,7 @@ public partial class DashboardWindow : Window
     // Cloud Sync Status
     private void UpdateCloudSyncStatus()
     {
-        if (_cloudSyncService == null)
+        if (_cloudConnection == null)
         {
             SyncStatusBadge.Visibility = Visibility.Collapsed;
             return;
@@ -294,7 +296,7 @@ public partial class DashboardWindow : Window
 
         SyncStatusBadge.Visibility = Visibility.Visible;
         
-        switch (_cloudSyncService.Status)
+        switch (_cloudConnection?.Status ?? SyncStatus.Disconnected)
         {
             case SyncStatus.Disconnected:
                 SyncStatusIcon.Text = "☁️";
@@ -313,7 +315,7 @@ public partial class DashboardWindow : Window
                 break;
             case SyncStatus.Idle:
                 SyncStatusIcon.Text = "✓";
-                var lastSync = _cloudSyncService.LastSyncResult?.CompletedAt;
+                var lastSync = _cloudSync?.LastSyncResult?.CompletedAt;
                 SyncStatusText.Text = lastSync.HasValue 
                     ? L.Get("CloudStatusConnectedLastSync", lastSync.Value.ToString("HH:mm"))
                     : L.Get("CloudStatusConnected");
@@ -337,13 +339,13 @@ public partial class DashboardWindow : Window
 
     private async void SyncStatus_Click(object sender, MouseButtonEventArgs e)
     {
-        if (_cloudSyncService == null) return;
+        if (_cloudSync == null || _cloudConnection == null) return;
 
-        if (_cloudSyncService.Status == SyncStatus.Error || _cloudSyncService.Status == SyncStatus.Idle)
+        if (_cloudConnection.Status == SyncStatus.Error || _cloudConnection.Status == SyncStatus.Idle)
         {
             try
             {
-                await _cloudSyncService.SyncAsync();
+                await _cloudSync.SyncAsync();
                 UpdateCloudSyncStatus();
             }
             catch (Exception ex)
@@ -601,9 +603,9 @@ public partial class DashboardWindow : Window
     public void Shutdown()
     {
         // Unsubscribe from cloud sync events
-        if (_cloudSyncService != null)
+        if (_cloudSync != null)
         {
-            _cloudSyncService.SyncProgress -= OnSyncProgress;
+            _cloudSync.SyncProgress -= OnSyncProgress;
         }
         
         // Unsubscribe from language change events
@@ -643,6 +645,17 @@ public partial class DashboardWindow : Window
             parent = System.Windows.Media.VisualTreeHelper.GetParent(parent);
         }
         return null;
+    }
+
+    protected override void OnClosed(EventArgs e)
+    {
+        // Unsubscribe from cloud sync events
+        if (_cloudSync != null)
+        {
+            _cloudSync.SyncProgress -= OnSyncProgress;
+        }
+
+        base.OnClosed(e);
     }
 }
 

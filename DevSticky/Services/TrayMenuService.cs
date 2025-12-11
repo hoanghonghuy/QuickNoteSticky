@@ -12,7 +12,8 @@ namespace DevSticky.Services;
 public class TrayMenuService : ITrayMenuService
 {
     private readonly IThemeService _themeService;
-    private readonly ICloudSyncService? _cloudSyncService;
+    private readonly ICloudConnection? _cloudConnection;
+    private readonly ICloudSync? _cloudSync;
     private readonly Dispatcher _dispatcher;
     
     private System.Windows.Forms.NotifyIcon? _notifyIcon;
@@ -34,11 +35,13 @@ public class TrayMenuService : ITrayMenuService
 
     public TrayMenuService(
         IThemeService themeService,
-        ICloudSyncService? cloudSyncService,
+        ICloudConnection? cloudConnection,
+        ICloudSync? cloudSync,
         Dispatcher dispatcher)
     {
         _themeService = themeService;
-        _cloudSyncService = cloudSyncService;
+        _cloudConnection = cloudConnection;
+        _cloudSync = cloudSync;
         _dispatcher = dispatcher;
     }
 
@@ -77,9 +80,9 @@ public class TrayMenuService : ITrayMenuService
         _themeService.ThemeChanged += OnThemeChanged;
         
         // Subscribe to cloud sync progress if available
-        if (_cloudSyncService != null)
+        if (_cloudSync != null)
         {
-            _cloudSyncService.SyncProgress += OnCloudSyncProgress;
+            _cloudSync.SyncProgress += OnCloudSyncProgress;
         }
     }
 
@@ -133,7 +136,7 @@ public class TrayMenuService : ITrayMenuService
         _syncNowMenuItem = new System.Windows.Forms.ToolStripMenuItem
         {
             Text = "🔄 " + L.Get("SyncNow"),
-            Enabled = _cloudSyncService?.Status == SyncStatus.Idle
+            Enabled = _cloudConnection?.Status == SyncStatus.Idle
         };
         _syncNowMenuItem.Click += async (_, _) => await TriggerManualSync();
         _trayContextMenu.Items.Add(_syncNowMenuItem);
@@ -146,10 +149,10 @@ public class TrayMenuService : ITrayMenuService
     /// </summary>
     private string GetSyncStatusText()
     {
-        if (_cloudSyncService == null)
+        if (_cloudConnection == null)
             return "☁️ " + L.Get("CloudSyncNotAvailable");
         
-        return _cloudSyncService.Status switch
+        return _cloudConnection.Status switch
         {
             SyncStatus.Disconnected => "☁️ " + L.Get("CloudStatusDisconnected"),
             SyncStatus.Connecting => "🔄 " + L.Get("CloudStatusConnecting"),
@@ -165,10 +168,10 @@ public class TrayMenuService : ITrayMenuService
     /// </summary>
     private string GetLastSyncText()
     {
-        if (_cloudSyncService?.LastSyncResult?.CompletedAt != null)
+        if (_cloudSync?.LastSyncResult?.CompletedAt != null)
         {
-            var lastSync = _cloudSyncService.LastSyncResult.CompletedAt.ToLocalTime();
-            return "📅 " + string.Format(L.Get("LastSyncTime"), lastSync.ToString("g"));
+            var lastSync = _cloudSync.LastSyncResult.CompletedAt.ToLocalTime();
+            return "📅 " + string.Format(L.Get("LastSyncTime"), lastSync.ToString("g", LocalizationService.Instance.CurrentCulture));
         }
         return "📅 " + L.Get("NeverSynced");
     }
@@ -178,7 +181,7 @@ public class TrayMenuService : ITrayMenuService
     /// </summary>
     private async Task TriggerManualSync()
     {
-        if (_cloudSyncService == null || _cloudSyncService.Status != SyncStatus.Idle)
+        if (_cloudSync == null || _cloudConnection?.Status != SyncStatus.Idle)
             return;
         
         // Update menu to show syncing
@@ -192,7 +195,7 @@ public class TrayMenuService : ITrayMenuService
             }
             else
             {
-                var result = await _cloudSyncService.SyncAsync();
+                var result = await _cloudSync.SyncAsync();
                 
                 if (result.Success)
                 {
@@ -246,7 +249,7 @@ public class TrayMenuService : ITrayMenuService
                 _lastSyncMenuItem.Text = GetLastSyncText();
             
             if (_syncNowMenuItem != null)
-                _syncNowMenuItem.Enabled = _cloudSyncService?.Status == SyncStatus.Idle;
+                _syncNowMenuItem.Enabled = _cloudConnection?.Status == SyncStatus.Idle;
         });
     }
 
@@ -335,18 +338,31 @@ public class TrayMenuService : ITrayMenuService
 
     public void Dispose()
     {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// Protected implementation of Dispose pattern.
+    /// </summary>
+    /// <param name="disposing">True if disposing managed resources</param>
+    protected virtual void Dispose(bool disposing)
+    {
         if (_disposed) return;
         _disposed = true;
         
-        // Unsubscribe from events
-        LocalizationService.Instance.LanguageChanged -= OnLanguageChanged;
-        _themeService.ThemeChanged -= OnThemeChanged;
-        
-        if (_cloudSyncService != null)
+        if (disposing)
         {
-            _cloudSyncService.SyncProgress -= OnCloudSyncProgress;
+            // Unsubscribe from events
+            LocalizationService.Instance.LanguageChanged -= OnLanguageChanged;
+            _themeService.ThemeChanged -= OnThemeChanged;
+            
+            if (_cloudSync != null)
+            {
+                _cloudSync.SyncProgress -= OnCloudSyncProgress;
+            }
+            
+            _trayContextMenu?.Dispose();
         }
-        
-        _trayContextMenu?.Dispose();
     }
 }

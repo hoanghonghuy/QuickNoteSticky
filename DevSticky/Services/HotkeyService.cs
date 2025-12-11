@@ -296,16 +296,39 @@ public class HotkeyService : IHotkeyService
 
     public void Dispose()
     {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// Finalizer to ensure Win32 resources are cleaned up
+    /// </summary>
+    ~HotkeyService()
+    {
+        Dispose(false);
+    }
+
+    /// <summary>
+    /// Protected implementation of Dispose pattern.
+    /// </summary>
+    /// <param name="disposing">True if disposing managed resources</param>
+    protected virtual void Dispose(bool disposing)
+    {
         if (_disposed) return;
         _disposed = true;
 
+        // Always clean up unmanaged resources (Win32 hotkeys)
         UnregisterAll();
 
-        Application.Current?.Dispatcher.Invoke(() =>
+        if (disposing)
         {
-            _hwndSource?.RemoveHook(WndProc);
-            _hwndSource?.Dispose();
-            _hwndSource = null;
-        });
+            // Clean up managed resources
+            Application.Current?.Dispatcher.Invoke(() =>
+            {
+                _hwndSource?.RemoveHook(WndProc);
+                _hwndSource?.Dispose();
+                _hwndSource = null;
+            });
+        }
     }
 }

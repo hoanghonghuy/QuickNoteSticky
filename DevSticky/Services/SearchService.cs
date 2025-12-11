@@ -1,3 +1,4 @@
+using DevSticky.Helpers;
 using DevSticky.Interfaces;
 using DevSticky.Models;
 
@@ -16,7 +17,7 @@ public class SearchService : ISearchService
     {
         var matches = new List<SearchMatch>();
         
-        if (string.IsNullOrEmpty(content) || string.IsNullOrEmpty(searchTerm))
+        if (StringHelper.IsNullOrEmpty(content) || StringHelper.IsNullOrEmpty(searchTerm))
             return matches;
 
         int index = 0;

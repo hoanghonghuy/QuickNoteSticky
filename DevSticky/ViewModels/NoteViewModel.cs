@@ -16,6 +16,7 @@ public class NoteViewModel : ViewModelBase
     private readonly IDebounceService _debounceService;
     private readonly Action<NoteViewModel>? _onClose;
     private readonly Action? _onSave;
+    private readonly Note _note;
 
     private string _title = "Untitled Note";
     private string _content = string.Empty;
@@ -30,27 +31,56 @@ public class NoteViewModel : ViewModelBase
     private List<Guid> _tagIds = new();
     private string? _monitorDeviceId;
 
-    public Guid Id { get; }
-    public WindowRect WindowRect { get; set; }
-    public DateTime CreatedDate { get; }
-    public DateTime ModifiedDate { get; private set; }
+    public Guid Id => _note.Id;
+    public WindowRect WindowRect 
+    { 
+        get => _note.WindowRect; 
+        set => _note.WindowRect = value; 
+    }
+    public DateTime CreatedDate => _note.CreatedDate;
+    public DateTime ModifiedDate => _note.ModifiedDate;
+
+    /// <summary>
+    /// Gets whether the underlying note has been modified
+    /// </summary>
+    public bool IsDirty => _note.IsDirty;
 
     public string Title
     {
         get => _title;
-        set => SetProperty(ref _title, value?.Length > 50 ? value[..50] : value ?? "Untitled Note");
+        set
+        {
+            var newValue = value?.Length > 50 ? value[..50] : value ?? "Untitled Note";
+            if (SetProperty(ref _title, newValue))
+            {
+                _note.Title = newValue;
+            }
+        }
     }
 
     public Guid? GroupId
     {
         get => _groupId;
-        set => SetProperty(ref _groupId, value);
+        set
+        {
+            if (SetProperty(ref _groupId, value))
+            {
+                _note.GroupId = value;
+            }
+        }
     }
 
     public List<Guid> TagIds
     {
         get => _tagIds;
-        set => SetProperty(ref _tagIds, value ?? new());
+        set
+        {
+            var newValue = value ?? new();
+            if (SetProperty(ref _tagIds, newValue))
+            {
+                _note.TagIds = newValue;
+            }
+        }
     }
 
     public string? MonitorDeviceId
@@ -60,6 +90,7 @@ public class NoteViewModel : ViewModelBase
         {
             if (SetProperty(ref _monitorDeviceId, value))
             {
+                _note.MonitorDeviceId = value;
                 _debounceService.Debounce($"save_{Id}", () => Save(), 500);
             }
         }
@@ -72,6 +103,7 @@ public class NoteViewModel : ViewModelBase
         {
             if (SetProperty(ref _content, value))
             {
+                _note.Content = value;
                 _debounceService.Debounce($"save_{Id}", () => Save(), 500);
                 UpdateSearchMatches();
             }
@@ -81,20 +113,39 @@ public class NoteViewModel : ViewModelBase
     public string Language
     {
         get => _language;
-        set => SetProperty(ref _language, value);
+        set
+        {
+            if (SetProperty(ref _language, value))
+            {
+                _note.Language = value;
+            }
+        }
     }
 
     public bool IsPinned
     {
         get => _isPinned;
-        set => SetProperty(ref _isPinned, value);
+        set
+        {
+            if (SetProperty(ref _isPinned, value))
+            {
+                _note.IsPinned = value;
+            }
+        }
     }
 
 
     public double Opacity
     {
         get => _opacity;
-        set => SetProperty(ref _opacity, OpacityHelper.Clamp(value));
+        set
+        {
+            var clampedValue = OpacityHelper.Clamp(value);
+            if (SetProperty(ref _opacity, clampedValue))
+            {
+                _note.Opacity = clampedValue;
+            }
+        }
     }
 
     public bool IsSearchVisible
@@ -146,7 +197,7 @@ public class NoteViewModel : ViewModelBase
         Action<NoteViewModel>? onClose = null,
         Action? onSave = null)
     {
-        Id = note.Id;
+        _note = note;
         _title = note.Title;
         _content = note.Content;
         _language = note.Language;
@@ -155,9 +206,6 @@ public class NoteViewModel : ViewModelBase
         _groupId = note.GroupId;
         _tagIds = note.TagIds ?? new();
         _monitorDeviceId = note.MonitorDeviceId;
-        WindowRect = note.WindowRect;
-        CreatedDate = note.CreatedDate;
-        ModifiedDate = note.ModifiedDate;
 
         _noteService = noteService;
         _formatterService = formatterService;
@@ -191,8 +239,8 @@ public class NoteViewModel : ViewModelBase
 
     private void Save()
     {
-        var note = ToNote();
-        _noteService.UpdateNote(note);
+        _noteService.UpdateNote(_note);
+        _note.MarkClean(); // Mark the note as clean after saving
         _onSave?.Invoke();
     }
 
@@ -214,19 +262,5 @@ public class NoteViewModel : ViewModelBase
         CurrentMatchIndex = 0;
     }
 
-    public Note ToNote() => new()
-    {
-        Id = Id,
-        Title = Title,
-        Content = Content,
-        Language = Language,
-        IsPinned = IsPinned,
-        Opacity = Opacity,
-        GroupId = GroupId,
-        TagIds = TagIds,
-        MonitorDeviceId = MonitorDeviceId,
-        WindowRect = WindowRect,
-        CreatedDate = CreatedDate,
-        ModifiedDate = ModifiedDate
-    };
+    public Note ToNote() => _note;
 }

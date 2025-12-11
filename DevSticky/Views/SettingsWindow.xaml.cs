@@ -4,23 +4,28 @@ using System.Windows.Input;
 using DevSticky.Interfaces;
 using DevSticky.Models;
 using DevSticky.Services;
+using DevSticky.Helpers;
 using Brush = System.Windows.Media.Brush;
 using Brushes = System.Windows.Media.Brushes;
 using Application = System.Windows.Application;
 
 namespace DevSticky.Views;
 
-public partial class SettingsWindow : Window
+public partial class SettingsWindow : Window, IDisposable
 {
     private readonly AppSettings _settings;
     private readonly IThemeService? _themeService;
     private readonly IHotkeyService? _hotkeyService;
-    private readonly ICloudSyncService? _cloudSyncService;
+    private readonly ICloudConnection? _cloudConnection;
+    private readonly ICloudSync? _cloudSync;
+    private readonly ICloudEncryption? _cloudEncryption;
     private readonly IEncryptionService? _encryptionService;
     private bool _isLoading;
     private System.Windows.Controls.TextBox? _activeHotkeyBox;
     private bool _isPassphraseVisible;
     private string _currentPassphrase = string.Empty;
+    private readonly EventSubscriptionManager _eventManager = new();
+    private bool _disposed;
     
     public SettingsWindow(AppSettings settings)
     {
@@ -43,18 +48,20 @@ public partial class SettingsWindow : Window
         // Try to get cloud sync services
         try
         {
-            _cloudSyncService = App.GetService<ICloudSyncService>();
+            _cloudConnection = App.GetService<ICloudConnection>();
+            _cloudSync = App.GetService<ICloudSync>();
+            _cloudEncryption = App.GetService<ICloudEncryption>();
             _encryptionService = App.GetService<IEncryptionService>();
             
             // Subscribe to sync events
-            if (_cloudSyncService != null)
+            if (_cloudSync != null)
             {
-                _cloudSyncService.SyncProgress += OnSyncProgress;
+                _eventManager.Subscribe<SyncProgressEventArgs>(_cloudSync, nameof(_cloudSync.SyncProgress), OnSyncProgress);
             }
         }
         catch
         {
-            _cloudSyncService = null;
+            // Cloud services not available
             _encryptionService = null;
         }
         
@@ -170,7 +177,7 @@ public partial class SettingsWindow : Window
         // Save cloud sync settings (Requirements 5.1, 5.10, 5.11)
         _settings.CloudSync.SyncIntervalSeconds = (int)SyncIntervalSlider.Value * 60;
         var selectedProvider = GetSelectedCloudProvider();
-        if (selectedProvider.HasValue && _cloudSyncService?.Status == SyncStatus.Idle)
+        if (selectedProvider.HasValue && _cloudConnection?.Status == SyncStatus.Idle)
         {
             _settings.CloudSync.Provider = selectedProvider;
         }
@@ -221,6 +228,9 @@ public partial class SettingsWindow : Window
         {
             var langCode = selectedLang.Tag?.ToString() ?? "en";
             LocalizationService.Instance.SetCulture(langCode);
+            
+            // Update dynamically set labels that don't use XAML binding
+            UpdateCloudSyncStatus();
         }
     }
 
@@ -276,9 +286,9 @@ public partial class SettingsWindow : Window
     {
         var dialog = new Microsoft.Win32.SaveFileDialog
         {
-            Filter = "DevSticky Backup (*.devsticky)|*.devsticky|JSON Files (*.json)|*.json",
+            Filter = L.Get("FilterBackupFiles"),
             DefaultExt = ".devsticky",
-            FileName = $"DevSticky_Backup_{DateTime.Now:yyyyMMdd_HHmmss}"
+            FileName = L.Get("BackupFileNameFormat", DateTime.Now.ToString("yyyyMMdd_HHmmss"))
         };
 
         if (dialog.ShowDialog() == true)
@@ -293,7 +303,7 @@ public partial class SettingsWindow : Window
                     WriteIndented = true
                 });
                 
-                await System.IO.File.WriteAllTextAsync(dialog.FileName, json);
+                await System.IO.File.WriteAllTextAsync(dialog.FileName, json).ConfigureAwait(false);
                 
                 CustomDialog.ShowSuccess(L.Get("Success"), L.Get("ExportSuccess"), this);
             }
@@ -308,7 +318,7 @@ public partial class SettingsWindow : Window
     {
         var dialog = new Microsoft.Win32.OpenFileDialog
         {
-            Filter = "DevSticky Backup (*.devsticky)|*.devsticky|JSON Files (*.json)|*.json|All Files (*.*)|*.*",
+            Filter = L.Get("FilterBackupFilesAll"),
             DefaultExt = ".devsticky"
         };
 
@@ -320,12 +330,12 @@ public partial class SettingsWindow : Window
 
             try
             {
-                var json = await System.IO.File.ReadAllTextAsync(dialog.FileName);
+                var json = await System.IO.File.ReadAllTextAsync(dialog.FileName).ConfigureAwait(false);
                 var data = System.Text.Json.JsonSerializer.Deserialize<Models.AppData>(json);
                 
                 if (data == null)
                 {
-                    throw new Exception("Invalid backup file format.");
+                    throw new Exception(L.Get("InvalidBackupFormat"));
                 }
 
                 var storageService = App.GetService<Interfaces.IStorageService>();
@@ -481,7 +491,7 @@ public partial class SettingsWindow : Window
     /// </summary>
     private async void CloudConnectBtn_Click(object sender, RoutedEventArgs e)
     {
-        if (_cloudSyncService == null)
+        if (_cloudConnection == null)
         {
             CustomDialog.ShowError(L.Get("Error"), L.Get("CloudSyncNotAvailable"), this);
             return;
@@ -489,10 +499,10 @@ public partial class SettingsWindow : Window
 
         var selectedProvider = GetSelectedCloudProvider();
         
-        if (_cloudSyncService.Status == SyncStatus.Idle || _cloudSyncService.Status == SyncStatus.Error)
+        if (_cloudConnection?.Status == SyncStatus.Idle || _cloudConnection?.Status == SyncStatus.Error)
         {
             // Disconnect (Requirements 5.10)
-            await _cloudSyncService.DisconnectAsync();
+            await _cloudConnection.DisconnectAsync();
             _settings.CloudSync.IsEnabled = false;
             _settings.CloudSync.Provider = null;
             UpdateCloudSyncStatus();
@@ -508,10 +518,10 @@ public partial class SettingsWindow : Window
                 // Set encryption passphrase if provided (Requirements 5.11)
                 if (!string.IsNullOrEmpty(_currentPassphrase))
                 {
-                    _cloudSyncService.SetEncryptionPassphrase(_currentPassphrase);
+                    _cloudEncryption?.SetEncryptionPassphrase(_currentPassphrase);
                 }
                 
-                var success = await _cloudSyncService.ConnectAsync(selectedProvider.Value);
+                var success = await _cloudConnection!.ConnectAsync(selectedProvider.Value);
                 
                 if (success)
                 {
@@ -562,7 +572,7 @@ public partial class SettingsWindow : Window
     /// </summary>
     private void UpdateCloudSyncStatus()
     {
-        if (_cloudSyncService == null)
+        if (_cloudConnection == null)
         {
             CloudStatusText.Text = L.Get("CloudSyncNotAvailable");
             CloudConnectBtn.Content = L.Get("CloudConnect");
@@ -572,7 +582,7 @@ public partial class SettingsWindow : Window
 
         var selectedProvider = GetSelectedCloudProvider();
         
-        switch (_cloudSyncService.Status)
+        switch (_cloudConnection?.Status ?? SyncStatus.Disconnected)
         {
             case SyncStatus.Disconnected:
                 CloudStatusText.Text = L.Get("CloudStatusDisconnected");
@@ -593,11 +603,11 @@ public partial class SettingsWindow : Window
                 break;
                 
             case SyncStatus.Idle:
-                var lastSync = _cloudSyncService.LastSyncResult?.CompletedAt;
+                var lastSync = _cloudSync?.LastSyncResult?.CompletedAt;
                 if (lastSync.HasValue)
                 {
                     CloudStatusText.Text = string.Format(L.Get("CloudStatusConnectedLastSync"), 
-                        lastSync.Value.ToLocalTime().ToString("g"));
+                        lastSync.Value.ToLocalTime().ToString("g", LocalizationService.Instance.CurrentCulture));
                 }
                 else
                 {
@@ -662,4 +672,19 @@ public partial class SettingsWindow : Window
     }
 
     #endregion
+
+    protected override void OnClosed(EventArgs e)
+    {
+        Dispose();
+        base.OnClosed(e);
+    }
+
+    public void Dispose()
+    {
+        if (_disposed) return;
+        _disposed = true;
+
+        _eventManager?.Dispose();
+        GC.SuppressFinalize(this);
+    }
 }

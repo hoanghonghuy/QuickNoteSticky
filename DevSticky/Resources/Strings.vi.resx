@@ -285,4 +285,53 @@
   <data name="HidePreview" xml:space="preserve"><value>Ẩn xem trước</value></data>
   <data name="DialogTitle" xml:space="preserve"><value>Hộp thoại</value></data>
   <data name="DashboardTitle" xml:space="preserve"><value>DevSticky - Bảng điều khiển</value></data>
+  
+  <!-- Cloud Sync Progress Messages -->
+  <data name="CloudAuthenticating" xml:space="preserve"><value>Đang xác thực với nhà cung cấp đám mây...</value></data>
+  <data name="CloudCheckingRemoteNotes" xml:space="preserve"><value>Đang kiểm tra ghi chú từ xa...</value></data>
+  <data name="CloudProcessingRemoteNotes" xml:space="preserve"><value>Đang xử lý ghi chú từ xa...</value></data>
+  <data name="CloudUploadingLocalNotes" xml:space="preserve"><value>Đang tải lên ghi chú địa phương...</value></data>
+  <data name="CloudSyncComplete" xml:space="preserve"><value>Hoàn tất</value></data>
+  <data name="CloudSyncCompletedSuccess" xml:space="preserve"><value>Đồng bộ hoàn tất thành công.</value></data>
+  
+  <!-- Cloud Sync Error Messages -->
+  <data name="CloudNotConnected" xml:space="preserve"><value>Chưa kết nối với nhà cung cấp đám mây</value></data>
+  <data name="CloudSyncInProgress" xml:space="preserve"><value>Đồng bộ đang được thực hiện</value></data>
+  <data name="CloudSyncOperationFailed" xml:space="preserve"><value>Thao tác đồng bộ thất bại</value></data>
+  <data name="CloudFailedToSyncNote" xml:space="preserve"><value>Không thể đồng bộ ghi chú</value></data>
+  
+  <!-- Conflict Markers -->
+  <data name="ConflictMarkerLocal" xml:space="preserve"><value>&lt;&lt;&lt;&lt;&lt;&lt;&lt; BẢN ĐỊA PHƯƠNG</value></data>
+  <data name="ConflictMarkerSeparator" xml:space="preserve"><value>=======</value></data>
+  <data name="ConflictMarkerRemote" xml:space="preserve"><value>&gt;&gt;&gt;&gt;&gt;&gt;&gt; BẢN TỪ XA</value></data>
+  
+  <!-- Export Service -->
+  <data name="FilterHtmlFiles" xml:space="preserve"><value>Tệp HTML (*.html)|*.html|Tất cả tệp (*.*)|*.*</value></data>
+  <data name="FilterPdfFiles" xml:space="preserve"><value>Tệp PDF (*.pdf)|*.pdf|Tất cả tệp (*.*)|*.*</value></data>
+  <data name="FilterMarkdownFiles" xml:space="preserve"><value>Tệp Markdown (*.md)|*.md|Tệp văn bản (*.txt)|*.txt|Tất cả tệp (*.*)|*.*</value></data>
+  <data name="ExportComplete" xml:space="preserve"><value>Xuất hoàn tất</value></data>
+  <data name="HtmlExportedTo" xml:space="preserve"><value>HTML đã được xuất đến:
+{0}</value></data>
+  <data name="ExportFailed" xml:space="preserve"><value>Xuất thất bại</value></data>
+  <data name="FailedToExportHtml" xml:space="preserve"><value>Không thể xuất HTML: {0}</value></data>
+  <data name="ExportNote" xml:space="preserve"><value>Xuất ghi chú</value></data>
+  <data name="PdfExportPlaceholder" xml:space="preserve"><value>Xuất PDF hiện đang là tính năng giữ chỗ. Tính năng này sẽ được triển khai trong phiên bản tương lai.</value></data>
+  <data name="FailedToExportPdf" xml:space="preserve"><value>Không thể xuất PDF: {0}</value></data>
+  <data name="MarkdownExportedTo" xml:space="preserve"><value>Markdown đã được xuất đến:
+{0}</value></data>
+  <data name="FailedToExportMarkdown" xml:space="preserve"><value>Không thể xuất Markdown: {0}</value></data>
+  <data name="DefaultExportFileName" xml:space="preserve"><value>ghi-chu</value></data>
+  
+  <!-- Note Window Tooltips -->
+  <data name="UnpinOnTop" xml:space="preserve"><value>Bỏ ghim (luôn trên cùng)</value></data>
+  <data name="PinTooltip" xml:space="preserve"><value>Ghim</value></data>
+  
+  <!-- Settings Window -->
+  <data name="FilterBackupFiles" xml:space="preserve"><value>Sao lưu DevSticky (*.devsticky)|*.devsticky|Tệp JSON (*.json)|*.json</value></data>
+  <data name="FilterBackupFilesAll" xml:space="preserve"><value>Sao lưu DevSticky (*.devsticky)|*.devsticky|Tệp JSON (*.json)|*.json|Tất cả tệp (*.*)|*.*</value></data>
+  <data name="BackupFileNameFormat" xml:space="preserve"><value>DevSticky_SaoLuu_{0}</value></data>
+  <data name="InvalidBackupFormat" xml:space="preserve"><value>Định dạng tệp sao lưu không hợp lệ.</value></data>
+  
+  <!-- Storage Service -->
+  <data name="ErrorAppDataNull" xml:space="preserve"><value>Dữ liệu ứng dụng được giải mã hóa là null</value></data>
 </root>

@@ -5,7 +5,7 @@ namespace DevSticky.Services;
 /// <summary>
 /// Service for caching frequently accessed data to improve performance
 /// </summary>
-public class CacheService
+public class CacheService : IDisposable
 {
     private Dictionary<Guid, NoteTag>? _tagCache;
     private Dictionary<Guid, NoteGroup>? _groupCache;
@@ -90,6 +90,30 @@ public class CacheService
         {
             _groupCache = groups.ToDictionary(g => g.Id);
             _lastGroupUpdate = DateTime.UtcNow;
+        }
+    }
+
+    /// <summary>
+    /// Disposes the cache service and releases all resources.
+    /// </summary>
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// Protected implementation of Dispose pattern.
+    /// </summary>
+    /// <param name="disposing">True if disposing managed resources</param>
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _tagCache?.Clear();
+            _groupCache?.Clear();
+            _tagCache = null;
+            _groupCache = null;
         }
     }
 }

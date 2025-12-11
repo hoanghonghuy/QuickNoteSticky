@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Windows;
+using DevSticky.Helpers;
 using DevSticky.Interfaces;
 using DevSticky.Models;
 
@@ -8,7 +9,7 @@ namespace DevSticky.Services;
 /// <summary>
 /// Service for managing note windows with multi-monitor support
 /// </summary>
-public class WindowService : IWindowService
+public class WindowService : IWindowService, IDisposable
 {
     private readonly ConcurrentDictionary<Guid, Window> _windows = new();
     private readonly Func<Note, Window> _windowFactory;
@@ -64,7 +65,7 @@ public class WindowService : IWindowService
                 window.Height = note.WindowRect.Height;
                 
                 // Ensure the window is within the monitor's bounds
-                EnsureWindowInMonitorBounds(window, targetMonitor);
+                MonitorBoundsHelper.EnsureWindowInBounds(window, targetMonitor);
             }
             else
             {
@@ -95,28 +96,11 @@ public class WindowService : IWindowService
         }
     }
 
-    private void EnsureWindowInMonitorBounds(Window window, MonitorInfo monitor)
-    {
-        var workingArea = monitor.WorkingArea;
-        
-        // Ensure window is within the monitor's working area
-        if (window.Left < workingArea.Left)
-            window.Left = workingArea.Left;
-        if (window.Top < workingArea.Top)
-            window.Top = workingArea.Top;
-        if (window.Left + window.Width > workingArea.Right)
-            window.Left = Math.Max(workingArea.Left, workingArea.Right - window.Width);
-        if (window.Top + window.Height > workingArea.Bottom)
-            window.Top = Math.Max(workingArea.Top, workingArea.Bottom - window.Height);
-    }
-
     private void MoveWindowToMonitorCenter(Window window, Note note, MonitorInfo monitor)
     {
-        var workingArea = monitor.WorkingArea;
         window.Width = note.WindowRect.Width;
         window.Height = note.WindowRect.Height;
-        window.Left = workingArea.Left + (workingArea.Width - window.Width) / 2;
-        window.Top = workingArea.Top + (workingArea.Height - window.Height) / 2;
+        MonitorBoundsHelper.CenterWindowOnMonitor(window, monitor);
     }
 
     public void CloseNote(Guid id)
@@ -209,21 +193,17 @@ public class WindowService : IWindowService
         if (currentMonitor == null)
         {
             // Window is off-screen, just center on target monitor
-            window.Left = targetMonitor.WorkingArea.Left + (targetMonitor.WorkingArea.Width - window.Width) / 2;
-            window.Top = targetMonitor.WorkingArea.Top + (targetMonitor.WorkingArea.Height - window.Height) / 2;
+            MonitorBoundsHelper.CenterWindowOnMonitor(window, targetMonitor);
         }
         else
         {
             // Calculate relative position and apply to target monitor
-            double relativeX = (window.Left - currentMonitor.WorkingArea.Left) / currentMonitor.WorkingArea.Width;
-            double relativeY = (window.Top - currentMonitor.WorkingArea.Top) / currentMonitor.WorkingArea.Height;
-            
-            window.Left = targetMonitor.WorkingArea.Left + relativeX * targetMonitor.WorkingArea.Width;
-            window.Top = targetMonitor.WorkingArea.Top + relativeY * targetMonitor.WorkingArea.Height;
+            var (relativeX, relativeY) = MonitorBoundsHelper.CalculateRelativePosition(window, currentMonitor);
+            MonitorBoundsHelper.ApplyRelativePosition(window, targetMonitor, relativeX, relativeY);
         }
 
         // Ensure window is within bounds
-        EnsureWindowInMonitorBounds(window, targetMonitor);
+        MonitorBoundsHelper.EnsureWindowInBounds(window, targetMonitor);
     }
 
     public void EnsureNoteVisible(Guid noteId)
@@ -236,6 +216,33 @@ public class WindowService : IWindowService
             var nearestPoint = _monitorService.GetNearestVisiblePoint(window.Left, window.Top);
             window.Left = nearestPoint.X;
             window.Top = nearestPoint.Y;
+        }
+    }
+
+    /// <summary>
+    /// Disposes the window service and releases all resources.
+    /// </summary>
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// Protected implementation of Dispose pattern.
+    /// </summary>
+    /// <param name="disposing">True if disposing managed resources</param>
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            // Close all managed windows
+            var windowIds = _windows.Keys.ToList();
+            foreach (var windowId in windowIds)
+            {
+                CloseNote(windowId);
+            }
+            _windows.Clear();
         }
     }
 }

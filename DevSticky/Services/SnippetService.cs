@@ -25,10 +25,12 @@ public partial class SnippetService : ISnippetService
 
     private readonly string _storagePath;
     private readonly List<Snippet> _snippets = new();
+    private readonly IErrorHandler _errorHandler;
     private bool _isLoaded;
 
-    public SnippetService()
+    public SnippetService(IErrorHandler errorHandler)
     {
+        _errorHandler = errorHandler ?? throw new ArgumentNullException(nameof(errorHandler));
         var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
         var devStickyFolder = Path.Combine(appDataPath, AppConstants.AppDataFolderName);
         _storagePath = Path.Combine(devStickyFolder, AppConstants.SnippetsFileName);
@@ -37,9 +39,10 @@ public partial class SnippetService : ISnippetService
     /// <summary>
     /// Constructor for testing with custom storage path
     /// </summary>
-    public SnippetService(string storagePath)
+    public SnippetService(string storagePath, IErrorHandler errorHandler)
     {
         _storagePath = storagePath;
+        _errorHandler = errorHandler ?? throw new ArgumentNullException(nameof(errorHandler));
     }
 
     private async Task EnsureLoadedAsync()
@@ -53,11 +56,11 @@ public partial class SnippetService : ISnippetService
 
     private async Task LoadSnippetsAsync()
     {
-        try
+        await _errorHandler.HandleWithFallbackAsync(async () =>
         {
             if (File.Exists(_storagePath))
             {
-                var json = await File.ReadAllTextAsync(_storagePath);
+                var json = await File.ReadAllTextAsync(_storagePath).ConfigureAwait(false);
                 var snippets = JsonSerializer.Deserialize<List<Snippet>>(json, JsonOptions);
                 if (snippets != null)
                 {
@@ -65,24 +68,28 @@ public partial class SnippetService : ISnippetService
                     _snippets.AddRange(snippets);
                 }
             }
-        }
-        catch (JsonException)
-        {
-            // If file is corrupted, start fresh
-            _snippets.Clear();
-        }
+            return true;
+        }, 
+        false, 
+        "SnippetService.LoadSnippetsAsync - Loading snippets from storage");
     }
 
     private async Task SaveSnippetsAsync()
     {
-        var directory = Path.GetDirectoryName(_storagePath);
-        if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+        await _errorHandler.HandleWithFallbackAsync(async () =>
         {
-            Directory.CreateDirectory(directory);
-        }
+            var directory = Path.GetDirectoryName(_storagePath);
+            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
 
-        var json = JsonSerializer.Serialize(_snippets, JsonOptions);
-        await File.WriteAllTextAsync(_storagePath, json);
+            var json = JsonSerializer.Serialize(_snippets, JsonOptions);
+            await File.WriteAllTextAsync(_storagePath, json).ConfigureAwait(false);
+            return true;
+        }, 
+        false, 
+        "SnippetService.SaveSnippetsAsync - Saving snippets to storage");
     }
 
     public async Task<IReadOnlyList<Snippet>> GetAllSnippetsAsync()
@@ -201,7 +208,7 @@ public partial class SnippetService : ISnippetService
         }
 
         var json = JsonSerializer.Serialize(_snippets, JsonOptions);
-        await File.WriteAllTextAsync(filePath, json);
+        await File.WriteAllTextAsync(filePath, json).ConfigureAwait(false);
     }
 
     public async Task ImportSnippetsAsync(string filePath, ConflictResolution resolution)
@@ -213,7 +220,7 @@ public partial class SnippetService : ISnippetService
             throw new FileNotFoundException("Import file not found", filePath);
         }
 
-        var json = await File.ReadAllTextAsync(filePath);
+        var json = await File.ReadAllTextAsync(filePath).ConfigureAwait(false);
         var importedSnippets = JsonSerializer.Deserialize<List<Snippet>>(json, JsonOptions);
 
         if (importedSnippets == null || importedSnippets.Count == 0)

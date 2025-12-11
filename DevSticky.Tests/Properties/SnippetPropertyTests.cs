@@ -54,7 +54,8 @@ public class SnippetPropertyTests : IDisposable
         return Prop.ForAll(ValidSnippetGenerator(), snippet =>
         {
             var storagePath = Path.Combine(_testDirectory, $"data_{Guid.NewGuid()}.json");
-            var service = new SnippetService(storagePath);
+            var errorHandler = new ErrorHandler();
+            var service = new SnippetService(storagePath, errorHandler);
             var created = service.CreateSnippetAsync(snippet).GetAwaiter().GetResult();
             var retrieved = service.GetSnippetByIdAsync(created.Id).GetAwaiter().GetResult();
 
@@ -82,7 +83,8 @@ public class SnippetPropertyTests : IDisposable
     {
         return Prop.ForAll(PlaceholderContentGenerator(), content =>
         {
-            var service = new SnippetService(_testStoragePath);
+            var errorHandler = new ErrorHandler();
+            var service = new SnippetService(_testStoragePath, errorHandler);
             var placeholders = service.ParsePlaceholders(content);
 
             // Count expected placeholders in content
@@ -121,8 +123,9 @@ public class SnippetPropertyTests : IDisposable
         return Prop.ForAll(SnippetListGenerator(), snippets =>
         {
             var exportPath = Path.Combine(_testDirectory, $"export_{Guid.NewGuid()}.json");
-            var service1 = new SnippetService(Path.Combine(_testDirectory, $"source_{Guid.NewGuid()}.json"));
-            var service2 = new SnippetService(Path.Combine(_testDirectory, $"target_{Guid.NewGuid()}.json"));
+            var errorHandler = new ErrorHandler();
+            var service1 = new SnippetService(Path.Combine(_testDirectory, $"source_{Guid.NewGuid()}.json"), errorHandler);
+            var service2 = new SnippetService(Path.Combine(_testDirectory, $"target_{Guid.NewGuid()}.json"), errorHandler);
 
             // Create all snippets in source service
             var createdSnippets = new List<Snippet>();
@@ -164,7 +167,8 @@ public class SnippetPropertyTests : IDisposable
     {
         return Prop.ForAll(SearchableSnippetGenerator(), testCase =>
         {
-            var service = new SnippetService(Path.Combine(_testDirectory, $"search_{Guid.NewGuid()}.json"));
+            var errorHandler = new ErrorHandler();
+            var service = new SnippetService(Path.Combine(_testDirectory, $"search_{Guid.NewGuid()}.json"), errorHandler);
 
             // Create the snippet
             var created = service.CreateSnippetAsync(testCase.Snippet).GetAwaiter().GetResult();

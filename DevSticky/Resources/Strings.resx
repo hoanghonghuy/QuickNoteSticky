@@ -826,4 +826,119 @@ This tag will be removed from {1} note(s).</value>
   <data name="DashboardTitle" xml:space="preserve">
     <value>DevSticky - Dashboard</value>
   </data>
+  
+  <!-- Cloud Sync Progress Messages -->
+  <data name="CloudAuthenticating" xml:space="preserve">
+    <value>Authenticating with cloud provider...</value>
+  </data>
+  <data name="CloudCheckingRemoteNotes" xml:space="preserve">
+    <value>Checking remote notes...</value>
+  </data>
+  <data name="CloudProcessingRemoteNotes" xml:space="preserve">
+    <value>Processing remote notes...</value>
+  </data>
+  <data name="CloudUploadingLocalNotes" xml:space="preserve">
+    <value>Uploading local notes...</value>
+  </data>
+  <data name="CloudSyncComplete" xml:space="preserve">
+    <value>Complete</value>
+  </data>
+  <data name="CloudSyncCompletedSuccess" xml:space="preserve">
+    <value>Sync completed successfully.</value>
+  </data>
+  
+  <!-- Cloud Sync Error Messages -->
+  <data name="CloudNotConnected" xml:space="preserve">
+    <value>Not connected to cloud provider</value>
+  </data>
+  <data name="CloudSyncInProgress" xml:space="preserve">
+    <value>Sync already in progress</value>
+  </data>
+  <data name="CloudSyncOperationFailed" xml:space="preserve">
+    <value>Sync operation failed</value>
+  </data>
+  <data name="CloudFailedToSyncNote" xml:space="preserve">
+    <value>Failed to sync note</value>
+  </data>
+  
+  <!-- Conflict Markers -->
+  <data name="ConflictMarkerLocal" xml:space="preserve">
+    <value>&lt;&lt;&lt;&lt;&lt;&lt;&lt; LOCAL</value>
+  </data>
+  <data name="ConflictMarkerSeparator" xml:space="preserve">
+    <value>=======</value>
+  </data>
+  <data name="ConflictMarkerRemote" xml:space="preserve">
+    <value>&gt;&gt;&gt;&gt;&gt;&gt;&gt; REMOTE</value>
+  </data>
+  
+  <!-- Export Service -->
+  <data name="FilterHtmlFiles" xml:space="preserve">
+    <value>HTML files (*.html)|*.html|All files (*.*)|*.*</value>
+  </data>
+  <data name="FilterPdfFiles" xml:space="preserve">
+    <value>PDF files (*.pdf)|*.pdf|All files (*.*)|*.*</value>
+  </data>
+  <data name="FilterMarkdownFiles" xml:space="preserve">
+    <value>Markdown files (*.md)|*.md|Text files (*.txt)|*.txt|All files (*.*)|*.*</value>
+  </data>
+  <data name="ExportComplete" xml:space="preserve">
+    <value>Export Complete</value>
+  </data>
+  <data name="HtmlExportedTo" xml:space="preserve">
+    <value>HTML exported to:
+{0}</value>
+  </data>
+  <data name="ExportFailed" xml:space="preserve">
+    <value>Export Failed</value>
+  </data>
+  <data name="FailedToExportHtml" xml:space="preserve">
+    <value>Failed to export HTML: {0}</value>
+  </data>
+  <data name="ExportNote" xml:space="preserve">
+    <value>Export Note</value>
+  </data>
+  <data name="PdfExportPlaceholder" xml:space="preserve">
+    <value>PDF export is currently a placeholder. This feature will be implemented in a future version.</value>
+  </data>
+  <data name="FailedToExportPdf" xml:space="preserve">
+    <value>Failed to export PDF: {0}</value>
+  </data>
+  <data name="MarkdownExportedTo" xml:space="preserve">
+    <value>Markdown exported to:
+{0}</value>
+  </data>
+  <data name="FailedToExportMarkdown" xml:space="preserve">
+    <value>Failed to export Markdown: {0}</value>
+  </data>
+  <data name="DefaultExportFileName" xml:space="preserve">
+    <value>note</value>
+  </data>
+  
+  <!-- Note Window Tooltips -->
+  <data name="UnpinOnTop" xml:space="preserve">
+    <value>Unpin (on top)</value>
+  </data>
+  <data name="PinTooltip" xml:space="preserve">
+    <value>Pin</value>
+  </data>
+  
+  <!-- Settings Window -->
+  <data name="FilterBackupFiles" xml:space="preserve">
+    <value>DevSticky Backup (*.devsticky)|*.devsticky|JSON Files (*.json)|*.json</value>
+  </data>
+  <data name="FilterBackupFilesAll" xml:space="preserve">
+    <value>DevSticky Backup (*.devsticky)|*.devsticky|JSON Files (*.json)|*.json|All Files (*.*)|*.*</value>
+  </data>
+  <data name="BackupFileNameFormat" xml:space="preserve">
+    <value>DevSticky_Backup_{0}</value>
+  </data>
+  <data name="InvalidBackupFormat" xml:space="preserve">
+    <value>Invalid backup file format.</value>
+  </data>
+  
+  <!-- Storage Service -->
+  <data name="ErrorAppDataNull" xml:space="preserve">
+    <value>Deserialized AppData is null</value>
+  </data>
 </root>

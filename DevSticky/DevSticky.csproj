@@ -7,15 +7,16 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
+    <StartupObject>DevSticky.Program</StartupObject>
 
     <AssemblyName>DevSticky</AssemblyName>
     <RootNamespace>DevSticky</RootNamespace>
     
     <!-- Application Info -->
-    <Version>1.0.0</Version>
+    <Version>2.1.0</Version>
     <Company>DevSticky</Company>
     <Product>DevSticky - Developer Sticky Notes</Product>
-    <Description>Lightweight sticky notes for developers with syntax highlighting</Description>
+    <Description>Lightweight sticky notes for developers with syntax highlighting and enhanced performance</Description>
     
     <!-- Application Icon (shown in Explorer, taskbar, etc.) -->
     <ApplicationIcon>Resources\app.ico</ApplicationIcon>

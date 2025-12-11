@@ -7,7 +7,7 @@ namespace DevSticky.Services;
 /// <summary>
 /// Service for managing notes (CRUD operations)
 /// </summary>
-public class NoteService : INoteService
+public class NoteService : INoteService, IDisposable
 {
     private readonly List<Note> _notes = new();
     private readonly AppSettings _settings;
@@ -45,10 +45,14 @@ public class NoteService : INoteService
 
     public void DeleteNote(Guid id)
     {
-        var note = _notes.FirstOrDefault(n => n.Id == id);
-        if (note != null)
+        // Optimized: Direct search and removal without LINQ
+        for (int i = 0; i < _notes.Count; i++)
         {
-            _notes.Remove(note);
+            if (_notes[i].Id == id)
+            {
+                _notes.RemoveAt(i);
+                break;
+            }
         }
     }
 
@@ -65,7 +69,18 @@ public class NoteService : INoteService
 
     public IReadOnlyList<Note> GetAllNotes() => _notes.AsReadOnly();
 
-    public Note? GetNoteById(Guid id) => _notes.FirstOrDefault(n => n.Id == id);
+    public Note? GetNoteById(Guid id)
+    {
+        // Optimized: Direct search without LINQ
+        foreach (var note in _notes)
+        {
+            if (note.Id == id)
+            {
+                return note;
+            }
+        }
+        return null;
+    }
 
     public void TogglePin(Guid id)
     {
@@ -94,5 +109,26 @@ public class NoteService : INoteService
     {
         _notes.Clear();
         _notes.AddRange(notes);
+    }
+
+    /// <summary>
+    /// Disposes the note service and releases all resources.
+    /// </summary>
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// Protected implementation of Dispose pattern.
+    /// </summary>
+    /// <param name="disposing">True if disposing managed resources</param>
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _notes.Clear();
+        }
     }
 }

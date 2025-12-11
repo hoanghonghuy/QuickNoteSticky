@@ -155,10 +155,34 @@ public class MonitorService : IMonitorService, IDisposable
 
     public void Dispose()
     {
-        if (!_disposed)
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// Finalizer to ensure system event handlers are cleaned up
+    /// </summary>
+    ~MonitorService()
+    {
+        Dispose(false);
+    }
+
+    /// <summary>
+    /// Protected implementation of Dispose pattern.
+    /// </summary>
+    /// <param name="disposing">True if disposing managed resources</param>
+    protected virtual void Dispose(bool disposing)
+    {
+        if (_disposed) return;
+        _disposed = true;
+
+        // Always clean up system event subscriptions
+        SystemEvents.DisplaySettingsChanged -= OnDisplaySettingsChanged;
+
+        if (disposing)
         {
-            SystemEvents.DisplaySettingsChanged -= OnDisplaySettingsChanged;
-            _disposed = true;
+            // Clean up managed resources
+            _monitors.Clear();
         }
     }
 }

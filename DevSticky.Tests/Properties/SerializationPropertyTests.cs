@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using DevSticky.Models;
+using DevSticky.Helpers;
 using FsCheck;
 using FsCheck.Xunit;
 
@@ -56,6 +57,37 @@ public class SerializationPropertyTests
 
             return deserialized != null &&
                    deserialized.Notes.Count == appData.Notes.Count;
+        });
+    }
+
+    /// <summary>
+    /// Property 7: JSON Serialization Round Trip
+    /// **Feature: code-refactor, Property 7: JSON Serialization Round Trip**
+    /// **Validates: Requirements 2.1**
+    /// For any serializable object, serializing then deserializing using JsonSerializerOptionsFactory 
+    /// should produce an equivalent object.
+    /// </summary>
+    [Property(MaxTest = 100)]
+    public Property JsonSerializerOptionsFactory_RoundTrip_ShouldPreserveData()
+    {
+        return Prop.ForAll(AppDataGenerator(), appData =>
+        {
+            // Test with Default options
+            var jsonDefault = JsonSerializer.Serialize(appData, JsonSerializerOptionsFactory.Default);
+            var deserializedDefault = JsonSerializer.Deserialize<AppData>(jsonDefault, JsonSerializerOptionsFactory.Default);
+
+            // Test with Compact options
+            var jsonCompact = JsonSerializer.Serialize(appData, JsonSerializerOptionsFactory.Compact);
+            var deserializedCompact = JsonSerializer.Deserialize<AppData>(jsonCompact, JsonSerializerOptionsFactory.Compact);
+
+            return deserializedDefault != null &&
+                   deserializedCompact != null &&
+                   deserializedDefault.Notes.Count == appData.Notes.Count &&
+                   deserializedCompact.Notes.Count == appData.Notes.Count &&
+                   deserializedDefault.AppSettings.DefaultOpacity == appData.AppSettings.DefaultOpacity &&
+                   deserializedCompact.AppSettings.DefaultOpacity == appData.AppSettings.DefaultOpacity &&
+                   deserializedDefault.AppSettings.Theme == appData.AppSettings.Theme &&
+                   deserializedCompact.AppSettings.Theme == appData.AppSettings.Theme;
         });
     }
 

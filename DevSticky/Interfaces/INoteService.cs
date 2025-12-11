@@ -5,7 +5,7 @@ namespace DevSticky.Interfaces;
 /// <summary>
 /// Service for managing notes (CRUD operations)
 /// </summary>
-public interface INoteService
+public interface INoteService : IDisposable
 {
     Note CreateNote();
     void DeleteNote(Guid id);

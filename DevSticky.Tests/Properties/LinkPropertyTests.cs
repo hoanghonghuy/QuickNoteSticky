@@ -351,6 +351,8 @@ public class TestNoteService : INoteService
         _notes.Clear();
         _notes.AddRange(notes);
     }
+    
+    public void Dispose() { }
 }
 
 #endregion

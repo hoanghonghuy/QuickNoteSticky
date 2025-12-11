@@ -3,6 +3,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
+using DevSticky.Helpers;
 using DevSticky.Interfaces;
 using DevSticky.Models;
 using DevSticky.Services;
@@ -12,7 +13,7 @@ namespace DevSticky.Views;
 /// <summary>
 /// Window displaying a visual network diagram of notes and their connections (Requirements 7.8, 7.9)
 /// </summary>
-public partial class GraphViewWindow : Window
+public partial class GraphViewWindow : Window, IDisposable
 {
     /// <summary>
     /// Event raised when a note node is clicked to navigate
@@ -37,6 +38,8 @@ public partial class GraphViewWindow : Window
     private readonly Dictionary<Guid, Ellipse> _nodeElements = new();
     private const double NodeRadius = 25;
     private const double NodeSpacing = 100;
+    private readonly EventSubscriptionManager _eventManager = new();
+    private bool _disposed;
 
     public GraphViewWindow(ILinkService? linkService = null, INoteService? noteService = null)
     {
@@ -52,10 +55,10 @@ public partial class GraphViewWindow : Window
             // Services not available during design time
         }
         
-        Loaded += OnLoaded;
+        _eventManager.Subscribe<RoutedEventArgs>(this, nameof(Loaded), OnLoaded);
     }
 
-    private async void OnLoaded(object sender, RoutedEventArgs e)
+    private async void OnLoaded(object? sender, RoutedEventArgs e)
     {
         try
         {
@@ -324,9 +327,9 @@ public partial class GraphViewWindow : Window
             Canvas.SetLeft(ellipse, pos.X - NodeRadius);
             Canvas.SetTop(ellipse, pos.Y - NodeRadius);
 
-            ellipse.MouseLeftButtonUp += Node_MouseLeftButtonUp;
-            ellipse.MouseEnter += Node_MouseEnter;
-            ellipse.MouseLeave += Node_MouseLeave;
+            _eventManager.Subscribe<MouseButtonEventArgs>(ellipse, nameof(ellipse.MouseLeftButtonUp), Node_MouseLeftButtonUp);
+            _eventManager.Subscribe<System.Windows.Input.MouseEventArgs>(ellipse, nameof(ellipse.MouseEnter), Node_MouseEnter);
+            _eventManager.Subscribe<System.Windows.Input.MouseEventArgs>(ellipse, nameof(ellipse.MouseLeave), Node_MouseLeave);
 
             _nodeElements[node.NoteId] = ellipse;
             GraphCanvas.Children.Add(ellipse);
@@ -357,7 +360,7 @@ public partial class GraphViewWindow : Window
         return title[..(maxLength - 3)] + "...";
     }
 
-    private void Node_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+    private void Node_MouseLeftButtonUp(object? sender, MouseButtonEventArgs e)
     {
         if (sender is Ellipse ellipse && ellipse.Tag is Guid noteId)
         {
@@ -366,7 +369,7 @@ public partial class GraphViewWindow : Window
         }
     }
 
-    private void Node_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
+    private void Node_MouseEnter(object? sender, System.Windows.Input.MouseEventArgs e)
     {
         if (sender is Ellipse ellipse)
         {
@@ -383,7 +386,7 @@ public partial class GraphViewWindow : Window
         }
     }
 
-    private void Node_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
+    private void Node_MouseLeave(object? sender, System.Windows.Input.MouseEventArgs e)
     {
         if (sender is Ellipse ellipse)
         {
@@ -523,4 +526,28 @@ public partial class GraphViewWindow : Window
     }
 
     #endregion
+
+    protected override void OnClosed(EventArgs e)
+    {
+        Dispose();
+        base.OnClosed(e);
+    }
+
+    public void Dispose()
+    {
+        if (_disposed) return;
+        _disposed = true;
+
+        // Clear node elements to break references
+        _nodeElements.Clear();
+        _nodePositions.Clear();
+
+        // Clear and dispose canvas children
+        WpfResourceHelper.ClearAndDisposePanel(GraphCanvas);
+
+        // Dispose event manager
+        _eventManager?.Dispose();
+        
+        GC.SuppressFinalize(this);
+    }
 }

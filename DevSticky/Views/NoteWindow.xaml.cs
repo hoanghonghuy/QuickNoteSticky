@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using DevSticky.Handlers;
+using DevSticky.Helpers;
 using DevSticky.Interfaces;
 using DevSticky.Models;
 using DevSticky.Resources;
@@ -24,6 +25,8 @@ public partial class NoteWindow : Window
     private readonly IMarkdownService _markdownService;
     private readonly ILinkService _linkService;
     private readonly INoteService _noteService;
+    private readonly NoteWindowCoordinator _coordinator;
+    private readonly Helpers.EventSubscriptionManager _eventManager = new();
     private string _currentLanguage = "PlainText";
     
     // Markdown preview state (managed by MarkdownPreviewHandler)
@@ -45,7 +48,8 @@ public partial class NoteWindow : Window
     /// Creates a new NoteWindow with all required services injected via NoteWindowContext.
     /// </summary>
     /// <param name="context">The context containing all required services</param>
-    public NoteWindow(NoteWindowContext context)
+    /// <param name="coordinator">The coordinator for window operations</param>
+    public NoteWindow(NoteWindowContext context, NoteWindowCoordinator coordinator)
     {
         // Initialize services from context (Requirements 4.1, 4.2, 4.3)
         _themeService = context.ThemeService;
@@ -55,6 +59,7 @@ public partial class NoteWindow : Window
         _markdownService = context.MarkdownService;
         _linkService = context.LinkService;
         _noteService = context.NoteService;
+        _coordinator = coordinator ?? throw new ArgumentNullException(nameof(coordinator));
         
         InitializeComponent();
         DataContextChanged += OnDataContextChanged;
@@ -67,11 +72,11 @@ public partial class NoteWindow : Window
         };
         LanguageCombo.SelectedIndex = 0;
         
-        // Subscribe to theme changes for syntax highlighting
-        _themeService.ThemeChanged += OnThemeChanged;
+        // Subscribe to theme changes for syntax highlighting using weak event manager
+        _eventManager.Subscribe<ThemeChangedEventArgs>(_themeService, nameof(_themeService.ThemeChanged), OnThemeChanged);
         
-        // Subscribe to monitor changes for multi-monitor support
-        _monitorService.MonitorsChanged += OnMonitorsChanged;
+        // Subscribe to monitor changes for multi-monitor support using weak event manager
+        _eventManager.Subscribe<EventArgs>(_monitorService, nameof(_monitorService.MonitorsChanged), OnMonitorsChanged);
         
         // Initialize markdown preview handler (Requirements 2.2)
         _markdownPreviewHandler = new MarkdownPreviewHandler(
@@ -237,54 +242,7 @@ public partial class NoteWindow : Window
             return;
 
         var targetDeviceId = menuItem.Tag as string;
-        if (string.IsNullOrEmpty(targetDeviceId))
-            return;
-
-        var targetMonitor = _monitorService.GetMonitorById(targetDeviceId);
-        if (targetMonitor == null)
-            return;
-
-        // Calculate relative position within current monitor
-        var currentMonitor = _monitorService.GetMonitorAt(Left, Top);
-        
-        if (currentMonitor != null)
-        {
-            // Calculate relative position and apply to target monitor
-            double relativeX = (Left - currentMonitor.WorkingArea.Left) / currentMonitor.WorkingArea.Width;
-            double relativeY = (Top - currentMonitor.WorkingArea.Top) / currentMonitor.WorkingArea.Height;
-            
-            Left = targetMonitor.WorkingArea.Left + relativeX * targetMonitor.WorkingArea.Width;
-            Top = targetMonitor.WorkingArea.Top + relativeY * targetMonitor.WorkingArea.Height;
-        }
-        else
-        {
-            // Window is off-screen, center on target monitor
-            Left = targetMonitor.WorkingArea.Left + (targetMonitor.WorkingArea.Width - Width) / 2;
-            Top = targetMonitor.WorkingArea.Top + (targetMonitor.WorkingArea.Height - Height) / 2;
-        }
-
-        // Ensure window is within bounds
-        EnsureWindowInMonitorBounds(targetMonitor);
-
-        // Update the note's monitor assignment
-        _viewModel.MonitorDeviceId = targetDeviceId;
-    }
-
-    /// <summary>
-    /// Ensure the window is within the monitor's working area
-    /// </summary>
-    private void EnsureWindowInMonitorBounds(MonitorInfo monitor)
-    {
-        var workingArea = monitor.WorkingArea;
-        
-        if (Left < workingArea.Left)
-            Left = workingArea.Left;
-        if (Top < workingArea.Top)
-            Top = workingArea.Top;
-        if (Left + Width > workingArea.Right)
-            Left = Math.Max(workingArea.Left, workingArea.Right - Width);
-        if (Top + Height > workingArea.Bottom)
-            Top = Math.Max(workingArea.Top, workingArea.Bottom - Height);
+        _coordinator.MoveWindowToMonitor(this, targetDeviceId!, _viewModel);
     }
 
     /// <summary>
@@ -396,7 +354,7 @@ public partial class NoteWindow : Window
     private void UpdatePinButton()
     {
         BtnPin.Content = _isPinned ? "●" : "○";
-        BtnPin.ToolTip = _isPinned ? "Unpin (on top)" : "Pin";
+        BtnPin.ToolTip = _isPinned ? L.Get("UnpinOnTop") : L.Get("PinTooltip");
     }
 
     // Event Handlers
@@ -482,112 +440,38 @@ public partial class NoteWindow : Window
 
     /// <summary>
     /// Export as HTML (Requirements 4.9)
+    /// Delegates to coordinator
     /// </summary>
-    private void ExportHtml_Click(object sender, RoutedEventArgs e)
+    private async void ExportHtml_Click(object sender, RoutedEventArgs e)
     {
-        var dialog = new Microsoft.Win32.SaveFileDialog
+        if (_viewModel != null)
         {
-            Filter = "HTML files (*.html)|*.html|All files (*.*)|*.*",
-            DefaultExt = ".html",
-            FileName = GetExportFileName("html")
-        };
-
-        if (dialog.ShowDialog() == true)
-        {
-            try
-            {
-                var options = new MarkdownOptions
-                {
-                    EnableSyntaxHighlighting = true,
-                    EnableTables = true,
-                    EnableTaskLists = true,
-                    CurrentTheme = _themeService.CurrentTheme
-                };
-
-                var html = _markdownService.RenderToHtml(Editor.Text, options);
-                System.IO.File.WriteAllText(dialog.FileName, html);
-                CustomDialog.ShowSuccess("Export Complete", $"HTML exported to:\n{dialog.FileName}");
-            }
-            catch (Exception ex)
-            {
-                CustomDialog.ShowError("Export Failed", $"Failed to export HTML: {ex.Message}");
-            }
+            await _coordinator.ExportAsHtmlAsync(Editor.Text, _viewModel.Title);
         }
     }
 
     /// <summary>
     /// Export as PDF (Requirements 4.9)
+    /// Delegates to coordinator
     /// </summary>
     private async void ExportPdf_Click(object sender, RoutedEventArgs e)
     {
-        var dialog = new Microsoft.Win32.SaveFileDialog
+        if (_viewModel != null)
         {
-            Filter = "PDF files (*.pdf)|*.pdf|All files (*.*)|*.*",
-            DefaultExt = ".pdf",
-            FileName = GetExportFileName("pdf")
-        };
-
-        if (dialog.ShowDialog() == true)
-        {
-            try
-            {
-                // Note: RenderToPdfAsync currently returns HTML as bytes
-                // A full PDF implementation would require a PDF library like iTextSharp or PdfSharp
-                var pdfBytes = await _markdownService.RenderToPdfAsync(Editor.Text);
-                
-                // For now, save as HTML with .pdf extension (placeholder)
-                // In a production app, you'd use a proper PDF library
-                await System.IO.File.WriteAllBytesAsync(dialog.FileName, pdfBytes);
-                
-                CustomDialog.ShowInfo("Export Note", 
-                    "PDF export is currently a placeholder. The file contains HTML content.\n" +
-                    "For full PDF support, a PDF library would need to be integrated.");
-            }
-            catch (Exception ex)
-            {
-                CustomDialog.ShowError("Export Failed", $"Failed to export PDF: {ex.Message}");
-            }
+            await _coordinator.ExportAsPdfAsync(Editor.Text, _viewModel.Title);
         }
     }
 
     /// <summary>
     /// Export as plain Markdown (Requirements 4.9)
+    /// Delegates to coordinator
     /// </summary>
-    private void ExportMarkdown_Click(object sender, RoutedEventArgs e)
+    private async void ExportMarkdown_Click(object sender, RoutedEventArgs e)
     {
-        var dialog = new Microsoft.Win32.SaveFileDialog
+        if (_viewModel != null)
         {
-            Filter = "Markdown files (*.md)|*.md|Text files (*.txt)|*.txt|All files (*.*)|*.*",
-            DefaultExt = ".md",
-            FileName = GetExportFileName("md")
-        };
-
-        if (dialog.ShowDialog() == true)
-        {
-            try
-            {
-                System.IO.File.WriteAllText(dialog.FileName, Editor.Text);
-                CustomDialog.ShowSuccess("Export Complete", $"Markdown exported to:\n{dialog.FileName}");
-            }
-            catch (Exception ex)
-            {
-                CustomDialog.ShowError("Export Failed", $"Failed to export Markdown: {ex.Message}");
-            }
+            await _coordinator.ExportAsMarkdownAsync(Editor.Text, _viewModel.Title);
         }
-    }
-
-    /// <summary>
-    /// Generate a filename for export based on note title
-    /// </summary>
-    private string GetExportFileName(string extension)
-    {
-        var title = _viewModel?.Title ?? "note";
-        // Sanitize filename
-        var invalidChars = System.IO.Path.GetInvalidFileNameChars();
-        var sanitized = new string(title.Where(c => !invalidChars.Contains(c)).ToArray());
-        if (string.IsNullOrWhiteSpace(sanitized))
-            sanitized = "note";
-        return $"{sanitized}.{extension}";
     }
 
     #endregion
@@ -721,11 +605,11 @@ public partial class NoteWindow : Window
     
     protected override void OnClosed(EventArgs e)
     {
-        // Unsubscribe from theme changes
-        _themeService.ThemeChanged -= OnThemeChanged;
+        // Dispose weak event manager (automatically unsubscribes from all events)
+        _eventManager.Dispose();
         
-        // Unsubscribe from monitor changes
-        _monitorService.MonitorsChanged -= OnMonitorsChanged;
+        // Clean up AvalonEdit TextEditor resources
+        WpfResourceHelper.DisposeTextEditor(Editor);
         
         // Clean up markdown preview handler (Requirements 2.2)
         if (_markdownPreviewHandler != null)
@@ -733,6 +617,12 @@ public partial class NoteWindow : Window
             _markdownPreviewHandler.NoteLinkClicked -= OnNoteLinkClicked;
             _markdownPreviewHandler.ExternalLinkClicked -= OnExternalLinkClicked;
             _markdownPreviewHandler.Dispose();
+        }
+        
+        // Clean up markdown preview control
+        if (MarkdownPreview is IDisposable disposablePreview)
+        {
+            disposablePreview.Dispose();
         }
         
         // Clean up link autocomplete handler (Requirements 2.1, 7.1, 7.2)
@@ -747,6 +637,10 @@ public partial class NoteWindow : Window
         
         // Unsubscribe from backlinks panel events (Requirements 7.6, 7.7)
         BacklinksPanel.BacklinkClicked -= OnBacklinkClicked;
+        
+        // Clean up any remaining event subscriptions
+        DataContextChanged -= OnDataContextChanged;
+        KeyDown -= OnKeyDown;
         
         base.OnClosed(e);
     }
@@ -777,22 +671,14 @@ public partial class NoteWindow : Window
 
     /// <summary>
     /// Save current note as a template (Requirements 6.6, 6.7)
+    /// Delegates to coordinator
     /// </summary>
-    private void SaveAsTemplate_Click(object sender, RoutedEventArgs e)
+    private async void SaveAsTemplate_Click(object sender, RoutedEventArgs e)
     {
         if (_viewModel == null) return;
 
         var note = _viewModel.ToNote();
-        var dialog = new SaveAsTemplateDialog(note)
-        {
-            Owner = this
-        };
-
-        if (dialog.ShowDialog() == true && dialog.CreatedTemplate != null)
-        {
-            CustomDialog.ShowSuccess("Template Saved",
-                $"Template '{dialog.CreatedTemplate.Name}' has been saved.");
-        }
+        await _coordinator.SaveAsTemplateAsync(this, note);
     }
 
     #endregion

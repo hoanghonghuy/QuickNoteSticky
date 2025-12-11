@@ -31,11 +31,16 @@ public class CloudSyncPropertyTests
                 var storageService = new MockStorageService();
                 var encryptionService = new EncryptionService();
                 
+                var registry = new CloudProviderRegistry();
+                registry.RegisterProvider(CloudProvider.OneDrive, () => new MockCloudStorageProvider());
+                var errorHandler = new ErrorHandler();
+                
                 var syncService = new CloudSyncService(
                     noteService, 
                     storageService, 
                     encryptionService,
-                    _ => new MockCloudStorageProvider());
+                    registry,
+                    errorHandler);
 
                 // Queue notes with small delays to ensure ordering
                 var queuedTimes = new List<DateTime>();
@@ -291,13 +296,16 @@ public class CloudSyncPropertyTests
             _notes.Clear();
             _notes.AddRange(notes);
         }
+        public void Dispose() { }
     }
 
     private class MockStorageService : IStorageService
     {
         public Task<AppData> LoadAsync() => Task.FromResult(new AppData());
         public Task SaveAsync(AppData data) => Task.CompletedTask;
+        public Task SaveNotesAsync(IEnumerable<Note> notes, AppData currentData) => Task.CompletedTask;
         public string GetStoragePath() => "mock://storage";
+        public void Dispose() { }
     }
 
     private class MockCloudStorageProvider : ICloudStorageProvider

@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Input;
 using DevSticky.Interfaces;
 using DevSticky.Models;
+using DevSticky.Helpers;
 using WpfBrush = System.Windows.Media.Brush;
 using WpfButton = System.Windows.Controls.Button;
 using WpfBorder = System.Windows.Controls.Border;
@@ -25,13 +26,15 @@ namespace DevSticky.Views;
 /// Dialog for selecting a template when creating a new note.
 /// Requirements: 6.1, 6.8
 /// </summary>
-public partial class TemplateSelectionDialog : Window
+public partial class TemplateSelectionDialog : Window, IDisposable
 {
     private readonly ITemplateService _templateService;
     private IReadOnlyList<NoteTemplate> _allTemplates = Array.Empty<NoteTemplate>();
     private NoteTemplate? _selectedTemplate;
     private string? _selectedCategory;
     private string _searchQuery = string.Empty;
+    private readonly EventSubscriptionManager _eventManager = new();
+    private bool _disposed;
 
     /// <summary>
     /// The selected template, or null if user chose blank note or cancelled
@@ -47,7 +50,7 @@ public partial class TemplateSelectionDialog : Window
     {
         InitializeComponent();
         _templateService = templateService ?? App.GetService<ITemplateService>();
-        Loaded += async (_, _) => await LoadTemplatesAsync();
+        _eventManager.Subscribe<RoutedEventArgs>(this, nameof(Loaded), async (_, _) => await LoadTemplatesAsync());
     }
 
     private async Task LoadTemplatesAsync()
@@ -93,11 +96,11 @@ public partial class TemplateSelectionDialog : Window
             Tag = category,
             Style = (Style)FindResource("CategoryFilterBtn")
         };
-        btn.Click += CategoryFilter_Click;
+        _eventManager.Subscribe<RoutedEventArgs>(btn, nameof(btn.Click), CategoryFilter_Click);
         return btn;
     }
 
-    private void CategoryFilter_Click(object sender, RoutedEventArgs e)
+    private void CategoryFilter_Click(object? sender, RoutedEventArgs e)
     {
         if (sender is WpfButton btn)
         {
@@ -266,17 +269,17 @@ public partial class TemplateSelectionDialog : Window
         card.Child = grid;
 
         // Event handlers
-        card.MouseLeftButtonUp += (_, _) => SelectTemplate(template, card);
-        card.MouseEnter += (_, _) =>
+        _eventManager.Subscribe<MouseButtonEventArgs>(card, nameof(card.MouseLeftButtonUp), (_, _) => SelectTemplate(template, card));
+        _eventManager.Subscribe<System.Windows.Input.MouseEventArgs>(card, nameof(card.MouseEnter), (_, _) =>
         {
             if (card.Tag != _selectedTemplate)
                 card.Background = (WpfBrush)FindResource("Surface1Brush");
-        };
-        card.MouseLeave += (_, _) =>
+        });
+        _eventManager.Subscribe<System.Windows.Input.MouseEventArgs>(card, nameof(card.MouseLeave), (_, _) =>
         {
             if (card.Tag != _selectedTemplate)
                 card.Background = (WpfBrush)FindResource("Surface0Brush");
-        };
+        });
 
         return card;
     }
@@ -340,5 +343,43 @@ public partial class TemplateSelectionDialog : Window
             DialogResult = true;
             Close();
         }
+    }
+
+    protected override void OnClosed(EventArgs e)
+    {
+        Dispose();
+        base.OnClosed(e);
+    }
+
+    public void Dispose()
+    {
+        if (_disposed) return;
+        _disposed = true;
+
+        // Clear template list and dispose any disposable items
+        try
+        {
+            if (TemplateList?.Items != null)
+            {
+                foreach (var item in TemplateList.Items)
+                {
+                    if (item is IDisposable disposableItem)
+                    {
+                        disposableItem.Dispose();
+                    }
+                }
+                TemplateList.Items.Clear();
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error clearing TemplateList: {ex.Message}");
+        }
+        
+        // Clear category filter panel
+        WpfResourceHelper.ClearAndDisposePanel(CategoryFilterPanel);
+
+        _eventManager?.Dispose();
+        GC.SuppressFinalize(this);
     }
 }
