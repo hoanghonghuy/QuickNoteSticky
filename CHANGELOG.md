@@ -7,7 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [2.0.1] - TBD
+## [2.0.2] - 2025-12-12
+
+### Fixed
+- Fixed STA thread and WPF threading issues
+- Improved localization handling
+
+## [2.0.1] - 2025-12-09
 
 ### Fixed
 - Fixed i18n: Implement dynamic language switching for Dashboard and persistent windows
@@ -133,7 +139,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - MVVM Architecture with Dependency Injection
 - JSON-based local storage
 
-[Unreleased]: https://github.com/hoanghonghuy/QuickNoteSticky/compare/v2.0.1...HEAD
+[Unreleased]: https://github.com/hoanghonghuy/QuickNoteSticky/compare/v2.0.2...HEAD
+[2.0.2]: https://github.com/hoanghonghuy/QuickNoteSticky/compare/v2.0.1...v2.0.2
 [2.0.1]: https://github.com/hoanghonghuy/QuickNoteSticky/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/hoanghonghuy/QuickNoteSticky/compare/v1.0.0...v2.0.0
 [1.0.0]: https://github.com/hoanghonghuy/QuickNoteSticky/releases/tag/v1.0.0
