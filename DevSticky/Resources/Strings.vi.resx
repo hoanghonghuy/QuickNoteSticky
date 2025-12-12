@@ -350,6 +350,8 @@
   <data name="RestoreSuccess" xml:space="preserve"><value>Khôi phục thành công! Vui lòng khởi động lại ứng dụng.</value></data>
   <data name="RestoreFailed" xml:space="preserve"><value>Không thể khôi phục bản sao lưu</value></data>
   <data name="Restore" xml:space="preserve"><value>Khôi phục</value></data>
+  <data name="RecentNotes" xml:space="preserve"><value>Ghi chú gần đây</value></data>
+  <data name="NoRecentNotes" xml:space="preserve"><value>Không có ghi chú gần đây</value></data>
   
   <!-- Storage Service -->
   <data name="ErrorAppDataNull" xml:space="preserve"><value>Dữ liệu ứng dụng được giải mã hóa là null</value></data>

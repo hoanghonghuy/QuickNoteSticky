@@ -140,6 +140,22 @@ public class MainViewModel : ViewModelBase
         var vm = CreateNoteViewModel(note);
         Notes.Add(vm);
         _windowService.ShowNote(note);
+        
+        // Record access for recent notes
+        RecordNoteAccess(note.Id);
+    }
+
+    /// <summary>
+    /// Record note access for recent notes tracking
+    /// </summary>
+    private void RecordNoteAccess(Guid noteId)
+    {
+        try
+        {
+            var recentNotesService = App.GetService<IRecentNotesService>();
+            recentNotesService?.RecordAccess(noteId);
+        }
+        catch { /* Ignore if service not available */ }
     }
 
     /// <summary>
@@ -156,6 +172,7 @@ public class MainViewModel : ViewModelBase
             Notes.Add(vm);
             _windowService.ShowNote(note);
             SaveAllNotes();
+            RecordNoteAccess(note.Id);
         }
         catch (Exception ex)
         {
@@ -177,6 +194,7 @@ public class MainViewModel : ViewModelBase
         var vm = CreateNoteViewModel(note);
         Notes.Add(vm);
         _windowService.ShowNote(note);
+        RecordNoteAccess(note.Id);
     }
 
     private NoteViewModel CreateNoteViewModel(Note note)
@@ -230,6 +248,14 @@ public class MainViewModel : ViewModelBase
     /// </summary>
     public void OpenNoteById(Guid noteId)
     {
+        // Record access for recent notes
+        try
+        {
+            var recentNotesService = App.GetService<IRecentNotesService>();
+            recentNotesService?.RecordAccess(noteId);
+        }
+        catch { /* Ignore if service not available */ }
+        
         // Optimized: Single pass search through notes
         foreach (var vm in Notes)
         {

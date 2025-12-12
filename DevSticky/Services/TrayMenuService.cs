@@ -14,6 +14,7 @@ public class TrayMenuService : ITrayMenuService
     private readonly IThemeService _themeService;
     private readonly ICloudConnection? _cloudConnection;
     private readonly ICloudSync? _cloudSync;
+    private readonly IRecentNotesService? _recentNotesService;
     private readonly Dispatcher _dispatcher;
     
     private System.Windows.Forms.NotifyIcon? _notifyIcon;
@@ -30,6 +31,7 @@ public class TrayMenuService : ITrayMenuService
     private Action? _onOpenSettings;
     private Action? _onExit;
     private Func<Task>? _onSyncNow;
+    private Action<Guid>? _onOpenNote;
     
     private bool _disposed;
 
@@ -37,11 +39,13 @@ public class TrayMenuService : ITrayMenuService
         IThemeService themeService,
         ICloudConnection? cloudConnection,
         ICloudSync? cloudSync,
+        IRecentNotesService? recentNotesService,
         Dispatcher dispatcher)
     {
         _themeService = themeService;
         _cloudConnection = cloudConnection;
         _cloudSync = cloudSync;
+        _recentNotesService = recentNotesService;
         _dispatcher = dispatcher;
     }
 
@@ -55,7 +59,8 @@ public class TrayMenuService : ITrayMenuService
         Action onHideAll,
         Action onOpenSettings,
         Action onExit,
-        Func<Task>? onSyncNow = null)
+        Func<Task>? onSyncNow = null,
+        Action<Guid>? onOpenNote = null)
     {
         _onOpenDashboard = onOpenDashboard;
         _onCreateNewNote = onCreateNewNote;
@@ -64,6 +69,7 @@ public class TrayMenuService : ITrayMenuService
         _onOpenSettings = onOpenSettings;
         _onExit = onExit;
         _onSyncNow = onSyncNow;
+        _onOpenNote = onOpenNote;
     }
 
     /// <inheritdoc />
@@ -99,6 +105,10 @@ public class TrayMenuService : ITrayMenuService
         _trayContextMenu.Items.Add(L.Get("TrayHideAll"), null, (_, _) => _onHideAll?.Invoke());
         _trayContextMenu.Items.Add("-");
         
+        // Recent Notes Section
+        AddRecentNotesMenuItems();
+        _trayContextMenu.Items.Add("-");
+        
         // Cloud Sync Section (Requirements 5.5, 5.6)
         AddCloudSyncMenuItems();
         
@@ -107,6 +117,48 @@ public class TrayMenuService : ITrayMenuService
         
         // Re-apply theme to new menu items
         ApplyTheme();
+    }
+
+    /// <summary>
+    /// Add recent notes submenu to the tray context menu
+    /// </summary>
+    private void AddRecentNotesMenuItems()
+    {
+        if (_trayContextMenu == null || _recentNotesService == null) return;
+        
+        var recentNotes = _recentNotesService.GetRecentNotes();
+        
+        if (recentNotes.Count == 0)
+        {
+            var emptyItem = new System.Windows.Forms.ToolStripMenuItem
+            {
+                Text = "📝 " + L.Get("NoRecentNotes"),
+                Enabled = false
+            };
+            _trayContextMenu.Items.Add(emptyItem);
+            return;
+        }
+        
+        // Create submenu for recent notes
+        var recentMenu = new System.Windows.Forms.ToolStripMenuItem
+        {
+            Text = "📝 " + L.Get("RecentNotes")
+        };
+        
+        foreach (var note in recentNotes.Take(5))
+        {
+            var noteId = note.NoteId;
+            var title = note.Title.Length > 30 ? note.Title[..30] + "..." : note.Title;
+            var menuItem = new System.Windows.Forms.ToolStripMenuItem
+            {
+                Text = title,
+                ToolTipText = note.ContentPreview
+            };
+            menuItem.Click += (_, _) => _onOpenNote?.Invoke(noteId);
+            recentMenu.DropDownItems.Add(menuItem);
+        }
+        
+        _trayContextMenu.Items.Add(recentMenu);
     }
 
     /// <summary>

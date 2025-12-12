@@ -937,7 +937,8 @@ public partial class App : Application
             onHideAll: () => InvokeOnUIThread(() => _mainViewModel.TrayViewModel.HideAllCommand.Execute(null)),
             onOpenSettings: OpenSettings,
             onExit: () => InvokeOnUIThread(() => _mainViewModel.TrayViewModel.ExitCommand.Execute(null)),
-            onSyncNow: TriggerManualSync
+            onSyncNow: TriggerManualSync,
+            onOpenNote: noteId => InvokeOnUIThread(() => _mainViewModel.OpenNoteById(noteId))
         );
         
         _trayMenuService.BuildMenu();

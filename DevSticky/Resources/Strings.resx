@@ -989,6 +989,12 @@ This tag will be removed from {1} note(s).</value>
   <data name="Restore" xml:space="preserve">
     <value>Restore</value>
   </data>
+  <data name="RecentNotes" xml:space="preserve">
+    <value>Recent Notes</value>
+  </data>
+  <data name="NoRecentNotes" xml:space="preserve">
+    <value>No recent notes</value>
+  </data>
   
   <!-- Storage Service -->
   <data name="ErrorAppDataNull" xml:space="preserve">
