@@ -824,6 +824,7 @@ public partial class App : Application
         services.AddSingleton<IMemoryCleanupService, MemoryCleanupService>();
         services.AddSingleton<IBackupService, BackupService>();
         services.AddSingleton<IRecentNotesService, RecentNotesService>();
+        services.AddTransient<IUndoRedoService, UndoRedoService>();
         
         // Window Services - Transient (per-window instances)
         services.AddTransient<IWindowService>(sp => 

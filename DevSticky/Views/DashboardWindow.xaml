@@ -54,10 +54,14 @@
                 </Grid>
             </Border>
             
-            <!-- Notes List -->
+            <!-- Notes List with Virtual Scrolling for performance -->
             <ListBox x:Name="NotesList" Grid.Row="1" 
                      Background="Transparent" BorderThickness="0"
                      ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                     ScrollViewer.CanContentScroll="True"
+                     VirtualizingPanel.IsVirtualizing="True"
+                     VirtualizingPanel.VirtualizationMode="Recycling"
+                     VirtualizingPanel.ScrollUnit="Pixel"
                      SelectionChanged="NotesList_SelectionChanged">
                 <ListBox.Resources>
                     <!-- Group Header Template -->
