@@ -937,6 +937,59 @@ This tag will be removed from {1} note(s).</value>
     <value>Invalid backup file format.</value>
   </data>
   
+  <!-- Auto Backup -->
+  <data name="AutoBackup" xml:space="preserve">
+    <value>Auto Backup</value>
+  </data>
+  <data name="BackupInterval" xml:space="preserve">
+    <value>Backup Interval</value>
+  </data>
+  <data name="MaxBackups" xml:space="preserve">
+    <value>Max Backups</value>
+  </data>
+  <data name="BackupNow" xml:space="preserve">
+    <value>Backup Now</value>
+  </data>
+  <data name="RestoreBackup" xml:space="preserve">
+    <value>Restore Backup</value>
+  </data>
+  <data name="ManualBackup" xml:space="preserve">
+    <value>Manual Export/Import</value>
+  </data>
+  <data name="BackupInProgress" xml:space="preserve">
+    <value>Creating backup...</value>
+  </data>
+  <data name="BackupSuccess" xml:space="preserve">
+    <value>Backup created successfully!</value>
+  </data>
+  <data name="BackupFailed" xml:space="preserve">
+    <value>Backup failed</value>
+  </data>
+  <data name="BackupServiceNotAvailable" xml:space="preserve">
+    <value>Backup service not available</value>
+  </data>
+  <data name="SelectBackup" xml:space="preserve">
+    <value>Select Backup</value>
+  </data>
+  <data name="NoBackupsFound" xml:space="preserve">
+    <value>No backups found</value>
+  </data>
+  <data name="RestoreConfirmTitle" xml:space="preserve">
+    <value>Restore Backup</value>
+  </data>
+  <data name="RestoreConfirm" xml:space="preserve">
+    <value>This will replace all current notes with the backup. Continue?</value>
+  </data>
+  <data name="RestoreSuccess" xml:space="preserve">
+    <value>Backup restored successfully! Please restart the application.</value>
+  </data>
+  <data name="RestoreFailed" xml:space="preserve">
+    <value>Failed to restore backup</value>
+  </data>
+  <data name="Restore" xml:space="preserve">
+    <value>Restore</value>
+  </data>
+  
   <!-- Storage Service -->
   <data name="ErrorAppDataNull" xml:space="preserve">
     <value>Deserialized AppData is null</value>

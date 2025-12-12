@@ -332,6 +332,25 @@
   <data name="BackupFileNameFormat" xml:space="preserve"><value>DevSticky_SaoLuu_{0}</value></data>
   <data name="InvalidBackupFormat" xml:space="preserve"><value>Định dạng tệp sao lưu không hợp lệ.</value></data>
   
+  <!-- Auto Backup -->
+  <data name="AutoBackup" xml:space="preserve"><value>Sao lưu tự động</value></data>
+  <data name="BackupInterval" xml:space="preserve"><value>Khoảng thời gian sao lưu</value></data>
+  <data name="MaxBackups" xml:space="preserve"><value>Số bản sao lưu tối đa</value></data>
+  <data name="BackupNow" xml:space="preserve"><value>Sao lưu ngay</value></data>
+  <data name="RestoreBackup" xml:space="preserve"><value>Khôi phục</value></data>
+  <data name="ManualBackup" xml:space="preserve"><value>Xuất/Nhập thủ công</value></data>
+  <data name="BackupInProgress" xml:space="preserve"><value>Đang tạo bản sao lưu...</value></data>
+  <data name="BackupSuccess" xml:space="preserve"><value>Sao lưu thành công!</value></data>
+  <data name="BackupFailed" xml:space="preserve"><value>Sao lưu thất bại</value></data>
+  <data name="BackupServiceNotAvailable" xml:space="preserve"><value>Dịch vụ sao lưu không khả dụng</value></data>
+  <data name="SelectBackup" xml:space="preserve"><value>Chọn bản sao lưu</value></data>
+  <data name="NoBackupsFound" xml:space="preserve"><value>Không tìm thấy bản sao lưu nào</value></data>
+  <data name="RestoreConfirmTitle" xml:space="preserve"><value>Khôi phục sao lưu</value></data>
+  <data name="RestoreConfirm" xml:space="preserve"><value>Thao tác này sẽ thay thế tất cả ghi chú hiện tại bằng bản sao lưu. Tiếp tục?</value></data>
+  <data name="RestoreSuccess" xml:space="preserve"><value>Khôi phục thành công! Vui lòng khởi động lại ứng dụng.</value></data>
+  <data name="RestoreFailed" xml:space="preserve"><value>Không thể khôi phục bản sao lưu</value></data>
+  <data name="Restore" xml:space="preserve"><value>Khôi phục</value></data>
+  
   <!-- Storage Service -->
   <data name="ErrorAppDataNull" xml:space="preserve"><value>Dữ liệu ứng dụng được giải mã hóa là null</value></data>
 </root>

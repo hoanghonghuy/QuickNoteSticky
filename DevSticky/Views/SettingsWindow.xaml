@@ -489,6 +489,57 @@
                             <TextBlock Text="{loc:Localize BackupRestore}" Style="{StaticResource SettingLabel}" 
                                        FontWeight="SemiBold" Margin="0,0,0,12"/>
                             
+                            <!-- Auto Backup Toggle -->
+                            <Grid Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="{loc:Localize AutoBackup}" 
+                                           Style="{StaticResource SettingLabel}" VerticalAlignment="Center" Margin="0"/>
+                                <CheckBox x:Name="AutoBackupCheckBox" Grid.Column="1" 
+                                          Checked="AutoBackupCheckBox_Changed" Unchecked="AutoBackupCheckBox_Changed"/>
+                            </Grid>
+                            
+                            <!-- Backup Interval -->
+                            <TextBlock Style="{StaticResource SettingLabel}">
+                                <Run Text="{loc:Localize BackupInterval}"/>
+                                <Run Text=": "/>
+                                <Run x:Name="BackupIntervalValue" Text="30"/>
+                                <Run Text=" "/>
+                                <Run Text="{loc:Localize Minutes}"/>
+                            </TextBlock>
+                            <Slider x:Name="BackupIntervalSlider" Style="{StaticResource SettingSlider}"
+                                    Minimum="5" Maximum="120" Value="30"
+                                    ValueChanged="BackupIntervalSlider_ValueChanged"
+                                    IsSnapToTickEnabled="True" TickFrequency="5"/>
+                            
+                            <!-- Max Backups -->
+                            <TextBlock Style="{StaticResource SettingLabel}">
+                                <Run Text="{loc:Localize MaxBackups}"/>
+                                <Run Text=": "/>
+                                <Run x:Name="MaxBackupsValue" Text="10"/>
+                            </TextBlock>
+                            <Slider x:Name="MaxBackupsSlider" Style="{StaticResource SettingSlider}"
+                                    Minimum="3" Maximum="30" Value="10"
+                                    ValueChanged="MaxBackupsSlider_ValueChanged"
+                                    IsSnapToTickEnabled="True" TickFrequency="1"/>
+                            
+                            <!-- Backup Actions -->
+                            <StackPanel Orientation="Horizontal" Margin="0,8,0,8">
+                                <Button Content="{loc:Localize BackupNow}" Style="{StaticResource ActionBtn}" 
+                                        Click="BtnBackupNow_Click" Padding="16,8" Margin="0,0,8,0"/>
+                                <Button Content="{loc:Localize RestoreBackup}" Style="{StaticResource ActionBtn}" 
+                                        Click="BtnRestoreBackup_Click" Padding="16,8"/>
+                            </StackPanel>
+                            
+                            <!-- Backup Status -->
+                            <TextBlock x:Name="BackupStatusText" Foreground="{DynamicResource SubtextBrush}" 
+                                       FontSize="11" TextWrapping="Wrap" Margin="0,0,0,12"/>
+                            
+                            <!-- Export/Import -->
+                            <TextBlock Text="{loc:Localize ManualBackup}" Style="{StaticResource SettingLabel}" 
+                                       Margin="0,8,0,8"/>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                                 <Button Content="{loc:Localize ExportData}" Style="{StaticResource ActionBtn}" 
                                         Click="BtnExport_Click" Padding="16,8" Margin="0,0,8,0"/>

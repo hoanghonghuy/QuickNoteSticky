@@ -106,6 +106,9 @@ public partial class SettingsWindow : Window, IDisposable
         // Load cloud sync settings (Requirements 5.1, 5.10, 5.11)
         LoadCloudSyncSettings();
         
+        // Load backup settings
+        LoadBackupSettings();
+        
         _isLoading = false;
     }
     
@@ -669,6 +672,149 @@ public partial class SettingsWindow : Window, IDisposable
         {
             CloudSyncStatusText.Text = $"{e.Operation}: {e.ProgressPercent}% - {e.Message}";
         });
+    }
+
+    #endregion
+
+    #region Backup Configuration
+
+    private void AutoBackupCheckBox_Changed(object sender, RoutedEventArgs e)
+    {
+        if (_isLoading) return;
+        
+        var isEnabled = AutoBackupCheckBox.IsChecked == true;
+        BackupIntervalSlider.IsEnabled = isEnabled;
+        MaxBackupsSlider.IsEnabled = isEnabled;
+        
+        // Update backup service
+        try
+        {
+            var backupService = App.GetService<IBackupService>();
+            var settings = backupService.GetSettings();
+            settings.IsEnabled = isEnabled;
+            backupService.UpdateSettings(settings);
+            
+            if (isEnabled)
+            {
+                backupService.StartAutoBackup();
+            }
+            else
+            {
+                backupService.StopAutoBackup();
+            }
+        }
+        catch
+        {
+            // Backup service not available
+        }
+    }
+
+    private void BackupIntervalSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+    {
+        if (BackupIntervalValue != null)
+            BackupIntervalValue.Text = ((int)e.NewValue).ToString();
+    }
+
+    private void MaxBackupsSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+    {
+        if (MaxBackupsValue != null)
+            MaxBackupsValue.Text = ((int)e.NewValue).ToString();
+    }
+
+    private async void BtnBackupNow_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var backupService = App.GetService<IBackupService>();
+            BackupStatusText.Text = L.Get("BackupInProgress");
+            
+            var success = await backupService.CreateBackupAsync();
+            
+            if (success)
+            {
+                BackupStatusText.Text = L.Get("BackupSuccess");
+                BackupStatusText.Foreground = FindResource("GreenBrush") as Brush ?? Brushes.Green;
+            }
+            else
+            {
+                BackupStatusText.Text = L.Get("BackupFailed");
+                BackupStatusText.Foreground = FindResource("RedBrush") as Brush ?? Brushes.Red;
+            }
+        }
+        catch (Exception ex)
+        {
+            BackupStatusText.Text = $"{L.Get("BackupFailed")}: {ex.Message}";
+            BackupStatusText.Foreground = FindResource("RedBrush") as Brush ?? Brushes.Red;
+        }
+    }
+
+    private async void BtnRestoreBackup_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var backupService = App.GetService<IBackupService>();
+            var backups = await backupService.GetBackupsAsync();
+            
+            if (backups.Count == 0)
+            {
+                CustomDialog.ShowInfo(L.Get("Info"), L.Get("NoBackupsFound"), this);
+                return;
+            }
+            
+            // Show backup selection dialog
+            var backupWindow = new BackupSelectionWindow(backups);
+            backupWindow.Owner = this;
+            
+            if (backupWindow.ShowDialog() == true && backupWindow.SelectedBackup != null)
+            {
+                // Confirm restore
+                if (!CustomDialog.ConfirmWarning(L.Get("RestoreConfirmTitle"), L.Get("RestoreConfirm"), this))
+                    return;
+                
+                var appData = await backupService.RestoreFromBackupAsync(backupWindow.SelectedBackup.FileName);
+                
+                if (appData != null)
+                {
+                    var storageService = App.GetService<IStorageService>();
+                    await storageService.SaveAsync(appData);
+                    
+                    CustomDialog.ShowSuccess(L.Get("Success"), L.Get("RestoreSuccess"), this);
+                    Close();
+                }
+                else
+                {
+                    CustomDialog.ShowError(L.Get("Error"), L.Get("RestoreFailed"), this);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            CustomDialog.ShowError(L.Get("Error"), $"{L.Get("RestoreFailed")}: {ex.Message}", this);
+        }
+    }
+
+    private void LoadBackupSettings()
+    {
+        try
+        {
+            var backupService = App.GetService<IBackupService>();
+            var settings = backupService.GetSettings();
+            
+            AutoBackupCheckBox.IsChecked = settings.IsEnabled;
+            BackupIntervalSlider.Value = settings.IntervalMinutes;
+            MaxBackupsSlider.Value = settings.MaxBackups;
+            
+            BackupIntervalSlider.IsEnabled = settings.IsEnabled;
+            MaxBackupsSlider.IsEnabled = settings.IsEnabled;
+        }
+        catch
+        {
+            // Backup service not available
+            AutoBackupCheckBox.IsEnabled = false;
+            BackupIntervalSlider.IsEnabled = false;
+            MaxBackupsSlider.IsEnabled = false;
+            BackupStatusText.Text = L.Get("BackupServiceNotAvailable");
+        }
     }
 
     #endregion
