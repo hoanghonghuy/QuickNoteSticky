@@ -820,6 +820,11 @@ public partial class App : Application
         services.AddSingleton<ISaveQueueService, SaveQueueService>();
         services.AddSingleton<IDirtyTracker<Note>>(sp => new DirtyTracker<Note>());
         
+        // v2.1 Services - Memory Management and User Experience
+        services.AddSingleton<IMemoryCleanupService, MemoryCleanupService>();
+        services.AddSingleton<IBackupService, BackupService>();
+        services.AddSingleton<IRecentNotesService, RecentNotesService>();
+        
         // Window Services - Transient (per-window instances)
         services.AddTransient<IWindowService>(sp => 
             new WindowService(

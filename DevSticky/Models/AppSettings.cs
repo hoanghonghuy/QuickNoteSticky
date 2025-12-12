@@ -65,6 +65,14 @@ public class AppSettings
     // v2.0 property for encryption passphrase hash (stored securely)
     public string? EncryptionPassphraseHash { get; set; }
 
+    // v2.1 properties for backup
+    public bool AutoBackupEnabled { get; set; } = true;
+    public int BackupIntervalMinutes { get; set; } = 30;
+    public int MaxBackupCount { get; set; } = 10;
+
+    // v2.1 properties for recent notes
+    public int MaxRecentNotes { get; set; } = 10;
+
     public void Save()
     {
         try
