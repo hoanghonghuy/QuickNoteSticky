@@ -1,34 +1,21 @@
 using System.Collections.Concurrent;
-using System.Timers;
 using DevSticky.Interfaces;
-using Timer = System.Timers.Timer;
 
 namespace DevSticky.Services;
 
 /// <summary>
-/// Optimized service for debouncing operations (e.g., auto-save)
-/// Uses a single timer and PriorityQueue for efficient management of multiple debounce operations.
+/// Service for debouncing operations (e.g., auto-save)
+/// Ensures that only the latest debounced action executes for each key.
 /// </summary>
 public class DebounceService : IDebounceService, IDisposable
 {
-    private readonly PriorityQueue<DebounceEntry, DateTime> _queue = new();
     private readonly ConcurrentDictionary<string, DebounceEntry> _entries = new();
-    private readonly Timer _timer;
     private readonly object _lock = new();
     private bool _disposed;
 
-    public DebounceService()
-    {
-        _timer = new Timer
-        {
-            AutoReset = false
-        };
-        _timer.Elapsed += OnTimerElapsed;
-    }
-
     /// <summary>
     /// Debounces an action by key. If called again before the delay expires,
-    /// the timer resets and the action is delayed again.
+    /// the previous action is cancelled and a new one is scheduled.
     /// </summary>
     public void Debounce(string key, Action action, int milliseconds)
     {
@@ -36,21 +23,48 @@ public class DebounceService : IDebounceService, IDisposable
 
         lock (_lock)
         {
-            var executeAt = DateTime.UtcNow.AddMilliseconds(milliseconds);
-            var entry = new DebounceEntry(key, action, executeAt);
-
-            // Remove old entry if exists
-            if (_entries.TryRemove(key, out var oldEntry))
+            // Cancel any existing entry for this key
+            if (_entries.TryGetValue(key, out var existingEntry))
             {
-                oldEntry.IsCancelled = true;
+                existingEntry.CancellationTokenSource.Cancel();
+                existingEntry.CancellationTokenSource.Dispose();
             }
 
-            // Add new entry
+            // Create new entry
+            var cts = new CancellationTokenSource();
+            var entry = new DebounceEntry(action, cts);
             _entries[key] = entry;
-            _queue.Enqueue(entry, executeAt);
 
-            // Update timer to fire at the earliest scheduled time
-            UpdateTimer();
+            // Schedule the action
+            Task.Run(async () =>
+            {
+                try
+                {
+                    await Task.Delay(milliseconds, cts.Token);
+                    
+                    // Check if this entry is still current and execute
+                    lock (_lock)
+                    {
+                        if (_entries.TryGetValue(key, out var currentEntry) && currentEntry == entry)
+                        {
+                            _entries.TryRemove(key, out _);
+                            action?.Invoke();
+                        }
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    // Expected when cancelled, do nothing
+                }
+                catch
+                {
+                    // Swallow other exceptions to prevent one failing action from affecting others
+                }
+                finally
+                {
+                    cts.Dispose();
+                }
+            }, cts.Token);
         }
     }
 
@@ -65,83 +79,8 @@ public class DebounceService : IDebounceService, IDisposable
         {
             if (_entries.TryRemove(key, out var entry))
             {
-                entry.IsCancelled = true;
-                UpdateTimer();
-            }
-        }
-    }
-
-    private void OnTimerElapsed(object? sender, ElapsedEventArgs e)
-    {
-        if (_disposed) return;
-
-        List<Action> actionsToExecute;
-
-        lock (_lock)
-        {
-            var now = DateTime.UtcNow.AddMilliseconds(10); // Add small buffer for timing precision
-            actionsToExecute = new List<Action>();
-
-            // Process all entries that are due
-            while (_queue.Count > 0 && _queue.Peek().ExecuteAt <= now)
-            {
-                var entry = _queue.Dequeue();
-
-                // Skip cancelled entries
-                if (entry.IsCancelled)
-                    continue;
-
-                // Remove from dictionary and collect action
-                if (_entries.TryRemove(entry.Key, out _))
-                {
-                    actionsToExecute.Add(entry.Action);
-                }
-            }
-
-            // Update timer for next scheduled entry
-            UpdateTimer();
-        }
-
-        // Execute actions outside the lock to avoid blocking
-        foreach (var action in actionsToExecute)
-        {
-            try
-            {
-                action?.Invoke();
-            }
-            catch
-            {
-                // Swallow exceptions to prevent one failing action from affecting others
-            }
-        }
-    }
-
-    private void UpdateTimer()
-    {
-        // Must be called within lock
-        _timer.Stop();
-
-        // Find the next non-cancelled entry
-        while (_queue.Count > 0 && _queue.Peek().IsCancelled)
-        {
-            _queue.Dequeue();
-        }
-
-        if (_queue.Count > 0)
-        {
-            var nextEntry = _queue.Peek();
-            var delay = (nextEntry.ExecuteAt - DateTime.UtcNow).TotalMilliseconds;
-
-            if (delay > 0)
-            {
-                _timer.Interval = delay;
-                _timer.Start();
-            }
-            else
-            {
-                // Entry is already due, trigger immediately
-                _timer.Interval = 1;
-                _timer.Start();
+                entry.CancellationTokenSource.Cancel();
+                entry.CancellationTokenSource.Dispose();
             }
         }
     }
@@ -166,27 +105,26 @@ public class DebounceService : IDebounceService, IDisposable
             
             if (disposing)
             {
-                _timer.Stop();
-                _timer.Dispose();
+                // Cancel all pending operations
+                foreach (var entry in _entries.Values)
+                {
+                    entry.CancellationTokenSource.Cancel();
+                    entry.CancellationTokenSource.Dispose();
+                }
                 _entries.Clear();
-                _queue.Clear();
             }
         }
     }
 
     private class DebounceEntry
     {
-        public string Key { get; }
         public Action Action { get; }
-        public DateTime ExecuteAt { get; }
-        public bool IsCancelled { get; set; }
+        public CancellationTokenSource CancellationTokenSource { get; }
 
-        public DebounceEntry(string key, Action action, DateTime executeAt)
+        public DebounceEntry(Action action, CancellationTokenSource cancellationTokenSource)
         {
-            Key = key;
             Action = action;
-            ExecuteAt = executeAt;
-            IsCancelled = false;
+            CancellationTokenSource = cancellationTokenSource;
         }
     }
 }

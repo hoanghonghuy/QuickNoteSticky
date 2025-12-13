@@ -187,6 +187,9 @@ public static class CrashAnalyzer
             case var type when type.Contains("nullreference"):
                 causes.Add("Null reference - likely uninitialized object or missing dependency");
                 break;
+            case var type when type.Contains("argumentnull"):
+                causes.Add("Argument null - missing dependency or service not properly injected");
+                break;
             case var type when type.Contains("filenotfound"):
                 causes.Add("Missing file - configuration, resource, or dependency file not found");
                 break;
@@ -260,9 +263,11 @@ public static class CrashAnalyzer
             actions.Add("Verify application installation integrity");
         }
         
-        if (exceptionType.Contains("directorynotfound"))
+        if (exceptionType.Contains("directorynotfound") || 
+            exceptionType.Contains("directorynotfoundexception") ||
+            crashReport.ExceptionType.Contains("DirectoryNotFoundException"))
         {
-            actions.Add("Create missing application data directories");
+            actions.Add("Create missing directory structure for application data");
             actions.Add("Reset application data folder structure");
         }
         

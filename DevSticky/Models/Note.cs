@@ -20,6 +20,10 @@ public class Note : TrackableModel
     private Guid? _templateId;
     private long _syncVersion;
     private DateTime? _lastSyncedDate;
+    
+    // v2.2 properties for folders and kanban
+    private Guid? _folderId;
+    private KanbanStatus? _kanbanStatus;
 
     public Guid Id
     {
@@ -118,5 +122,18 @@ public class Note : TrackableModel
     {
         get => _lastSyncedDate;
         set => SetProperty(ref _lastSyncedDate, value);
+    }
+
+    // v2.2 properties for folders and kanban
+    public Guid? FolderId
+    {
+        get => _folderId;
+        set => SetProperty(ref _folderId, value);
+    }
+    
+    public KanbanStatus? KanbanStatus
+    {
+        get => _kanbanStatus;
+        set => SetProperty(ref _kanbanStatus, value);
     }
 }

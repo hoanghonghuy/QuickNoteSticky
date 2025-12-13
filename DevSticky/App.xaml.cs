@@ -810,6 +810,14 @@ public partial class App : Application
         services.AddSingleton<IMarkdownService, MarkdownService>();
         services.AddSingleton<ITemplateService, TemplateService>();
         services.AddSingleton<ILinkService, LinkService>();
+        services.AddSingleton<IFileDropService, FileDropService>();
+        services.AddSingleton<IFuzzySearchService, FuzzySearchService>();
+        services.AddSingleton<IFolderService, FolderService>();
+        services.AddSingleton<ISmartCollectionService, SmartCollectionService>();
+        services.AddSingleton<IKanbanService, KanbanService>();
+        // ITagManagementService is created by MainViewModel, so we get it from there
+        services.AddSingleton<ITagManagementService>(sp => sp.GetRequiredService<MainViewModel>().TagManagementService);
+        services.AddSingleton<ITimelineService, TimelineService>();
         
         // Cache Services - Singleton (shared cache) - Enhanced cache for future use
         services.AddSingleton<ILruCache<Guid, NoteTag>>(sp => new LruCache<Guid, NoteTag>(100));

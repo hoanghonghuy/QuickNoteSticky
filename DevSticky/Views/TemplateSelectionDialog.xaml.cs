@@ -50,7 +50,12 @@ public partial class TemplateSelectionDialog : Window, IDisposable
     {
         InitializeComponent();
         _templateService = templateService ?? App.GetService<ITemplateService>();
-        _eventManager.Subscribe<RoutedEventArgs>(this, nameof(Loaded), async (_, _) => await LoadTemplatesAsync());
+        Loaded += TemplateSelectionDialog_Loaded;
+    }
+
+    private async void TemplateSelectionDialog_Loaded(object sender, RoutedEventArgs e)
+    {
+        await LoadTemplatesAsync();
     }
 
     private async Task LoadTemplatesAsync()
@@ -96,11 +101,11 @@ public partial class TemplateSelectionDialog : Window, IDisposable
             Tag = category,
             Style = (Style)FindResource("CategoryFilterBtn")
         };
-        _eventManager.Subscribe<RoutedEventArgs>(btn, nameof(btn.Click), CategoryFilter_Click);
+        btn.Click += CategoryFilter_Click;
         return btn;
     }
 
-    private void CategoryFilter_Click(object? sender, RoutedEventArgs e)
+    private void CategoryFilter_Click(object sender, RoutedEventArgs e)
     {
         if (sender is WpfButton btn)
         {
@@ -269,17 +274,17 @@ public partial class TemplateSelectionDialog : Window, IDisposable
         card.Child = grid;
 
         // Event handlers
-        _eventManager.Subscribe<MouseButtonEventArgs>(card, nameof(card.MouseLeftButtonUp), (_, _) => SelectTemplate(template, card));
-        _eventManager.Subscribe<System.Windows.Input.MouseEventArgs>(card, nameof(card.MouseEnter), (_, _) =>
+        card.MouseLeftButtonUp += (s, e) => SelectTemplate(template, card);
+        card.MouseEnter += (s, e) =>
         {
             if (card.Tag != _selectedTemplate)
                 card.Background = (WpfBrush)FindResource("Surface1Brush");
-        });
-        _eventManager.Subscribe<System.Windows.Input.MouseEventArgs>(card, nameof(card.MouseLeave), (_, _) =>
+        };
+        card.MouseLeave += (s, e) =>
         {
             if (card.Tag != _selectedTemplate)
                 card.Background = (WpfBrush)FindResource("Surface0Brush");
-        });
+        };
 
         return card;
     }

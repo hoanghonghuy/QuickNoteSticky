@@ -55,10 +55,10 @@ public partial class GraphViewWindow : Window, IDisposable
             // Services not available during design time
         }
         
-        _eventManager.Subscribe<RoutedEventArgs>(this, nameof(Loaded), OnLoaded);
+        Loaded += OnLoaded;
     }
 
-    private async void OnLoaded(object? sender, RoutedEventArgs e)
+    private async void OnLoaded(object sender, RoutedEventArgs e)
     {
         try
         {

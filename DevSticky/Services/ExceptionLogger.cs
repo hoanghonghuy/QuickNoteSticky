@@ -91,7 +91,7 @@ public class ExceptionLogger : IExceptionLogger
     /// </summary>
     public void TrackResource(IDisposable resource)
     {
-        if (resource == null) return;
+        if (resource == null) throw new ArgumentNullException(nameof(resource));
 
         lock (_logLock)
         {

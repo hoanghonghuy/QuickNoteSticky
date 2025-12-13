@@ -262,12 +262,20 @@ public class FinalVerificationTests
     {
         var services = new ServiceCollection();
         
+        // Register required dependencies
+        services.AddSingleton<AppSettings>();
+        services.AddSingleton<IErrorHandler, ErrorHandler>();
+        services.AddSingleton<IFileSystem, FileSystemAdapter>();
+        services.AddSingleton<IDateTimeProvider, SystemDateTimeProvider>();
+        
         // Register services (simplified for testing)
         services.AddSingleton<ICacheService, EnhancedCacheService>();
         services.AddSingleton<IStorageService, StorageService>();
         services.AddSingleton<INoteService, NoteService>();
-        services.AddSingleton<IFileSystem, FileSystemAdapter>();
-        services.AddSingleton<IDateTimeProvider, SystemDateTimeProvider>();
+        
+        // Register functions for EnhancedCacheService
+        services.AddSingleton<Func<IEnumerable<NoteTag>>>(() => Array.Empty<NoteTag>());
+        services.AddSingleton<Func<IEnumerable<NoteGroup>>>(() => Array.Empty<NoteGroup>());
         
         return services.BuildServiceProvider();
     }

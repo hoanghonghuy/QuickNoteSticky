@@ -124,23 +124,9 @@
                     </Grid.RowDefinitions>
                     
                     <!-- Search Box -->
-                    <Border Grid.Row="0" Background="{DynamicResource Surface1Brush}" 
-                            CornerRadius="4" Margin="0,0,8,8">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="🔍" Margin="8,0,4,0" 
-                                       VerticalAlignment="Center" Foreground="{DynamicResource SubtextBrush}"/>
-                            <TextBox x:Name="SearchBox" Grid.Column="1" 
-                                     Background="Transparent" BorderThickness="0"
-                                     Foreground="{DynamicResource TextBrush}"
-                                     CaretBrush="{DynamicResource TextBrush}"
-                                     Padding="4,8" FontSize="13"
-                                     TextChanged="SearchBox_TextChanged"/>
-                        </Grid>
-                    </Border>
+                    <TextBox x:Name="SearchBox" Grid.Row="0" Margin="0,0,8,8"
+                             Style="{StaticResource SearchBoxStyle}"
+                             TextChanged="SearchBox_TextChanged"/>
                     
                     <!-- Category Tree -->
                     <Border Grid.Row="1" Background="{DynamicResource Surface0Brush}" 

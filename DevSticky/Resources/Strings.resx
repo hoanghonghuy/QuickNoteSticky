@@ -97,6 +97,9 @@
   <data name="ManageTags" xml:space="preserve">
     <value>Manage Tags</value>
   </data>
+  <data name="MoreActions" xml:space="preserve">
+    <value>More actions</value>
+  </data>
   <data name="ToggleGroupedView" xml:space="preserve">
     <value>Toggle grouped view</value>
   </data>
@@ -302,6 +305,15 @@ This tag will be removed from {1} note(s).</value>
   <data name="SearchPlaceholder" xml:space="preserve">
     <value>Search...</value>
   </data>
+  <data name="SearchNotesPlaceholder" xml:space="preserve">
+    <value>Search notes...</value>
+  </data>
+  <data name="ClearSearch" xml:space="preserve">
+    <value>Clear search</value>
+  </data>
+  <data name="SearchResults" xml:space="preserve">
+    <value>{0} results for "{1}"</value>
+  </data>
   <data name="Next" xml:space="preserve">
     <value>Next</value>
   </data>
@@ -486,6 +498,9 @@ This tag will be removed from {1} note(s).</value>
   </data>
   <data name="GraphViewNotAvailable" xml:space="preserve">
     <value>Graph view is not available.</value>
+  </data>
+  <data name="KanbanViewNotAvailable" xml:space="preserve">
+    <value>Kanban view is not available.</value>
   </data>
   
   <!-- Snippet Browser -->
@@ -999,5 +1014,22 @@ This tag will be removed from {1} note(s).</value>
   <!-- Storage Service -->
   <data name="ErrorAppDataNull" xml:space="preserve">
     <value>Deserialized AppData is null</value>
+  </data>
+  
+  <!-- Timeline View -->
+  <data name="TimelineViewNotAvailable" xml:space="preserve">
+    <value>Timeline view is not available.</value>
+  </data>
+  <data name="Items" xml:space="preserve">
+    <value>Items</value>
+  </data>
+  <data name="SelectDate" xml:space="preserve">
+    <value>Select date</value>
+  </data>
+  <data name="DateRange" xml:space="preserve">
+    <value>Date Range</value>
+  </data>
+  <data name="ClearFilter" xml:space="preserve">
+    <value>Clear Filter</value>
   </data>
 </root>

@@ -10,7 +10,10 @@
         ResizeMode="CanResize"
         MinWidth="200" MinHeight="150"
         Width="320" Height="220"
-        ShowInTaskbar="False">
+        ShowInTaskbar="False"
+        AllowDrop="True"
+        Drop="Window_Drop"
+        DragOver="Window_DragOver">
     
     <Window.Resources>
         <ResourceDictionary>
@@ -251,11 +254,9 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <TextBox x:Name="SearchBox" 
-                             TextChanged="SearchBox_TextChanged"
-                             Background="{DynamicResource Surface1Brush}" 
-                             Foreground="{DynamicResource TextBrush}"
-                             CaretBrush="{DynamicResource TextBrush}"
-                             BorderThickness="0" Padding="6,3" FontSize="12"/>
+                             Style="{StaticResource SearchBoxStyle}"
+                             FontSize="12" Padding="6,4"
+                             TextChanged="SearchBox_TextChanged"/>
                     <StackPanel Grid.Column="1" Orientation="Horizontal">
                         <Button Content="◀" Style="{StaticResource NoteIconBtn}" Width="24"
                                 Click="BtnPrevMatch_Click"/>

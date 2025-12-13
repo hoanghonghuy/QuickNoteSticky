@@ -73,13 +73,23 @@ public class CrashReport
     /// </summary>
     public static CrashReport FromException(Exception exception, string component = "Unknown")
     {
+        if (exception == null)
+            throw new ArgumentNullException(nameof(exception));
+            
+        // Build message including inner exception details
+        var message = exception.Message;
+        if (exception.InnerException != null)
+        {
+            message += $" Inner exception: {exception.InnerException.Message}";
+        }
+        
         var report = new CrashReport
         {
             Timestamp = DateTime.UtcNow,
-            ExceptionType = exception.GetType().FullName ?? "Unknown",
-            Message = exception.Message,
+            ExceptionType = exception.GetType().Name, // Use Name instead of FullName for cleaner output
+            Message = message,
             StackTrace = exception.ToString(),
-            Component = component,
+            Component = string.IsNullOrEmpty(component) ? "Unknown" : component,
             ApplicationVersion = GetApplicationVersion(),
             OperatingSystem = Environment.OSVersion.ToString(),
             RuntimeVersion = Environment.Version.ToString(),

@@ -44,6 +44,12 @@ public class SafeModeController : ISafeModeController
     {
         try
         {
+            // Handle empty or null reason
+            if (string.IsNullOrWhiteSpace(reason))
+            {
+                reason = "Unknown reason";
+            }
+            
             _configuration = SafeModeConfig.CreateForReason(reason);
             SaveConfiguration();
             
@@ -67,6 +73,10 @@ public class SafeModeController : ISafeModeController
                 });
             
             // Fallback to in-memory configuration
+            if (string.IsNullOrWhiteSpace(reason))
+            {
+                reason = "Unknown reason";
+            }
             _configuration = SafeModeConfig.CreateForReason(reason);
         }
     }
@@ -76,6 +86,11 @@ public class SafeModeController : ISafeModeController
     {
         try
         {
+            if (!_configuration.IsEnabled)
+            {
+                return false; // Already deactivated
+            }
+            
             _configuration.IsEnabled = false;
             _configuration.Reason = string.Empty;
             SaveConfiguration();

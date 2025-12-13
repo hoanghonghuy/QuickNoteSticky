@@ -37,8 +37,8 @@ public class StartupValidator : IStartupValidator
     /// <param name="fileSystem">File system service for file operations</param>
     public StartupValidator(IServiceProvider serviceProvider, IFileSystem fileSystem)
     {
-        _serviceProvider = serviceProvider;
-        _fileSystem = fileSystem;
+        _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+        _fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
     }
     
     /// <inheritdoc />

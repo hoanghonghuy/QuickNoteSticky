@@ -26,6 +26,7 @@ public partial class NoteWindow : Window
     private readonly ILinkService _linkService;
     private readonly INoteService _noteService;
     private readonly NoteWindowCoordinator _coordinator;
+    private readonly IFileDropService _fileDropService;
     private readonly Helpers.EventSubscriptionManager _eventManager = new();
     private string _currentLanguage = "PlainText";
     
@@ -59,6 +60,7 @@ public partial class NoteWindow : Window
         _markdownService = context.MarkdownService;
         _linkService = context.LinkService;
         _noteService = context.NoteService;
+        _fileDropService = context.FileDropService;
         _coordinator = coordinator ?? throw new ArgumentNullException(nameof(coordinator));
         
         InitializeComponent();
@@ -76,7 +78,7 @@ public partial class NoteWindow : Window
         _eventManager.Subscribe<ThemeChangedEventArgs>(_themeService, nameof(_themeService.ThemeChanged), OnThemeChanged);
         
         // Subscribe to monitor changes for multi-monitor support using weak event manager
-        _eventManager.Subscribe<EventArgs>(_monitorService, nameof(_monitorService.MonitorsChanged), OnMonitorsChanged);
+        _eventManager.Subscribe(_monitorService, nameof(_monitorService.MonitorsChanged), OnMonitorsChanged);
         
         // Initialize markdown preview handler (Requirements 2.2)
         _markdownPreviewHandler = new MarkdownPreviewHandler(
@@ -679,6 +681,57 @@ public partial class NoteWindow : Window
 
         var note = _viewModel.ToNote();
         await _coordinator.SaveAsTemplateAsync(this, note);
+    }
+
+    #endregion
+
+    #region Drag & Drop Support (Requirements 1.1, 1.2, 1.3, 1.4, 1.5)
+
+    /// <summary>
+    /// Handle drag over event to show drop feedback
+    /// </summary>
+    private void Window_DragOver(object sender, System.Windows.DragEventArgs e)
+    {
+        // Check if the dragged data contains files
+        if (e.Data.GetDataPresent(System.Windows.DataFormats.FileDrop))
+        {
+            e.Effects = System.Windows.DragDropEffects.Copy;
+        }
+        else
+        {
+            e.Effects = System.Windows.DragDropEffects.None;
+        }
+        e.Handled = true;
+    }
+
+    /// <summary>
+    /// Handle drop event to process dropped files
+    /// </summary>
+    private void Window_Drop(object sender, System.Windows.DragEventArgs e)
+    {
+        if (e.Data.GetDataPresent(System.Windows.DataFormats.FileDrop))
+        {
+            var files = (string[])e.Data.GetData(System.Windows.DataFormats.FileDrop);
+            if (files != null && files.Length > 0)
+            {
+                // Process the dropped files using the FileDropService
+                var content = _fileDropService.ProcessDroppedFiles(files);
+                
+                if (!string.IsNullOrEmpty(content))
+                {
+                    // Insert the content at the current cursor position
+                    var cursorPosition = Editor.CaretOffset;
+                    Editor.Document.Insert(cursorPosition, content);
+                    
+                    // Update the view model content
+                    if (_viewModel != null)
+                    {
+                        _viewModel.Content = Editor.Text;
+                    }
+                }
+            }
+        }
+        e.Handled = true;
     }
 
     #endregion

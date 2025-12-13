@@ -39,6 +39,7 @@
   <data name="NoteCountGrouped" xml:space="preserve"><value>{0} ghi chú theo nhóm</value></data>
   <data name="ManageGroups" xml:space="preserve"><value>Quản lý nhóm</value></data>
   <data name="ManageTags" xml:space="preserve"><value>Quản lý thẻ</value></data>
+  <data name="MoreActions" xml:space="preserve"><value>Thêm hành động</value></data>
   <data name="ToggleGroupedView" xml:space="preserve"><value>Chuyển chế độ xem nhóm</value></data>
   <data name="SwitchToFlatView" xml:space="preserve"><value>Chuyển sang xem danh sách</value></data>
   <data name="SwitchToGroupedView" xml:space="preserve"><value>Chuyển sang xem theo nhóm</value></data>
@@ -102,6 +103,9 @@
   <data name="Unpin" xml:space="preserve"><value>Bỏ ghim</value></data>
   <data name="Search" xml:space="preserve"><value>Tìm kiếm</value></data>
   <data name="SearchPlaceholder" xml:space="preserve"><value>Tìm kiếm...</value></data>
+  <data name="SearchNotesPlaceholder" xml:space="preserve"><value>Tìm kiếm ghi chú...</value></data>
+  <data name="ClearSearch" xml:space="preserve"><value>Xóa tìm kiếm</value></data>
+  <data name="SearchResults" xml:space="preserve"><value>{0} kết quả cho "{1}"</value></data>
   <data name="Next" xml:space="preserve"><value>Tiếp</value></data>
   <data name="Previous" xml:space="preserve"><value>Trước</value></data>
   <data name="Format" xml:space="preserve"><value>Định dạng</value></data>
@@ -160,6 +164,7 @@
   <data name="TemplateManagementNotAvailable" xml:space="preserve"><value>Quản lý mẫu không khả dụng.</value></data>
   <data name="GraphView" xml:space="preserve"><value>Xem đồ thị</value></data>
   <data name="GraphViewNotAvailable" xml:space="preserve"><value>Xem đồ thị không khả dụng.</value></data>
+  <data name="KanbanViewNotAvailable" xml:space="preserve"><value>Xem Kanban không khả dụng.</value></data>
   
   <!-- Snippet Browser -->
   <data name="SnippetBrowserTitle" xml:space="preserve"><value>Thư viện mã</value></data>
@@ -355,4 +360,11 @@
   
   <!-- Storage Service -->
   <data name="ErrorAppDataNull" xml:space="preserve"><value>Dữ liệu ứng dụng được giải mã hóa là null</value></data>
+  
+  <!-- Timeline View -->
+  <data name="TimelineViewNotAvailable" xml:space="preserve"><value>Xem dòng thời gian không khả dụng.</value></data>
+  <data name="Items" xml:space="preserve"><value>Mục</value></data>
+  <data name="SelectDate" xml:space="preserve"><value>Chọn ngày</value></data>
+  <data name="DateRange" xml:space="preserve"><value>Khoảng thời gian</value></data>
+  <data name="ClearFilter" xml:space="preserve"><value>Xóa bộ lọc</value></data>
 </root>

@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using DevSticky.Helpers;
 using DevSticky.Interfaces;
 using DevSticky.Models;
 using DevSticky.Services;
@@ -16,12 +18,26 @@ namespace DevSticky.Tests;
 public class SafeModeControllerUnitTests : IDisposable
 {
     private readonly List<SafeModeController> _controllers = new();
+    private readonly string _safeModeConfigPath;
+
+    public SafeModeControllerUnitTests()
+    {
+        // Set up clean test environment
+        var appDataPath = PathHelper.GetAppDataPath(AppConstants.AppDataFolderName);
+        _safeModeConfigPath = Path.Combine(appDataPath, "safemode.json");
+        
+        // Ensure we start with no safe mode configuration
+        CleanupSafeModeConfig();
+    }
 
     #region Constructor Tests
 
     [Fact]
     public void Constructor_WithoutParameters_ShouldCreateController()
     {
+        // Arrange - ensure clean state
+        CleanupSafeModeConfig();
+        
         // Act
         var controller = new SafeModeController();
         _controllers.Add(controller);
@@ -36,7 +52,8 @@ public class SafeModeControllerUnitTests : IDisposable
     [Fact]
     public void Constructor_WithFileSystemAndLogger_ShouldCreateController()
     {
-        // Arrange
+        // Arrange - ensure clean state
+        CleanupSafeModeConfig();
         var fileSystem = new FileSystemAdapter();
         var exceptionLogger = new ExceptionLogger(new ErrorHandler());
 
@@ -53,6 +70,9 @@ public class SafeModeControllerUnitTests : IDisposable
     [Fact]
     public void Constructor_WithNullParameters_ShouldCreateController()
     {
+        // Arrange - ensure clean state
+        CleanupSafeModeConfig();
+        
         // Act
         var controller = new SafeModeController(null, null);
         _controllers.Add(controller);
@@ -93,7 +113,8 @@ public class SafeModeControllerUnitTests : IDisposable
     [Fact]
     public void ActivateSafeMode_WithEmptyReason_ShouldUseDefaultReason()
     {
-        // Arrange
+        // Arrange - ensure clean state
+        CleanupSafeModeConfig();
         var controller = new SafeModeController();
         _controllers.Add(controller);
 
@@ -164,7 +185,8 @@ public class SafeModeControllerUnitTests : IDisposable
     [Fact]
     public void DeactivateSafeMode_WhenNotActive_ShouldReturnFalse()
     {
-        // Arrange
+        // Arrange - ensure clean state
+        CleanupSafeModeConfig();
         var controller = new SafeModeController();
         _controllers.Add(controller);
 
@@ -460,10 +482,23 @@ public class SafeModeControllerUnitTests : IDisposable
     [Fact]
     public void GetSafeModeStatus_WhenNotActive_ShouldReturnInactiveStatus()
     {
-        // Arrange
-        var controller = new SafeModeController();
+        // Arrange - ensure clean state and use isolated file system
+        CleanupSafeModeConfig();
+        
+        // Create a test file system that doesn't persist configuration
+        var testFileSystem = new TestFileSystem();
+        var controller = new SafeModeController(testFileSystem, null);
         _controllers.Add(controller);
-
+        
+        // Ensure safe mode is deactivated (in case it was activated by previous tests)
+        if (controller.IsInSafeMode)
+        {
+            controller.DeactivateSafeMode();
+        }
+        
+        // Verify the controller is not in safe mode
+        Assert.False(controller.IsInSafeMode, $"Controller should not be in safe mode after deactivation. Config.IsEnabled: {controller.Configuration.IsEnabled}, Config.Reason: '{controller.Configuration.Reason}'");
+        
         // Act
         var status = controller.GetSafeModeStatus();
 
@@ -475,6 +510,27 @@ public class SafeModeControllerUnitTests : IDisposable
         Assert.Empty(status.DisabledServices);
         Assert.Empty(status.StartupFailures);
         Assert.False(status.ConfigurationReset);
+    }
+
+    private class TestFileSystem : IFileSystem
+    {
+        public bool FileExistsCalled { get; private set; }
+        
+        public bool FileExists(string path) 
+        { 
+            FileExistsCalled = true;
+            return false; // Always return false to simulate no existing config
+        }
+        public bool DirectoryExists(string path) => false;
+        public Task<string> ReadAllTextAsync(string path) => Task.FromResult(string.Empty);
+        public Task WriteAllTextAsync(string path, string content) => Task.CompletedTask;
+        public void CreateDirectory(string path) { }
+        public void DeleteFile(string path) { }
+        public Task DeleteFileAsync(string path) => Task.CompletedTask;
+        public void MoveFile(string sourceFileName, string destFileName) { }
+        public Task MoveFileAsync(string sourceFileName, string destFileName) => Task.CompletedTask;
+        public string? GetDirectoryName(string path) => Path.GetDirectoryName(path);
+        public string Combine(params string[] paths) => Path.Combine(paths);
     }
 
     [Fact]
@@ -514,7 +570,8 @@ public class SafeModeControllerUnitTests : IDisposable
     [Fact]
     public void Configuration_ShouldReturnCurrentConfiguration()
     {
-        // Arrange
+        // Arrange - ensure clean state
+        CleanupSafeModeConfig();
         var controller = new SafeModeController();
         _controllers.Add(controller);
 
@@ -558,7 +615,8 @@ public class SafeModeControllerUnitTests : IDisposable
     [Fact]
     public void IsInSafeMode_InitialState_ShouldBeFalse()
     {
-        // Arrange
+        // Arrange - ensure clean state
+        CleanupSafeModeConfig();
         var controller = new SafeModeController();
         _controllers.Add(controller);
 
@@ -597,6 +655,33 @@ public class SafeModeControllerUnitTests : IDisposable
 
     #endregion
 
+    private void CleanupSafeModeConfig()
+    {
+        try
+        {
+            // Clean up the specific test path
+            if (File.Exists(_safeModeConfigPath))
+            {
+                File.Delete(_safeModeConfigPath);
+            }
+            
+            // Also clean up any potential global safe mode config
+            var appDataPath = PathHelper.GetAppDataPath(AppConstants.AppDataFolderName);
+            if (Directory.Exists(appDataPath))
+            {
+                var allSafeModeFiles = Directory.GetFiles(appDataPath, "safemode*.json");
+                foreach (var file in allSafeModeFiles)
+                {
+                    File.Delete(file);
+                }
+            }
+        }
+        catch
+        {
+            // Ignore cleanup errors
+        }
+    }
+
     public void Dispose()
     {
         foreach (var controller in _controllers)
@@ -610,5 +695,8 @@ public class SafeModeControllerUnitTests : IDisposable
                 // Ignore disposal errors in tests
             }
         }
+        
+        // Clean up safe mode configuration after tests
+        CleanupSafeModeConfig();
     }
 }

@@ -31,6 +31,7 @@ public class UIWorkflowIntegrationTests : IDisposable
         var templateService = new TestTemplateService();
         var saveQueueService = new TestSaveQueueService();
         var dirtyTracker = new DirtyTracker<Note>();
+        var folderService = new TestFolderService();
 
         _mainViewModel = new MainViewModel(
             _noteService,
@@ -42,6 +43,7 @@ public class UIWorkflowIntegrationTests : IDisposable
             templateService,
             saveQueueService,
             dirtyTracker,
+            folderService,
             settings
         );
     }
@@ -416,6 +418,19 @@ public class UIWorkflowIntegrationTests : IDisposable
         public int QueueCount => 0;
         public event EventHandler<SaveCompletedEventArgs>? SaveCompleted;
         public void Dispose() { }
+    }
+
+    private class TestFolderService : IFolderService
+    {
+        public Task<NoteFolder> CreateFolderAsync(string name, Guid? parentId = null) => Task.FromResult(new NoteFolder());
+        public Task<bool> DeleteFolderAsync(Guid folderId) => Task.FromResult(true);
+        public Task<bool> MoveFolderAsync(Guid folderId, Guid? newParentId) => Task.FromResult(true);
+        public Task<bool> MoveNoteToFolderAsync(Guid noteId, Guid? folderId) => Task.FromResult(true);
+        public Task<IReadOnlyList<NoteFolder>> GetRootFoldersAsync() => Task.FromResult<IReadOnlyList<NoteFolder>>(Array.Empty<NoteFolder>());
+        public Task<IReadOnlyList<NoteFolder>> GetChildFoldersAsync(Guid parentId) => Task.FromResult<IReadOnlyList<NoteFolder>>(Array.Empty<NoteFolder>());
+        public Task<IReadOnlyList<Note>> GetNotesInFolderAsync(Guid? folderId) => Task.FromResult<IReadOnlyList<Note>>(Array.Empty<Note>());
+        public Task SaveAsync() => Task.CompletedTask;
+        public Task LoadAsync() => Task.CompletedTask;
     }
 
     #endregion

@@ -5,6 +5,7 @@ using System.Windows.Media;
 using DevSticky.Interfaces;
 using DevSticky.Services;
 using DevSticky.ViewModels;
+using DevSticky.Models;
 using Button = System.Windows.Controls.Button;
 using ComboBox = System.Windows.Controls.ComboBox;
 using DataObject = System.Windows.DataObject;
@@ -19,16 +20,25 @@ namespace DevSticky.Views;
 public partial class DashboardWindow : Window
 {
     private readonly MainViewModel _mainViewModel;
+    private readonly IFuzzySearchService _fuzzySearchService;
+    private readonly IFolderService _folderService;
+    private readonly ISmartCollectionService _smartCollectionService;
     private ICloudConnection? _cloudConnection;
     private ICloudSync? _cloudSync;
     private Guid? _editingNoteId;
     private Guid? _filterTagId;
     private bool _isGroupedView;
+    private bool _isFolderViewVisible;
+    private string _searchQuery = string.Empty;
+    private List<FuzzySearchResult>? _searchResults;
     
     public DashboardWindow(MainViewModel mainViewModel)
     {
         InitializeComponent();
         _mainViewModel = mainViewModel;
+        _fuzzySearchService = App.GetService<IFuzzySearchService>();
+        _folderService = App.GetService<IFolderService>();
+        _smartCollectionService = App.GetService<ISmartCollectionService>();
         
         // Try to get cloud sync service for status display
         try
@@ -46,7 +56,9 @@ public partial class DashboardWindow : Window
         }
         
         RefreshNotesList();
+        LoadSmartCollections();
         UpdateCloudSyncStatus();
+        UpdateClearButtonVisibility();
         
         // Subscribe to language changes to update UI text
         LocalizationService.Instance.LanguageChanged += OnLanguageChanged;
@@ -74,6 +86,24 @@ public partial class DashboardWindow : Window
         
         var notesQuery = _mainViewModel.Notes.AsEnumerable();
         
+        // Apply search filter if active
+        if (!string.IsNullOrWhiteSpace(_searchQuery))
+        {
+            var notes = _mainViewModel.Notes.Select(vm => new Note 
+            { 
+                Id = vm.Id, 
+                Title = vm.Title, 
+                Content = vm.Content,
+                CreatedDate = vm.CreatedDate,
+                ModifiedDate = vm.ModifiedDate,
+                TagIds = vm.TagIds,
+                GroupId = vm.GroupId
+            }).ToList();
+            
+            _searchResults = _fuzzySearchService.Search(notes, _searchQuery).ToList();
+            notesQuery = _searchResults.Select(sr => _mainViewModel.Notes.First(vm => vm.Id == sr.Note.Id));
+        }
+        
         // Apply tag filter if active
         if (_filterTagId.HasValue)
         {
@@ -89,9 +119,9 @@ public partial class DashboardWindow : Window
 
         var items = new List<object>();
         
-        if (_isGroupedView)
+        if (_isGroupedView && string.IsNullOrWhiteSpace(_searchQuery))
         {
-            // Group notes by their group
+            // Group notes by their group (only when not searching)
             var ungroupedNotes = notesQuery.Where(n => n.GroupId == null).ToList();
             var groupedNotes = notesQuery.Where(n => n.GroupId != null)
                 .GroupBy(n => n.GroupId)
@@ -124,13 +154,16 @@ public partial class DashboardWindow : Window
         }
         else
         {
+            // Flat view or search results
             items.AddRange(notesQuery.Select(n => CreateNoteListItem(n, groupOptions)));
         }
         
         NotesList.ItemsSource = items;
-        var totalNotes = _mainViewModel.Notes.Count(n => !_filterTagId.HasValue || n.TagIds.Contains(_filterTagId.Value));
+        var totalNotes = notesQuery.Count();
         
-        if (_filterTagId.HasValue && _isGroupedView)
+        if (!string.IsNullOrWhiteSpace(_searchQuery))
+            NoteCount.Text = L.Get("SearchResults", totalNotes, _searchQuery);
+        else if (_filterTagId.HasValue && _isGroupedView)
             NoteCount.Text = L.Get("NoteCountFiltered", totalNotes) + " • " + L.Get("NoteCountGrouped", totalNotes).Split('•').Last().Trim();
         else if (_filterTagId.HasValue)
             NoteCount.Text = L.Get("NoteCountFiltered", totalNotes);
@@ -192,6 +225,15 @@ public partial class DashboardWindow : Window
     {
         _mainViewModel.CreateNewNote();
         RefreshNotesList();
+    }
+
+    private void BtnOverflowMenu_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button btn && btn.ContextMenu != null)
+        {
+            btn.ContextMenu.PlacementTarget = btn;
+            btn.ContextMenu.IsOpen = true;
+        }
     }
 
     private void BtnDelete_Click(object sender, RoutedEventArgs e)
@@ -264,8 +306,8 @@ public partial class DashboardWindow : Window
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Failed to open template management: {ex.Message}");
-            CustomDialog.ShowInfo(L.Get("Error"), L.Get("TemplateManagementNotAvailable"), this);
+            System.Diagnostics.Debug.WriteLine($"Failed to open template management: {ex.Message}\n{ex.StackTrace}");
+            CustomDialog.ShowInfo(L.Get("Error"), $"{L.Get("TemplateManagementNotAvailable")}\n{ex.Message}", this);
         }
     }
 
@@ -274,14 +316,44 @@ public partial class DashboardWindow : Window
         try
         {
             var window = new GraphViewWindow();
-            window.NoteClicked += (_, noteId) => _mainViewModel.OpenNoteById(noteId);
+            window.NoteClicked += (s, noteId) => _mainViewModel.OpenNoteById(noteId);
             window.Owner = this;
             window.Show();
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Failed to open graph view: {ex.Message}");
-            CustomDialog.ShowInfo(L.Get("Error"), L.Get("GraphViewNotAvailable"), this);
+            System.Diagnostics.Debug.WriteLine($"Failed to open graph view: {ex.Message}\n{ex.StackTrace}");
+            CustomDialog.ShowInfo(L.Get("Error"), $"{L.Get("GraphViewNotAvailable")}\n{ex.Message}", this);
+        }
+    }
+
+    private void BtnKanbanView_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var window = new KanbanWindow();
+            window.Owner = this;
+            window.Show();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Failed to open Kanban view: {ex.Message}\n{ex.StackTrace}");
+            CustomDialog.ShowInfo(L.Get("Error"), $"{L.Get("KanbanViewNotAvailable")}\n{ex.Message}", this);
+        }
+    }
+
+    private void BtnTimelineView_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var window = new TimelineWindow();
+            window.Owner = this;
+            window.Show();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Failed to open Timeline view: {ex.Message}\n{ex.StackTrace}");
+            CustomDialog.ShowInfo(L.Get("Error"), $"{L.Get("TimelineViewNotAvailable")}\n{ex.Message}", this);
         }
     }
 
@@ -647,6 +719,59 @@ public partial class DashboardWindow : Window
         return null;
     }
 
+    // Search functionality
+    private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (sender is TextBox textBox)
+        {
+            _searchQuery = textBox.Text?.Trim() ?? string.Empty;
+            UpdateClearButtonVisibility();
+            RefreshNotesList();
+        }
+    }
+
+    private void SearchBox_KeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.Escape)
+        {
+            ClearSearch();
+            e.Handled = true;
+        }
+    }
+
+    private void ClearSearchButton_Click(object sender, RoutedEventArgs e)
+    {
+        ClearSearch();
+    }
+
+    private void ClearSearch()
+    {
+        SearchBox.Text = string.Empty;
+        _searchQuery = string.Empty;
+        _searchResults = null;
+        UpdateClearButtonVisibility();
+        RefreshNotesList();
+        SearchBox.Focus();
+    }
+
+    private void UpdateClearButtonVisibility()
+    {
+        ClearSearchButton.Visibility = HasSearchQuery ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    public string SearchQuery
+    {
+        get => _searchQuery;
+        set
+        {
+            _searchQuery = value ?? string.Empty;
+            UpdateClearButtonVisibility();
+            RefreshNotesList();
+        }
+    }
+
+    public bool HasSearchQuery => !string.IsNullOrWhiteSpace(_searchQuery);
+
     protected override void OnClosed(EventArgs e)
     {
         // Unsubscribe from cloud sync events
@@ -657,6 +782,223 @@ public partial class DashboardWindow : Window
 
         base.OnClosed(e);
     }
+
+    #region Folder Management
+
+    private async void BtnToggleFolderView_Click(object sender, RoutedEventArgs e)
+    {
+        _isFolderViewVisible = !_isFolderViewVisible;
+        FoldersSection.Visibility = _isFolderViewVisible ? Visibility.Visible : Visibility.Collapsed;
+        
+        if (_isFolderViewVisible)
+        {
+            await LoadFoldersAsync();
+        }
+    }
+
+    private async Task LoadFoldersAsync()
+    {
+        try
+        {
+            await _folderService.LoadAsync();
+            var rootFolders = await _folderService.GetRootFoldersAsync();
+            var folderViewModels = new List<FolderViewModel>();
+            
+            foreach (var folder in rootFolders)
+            {
+                var folderVm = await CreateFolderViewModelAsync(folder);
+                folderViewModels.Add(folderVm);
+            }
+            
+            FoldersTreeView.ItemsSource = folderViewModels;
+        }
+        catch (Exception ex)
+        {
+            // Log error but don't crash the UI
+            System.Diagnostics.Debug.WriteLine($"Error loading folders: {ex.Message}");
+        }
+    }
+
+    private async Task<FolderViewModel> CreateFolderViewModelAsync(NoteFolder folder)
+    {
+        var notesInFolder = await _folderService.GetNotesInFolderAsync(folder.Id);
+        var childFolders = await _folderService.GetChildFoldersAsync(folder.Id);
+        
+        var folderVm = new FolderViewModel
+        {
+            Id = folder.Id,
+            Name = folder.Name,
+            NoteCount = notesInFolder.Count,
+            Children = new List<FolderViewModel>()
+        };
+        
+        foreach (var childFolder in childFolders)
+        {
+            var childVm = await CreateFolderViewModelAsync(childFolder);
+            folderVm.Children.Add(childVm);
+        }
+        
+        return folderVm;
+    }
+
+    private async void FolderTreeItem_Drop(object sender, DragEventArgs e)
+    {
+        if (sender is TreeViewItem treeViewItem && 
+            treeViewItem.DataContext is FolderViewModel folderVm &&
+            e.Data.GetData(typeof(Guid)) is Guid noteId)
+        {
+            await _folderService.MoveNoteToFolderAsync(noteId, folderVm.Id);
+            RefreshNotesList();
+            await LoadFoldersAsync(); // Refresh folder counts
+        }
+    }
+
+    private void FolderTreeItem_DragOver(object sender, DragEventArgs e)
+    {
+        e.Effects = e.Data.GetDataPresent(typeof(Guid)) ? DragDropEffects.Move : DragDropEffects.None;
+        e.Handled = true;
+    }
+
+    private async void FolderItem_RightClick(object sender, MouseButtonEventArgs e)
+    {
+        if (sender is StackPanel panel && panel.DataContext is FolderViewModel folderVm)
+        {
+            var contextMenu = new ContextMenu();
+            
+            var newFolderItem = new MenuItem { Header = "New Subfolder" };
+            newFolderItem.Click += async (s, args) => await CreateSubfolderAsync(folderVm.Id);
+            contextMenu.Items.Add(newFolderItem);
+            
+            var renameFolderItem = new MenuItem { Header = "Rename" };
+            renameFolderItem.Click += (s, args) => RenameFolderAsync(folderVm);
+            contextMenu.Items.Add(renameFolderItem);
+            
+            contextMenu.Items.Add(new Separator());
+            
+            var deleteFolderItem = new MenuItem { Header = "Delete" };
+            deleteFolderItem.Click += async (s, args) => await DeleteFolderAsync(folderVm.Id);
+            contextMenu.Items.Add(deleteFolderItem);
+            
+            panel.ContextMenu = contextMenu;
+        }
+    }
+
+    private async Task CreateSubfolderAsync(Guid parentId)
+    {
+        // Simple prompt for folder name - in a real implementation, you'd use a proper dialog
+        var folderName = "New Folder"; // Default name for now
+        
+        try
+        {
+            await _folderService.CreateFolderAsync(folderName, parentId);
+            await LoadFoldersAsync();
+        }
+        catch (Exception ex)
+        {
+            System.Windows.MessageBox.Show($"Error creating folder: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private async void RenameFolderAsync(FolderViewModel folderVm)
+    {
+        // Note: This would require adding a RenameFolder method to IFolderService
+        // For now, we'll skip this functionality
+        System.Windows.MessageBox.Show("Rename functionality not yet implemented", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+    }
+
+    private async Task DeleteFolderAsync(Guid folderId)
+    {
+        var result = System.Windows.MessageBox.Show(
+            "Are you sure you want to delete this folder? Notes will be moved to the parent folder.",
+            "Delete Folder",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Question);
+        
+        if (result == MessageBoxResult.Yes)
+        {
+            await _folderService.DeleteFolderAsync(folderId);
+            RefreshNotesList();
+            await LoadFoldersAsync();
+        }
+    }
+
+    private void NoteItem_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (sender is Grid grid && grid.Tag is Guid noteId)
+        {
+            // Start drag operation
+            var dataObject = new DataObject(typeof(Guid), noteId);
+            DragDrop.DoDragDrop(grid, dataObject, DragDropEffects.Move);
+        }
+    }
+
+    #endregion
+
+    #region Smart Collections
+
+    private async void LoadSmartCollections()
+    {
+        try
+        {
+            var defaultCollections = _smartCollectionService.GetDefaultCollections();
+            var collectionsWithCounts = new List<SmartCollectionDisplay>();
+
+            foreach (var collection in defaultCollections)
+            {
+                var notes = await _smartCollectionService.GetNotesForCollectionAsync(collection.Id);
+                collectionsWithCounts.Add(new SmartCollectionDisplay
+                {
+                    Id = collection.Id,
+                    Name = collection.Name,
+                    Icon = collection.Icon,
+                    NoteCount = notes.Count
+                });
+            }
+
+            SmartCollectionsList.ItemsSource = collectionsWithCounts;
+        }
+        catch (Exception ex)
+        {
+            // Log error but don't crash the UI
+            System.Diagnostics.Debug.WriteLine($"Error loading smart collections: {ex.Message}");
+        }
+    }
+
+    private async void SmartCollectionsList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (sender is System.Windows.Controls.ListBox listBox && listBox.SelectedItem is SmartCollectionDisplay collection)
+        {
+            try
+            {
+                var notes = await _smartCollectionService.GetNotesForCollectionAsync(collection.Id);
+                var noteViewModels = notes.Select(n => _mainViewModel.Notes.FirstOrDefault(vm => vm.Id == n.Id))
+                                         .Where(vm => vm != null)
+                                         .ToList();
+
+                // Update the notes list to show only the filtered notes
+                var groupOptions = new List<GroupOption> { new() { Id = null, Name = L.Get("Ungrouped") } };
+                groupOptions.AddRange(_mainViewModel.Groups.Select(g => new GroupOption { Id = g.Id, Name = g.Name }));
+
+                var items = noteViewModels.Select(n => CreateNoteListItem(n!, groupOptions)).Cast<object>().ToList();
+                NotesList.ItemsSource = items;
+
+                // Update note count display
+                NoteCount.Text = $"{collection.Icon} {collection.Name}: {notes.Count} notes";
+
+                // Clear other filters
+                _filterTagId = null;
+                _searchQuery = string.Empty;
+                SearchBox.Text = string.Empty;
+                FilterBadge.Visibility = Visibility.Collapsed;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error filtering by smart collection: {ex.Message}");
+            }
+        }
+    }
+
+    #endregion
 }
 
 public class NoteListItem
@@ -694,6 +1036,22 @@ public class GroupHeader
     public string Name { get; set; } = "";
     public int NoteCount { get; set; }
     public bool IsExpanded { get; set; } = true;
+}
+
+public class FolderViewModel
+{
+    public Guid Id { get; set; }
+    public string Name { get; set; } = "";
+    public int NoteCount { get; set; }
+    public List<FolderViewModel> Children { get; set; } = new();
+}
+
+public class SmartCollectionDisplay
+{
+    public Guid Id { get; set; }
+    public string Name { get; set; } = "";
+    public string? Icon { get; set; }
+    public int NoteCount { get; set; }
 }
 
 public class DashboardTemplateSelector : DataTemplateSelector

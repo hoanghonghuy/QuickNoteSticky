@@ -450,7 +450,7 @@ public class StartupValidatorPropertyTests : IDisposable
             }
             
             var serviceProvider = services.BuildServiceProvider();
-            var fileSystem = scenario.HasFileSystem ? serviceProvider.GetService<IFileSystem>() : null;
+            var fileSystem = scenario.HasFileSystem ? serviceProvider.GetService<IFileSystem>() : new FileSystemAdapter();
             
             return new StartupValidator(serviceProvider, fileSystem);
         }

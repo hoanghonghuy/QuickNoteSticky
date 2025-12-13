@@ -15,6 +15,7 @@ public class NoteWindowContext
     public IMarkdownService MarkdownService { get; }
     public ILinkService LinkService { get; }
     public INoteService NoteService { get; }
+    public IFileDropService FileDropService { get; }
 
     public NoteWindowContext(
         IThemeService themeService,
@@ -23,7 +24,8 @@ public class NoteWindowContext
         IDebounceService debounceService,
         IMarkdownService markdownService,
         ILinkService linkService,
-        INoteService noteService)
+        INoteService noteService,
+        IFileDropService fileDropService)
     {
         ThemeService = themeService ?? throw new ArgumentNullException(nameof(themeService));
         MonitorService = monitorService ?? throw new ArgumentNullException(nameof(monitorService));
@@ -32,5 +34,6 @@ public class NoteWindowContext
         MarkdownService = markdownService ?? throw new ArgumentNullException(nameof(markdownService));
         LinkService = linkService ?? throw new ArgumentNullException(nameof(linkService));
         NoteService = noteService ?? throw new ArgumentNullException(nameof(noteService));
+        FileDropService = fileDropService ?? throw new ArgumentNullException(nameof(fileDropService));
     }
 }

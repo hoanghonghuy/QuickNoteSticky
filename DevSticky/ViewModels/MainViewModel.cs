@@ -20,6 +20,7 @@ public class MainViewModel : ViewModelBase
     private readonly IGroupManagementService _groupManagementService;
     private readonly ITagManagementService _tagManagementService;
     private readonly ISaveQueueService _saveQueueService;
+    private readonly IFolderService _folderService;
     private readonly CacheService _cacheService = new();
     private readonly IDirtyTracker<Note> _dirtyTracker;
     private AppData? _currentAppData;
@@ -50,6 +51,7 @@ public class MainViewModel : ViewModelBase
         ITemplateService templateService,
         ISaveQueueService saveQueueService,
         IDirtyTracker<Note> dirtyTracker,
+        IFolderService folderService,
         AppSettings appSettings)
     {
         _noteService = noteService;
@@ -61,6 +63,7 @@ public class MainViewModel : ViewModelBase
         _templateService = templateService;
         _saveQueueService = saveQueueService;
         _dirtyTracker = dirtyTracker;
+        _folderService = folderService;
         
         AppSettings = appSettings;
 
@@ -97,6 +100,9 @@ public class MainViewModel : ViewModelBase
         {
             saveQueue.SetCurrentAppData(data);
         }
+        
+        // Load folders
+        await _folderService.LoadAsync();
         
         // Load groups and tags
         foreach (var group in data.Groups)
@@ -411,6 +417,7 @@ public class MainViewModel : ViewModelBase
     public void RenameGroup(Guid groupId, string newName) => _groupManagementService.RenameGroup(groupId, newName);
 
     // Tag management - delegated to TagManagementService (Requirements 1.1, 8.3)
+    public ITagManagementService TagManagementService => _tagManagementService;
     public NoteTag CreateTag(string? name = null, string? color = null) => _tagManagementService.CreateTag(name, color);
     public void DeleteTag(Guid tagId) => _tagManagementService.DeleteTag(tagId);
     public void RenameTag(Guid tagId, string newName) => _tagManagementService.RenameTag(tagId, newName);

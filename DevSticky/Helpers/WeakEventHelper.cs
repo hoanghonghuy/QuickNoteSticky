@@ -89,6 +89,24 @@ public class EventSubscriptionManager : IDisposable
     private bool _disposed;
 
     /// <summary>
+    /// Subscribe to an event with automatic cleanup (non-generic EventHandler)
+    /// </summary>
+    /// <param name="source">Event source</param>
+    /// <param name="eventName">Event name</param>
+    /// <param name="handler">Event handler</param>
+    public void Subscribe(object source, string eventName, EventHandler handler)
+    {
+        if (_disposed) return;
+        
+        var eventInfo = source.GetType().GetEvent(eventName);
+        if (eventInfo != null)
+        {
+            eventInfo.AddEventHandler(source, handler);
+            _subscriptions.Add(new WeakEventSubscription(source, eventInfo, handler));
+        }
+    }
+
+    /// <summary>
     /// Subscribe to an event with automatic cleanup
     /// </summary>
     /// <typeparam name="TEventArgs">Type of event arguments</typeparam>

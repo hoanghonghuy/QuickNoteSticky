@@ -24,6 +24,8 @@
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="40"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="50"/>
             </Grid.RowDefinitions>
@@ -46,6 +48,8 @@
                         </Border>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                        <Button x:Name="BtnFolderView" Content="📁" Style="{StaticResource IconBtn}" 
+                                Click="BtnToggleFolderView_Click" ToolTip="Toggle Folder View"/>
                         <Button x:Name="BtnGroupView" Content="📂" Style="{StaticResource IconBtn}" 
                                 Click="BtnToggleGroupView_Click" ToolTip="{loc:Localize ToggleGroupedView}"/>
                         <Button Content="☰" Style="{StaticResource IconBtn}" Click="BtnSettings_Click" ToolTip="{loc:Localize Settings}"/>
@@ -54,8 +58,110 @@
                 </Grid>
             </Border>
             
+            <!-- Search Bar -->
+            <Border Grid.Row="1" Background="{DynamicResource Surface0Brush}" BorderBrush="{DynamicResource Surface1Brush}" 
+                    BorderThickness="0,1,0,1" Padding="12,6">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox x:Name="SearchBox"
+                             Background="{DynamicResource Surface1Brush}"
+                             Foreground="{DynamicResource TextBrush}"
+                             CaretBrush="{DynamicResource TextBrush}"
+                             SelectionBrush="{DynamicResource BlueBrush}"
+                             BorderThickness="0" FontSize="13" Padding="8,6"
+                             VerticalContentAlignment="Center"
+                             Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}"
+                             TextChanged="SearchBox_TextChanged"
+                             KeyDown="SearchBox_KeyDown"
+                             Style="{StaticResource SearchBoxStyle}"/>
+                    <Button x:Name="ClearSearchButton" Grid.Column="1" Content="✕" 
+                            Style="{StaticResource IconBtn}" Margin="8,0,0,0"
+                            Click="ClearSearchButton_Click" 
+                            ToolTip="{loc:Localize ClearSearch}"/>
+                </Grid>
+            </Border>
+            
+            <!-- Folders and Smart Collections Section -->
+            <Border Grid.Row="2" x:Name="FoldersSection" Background="{DynamicResource Surface0Brush}" 
+                    BorderBrush="{DynamicResource Surface1Brush}" BorderThickness="0,0,0,1" 
+                    Visibility="Collapsed">
+                <StackPanel>
+                    <!-- Smart Collections -->
+                    <Expander x:Name="SmartCollectionsExpander" Header="🔍 Smart Collections" IsExpanded="True"
+                              Background="Transparent" Foreground="{DynamicResource TextBrush}">
+                        <ListBox x:Name="SmartCollectionsList" Background="Transparent" BorderThickness="0"
+                                 MaxHeight="150" Margin="12,8" SelectionChanged="SmartCollectionsList_SelectionChanged">
+                            <ListBox.ItemContainerStyle>
+                                <Style TargetType="ListBoxItem">
+                                    <Setter Property="Background" Value="Transparent"/>
+                                    <Setter Property="Padding" Value="4,2"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="ListBoxItem">
+                                                <Border x:Name="bd" Background="{TemplateBinding Background}" 
+                                                        CornerRadius="4" Padding="{TemplateBinding Padding}">
+                                                    <ContentPresenter/>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="bd" Property="Background" Value="{DynamicResource Surface1Brush}"/>
+                                                    </Trigger>
+                                                    <Trigger Property="IsSelected" Value="True">
+                                                        <Setter TargetName="bd" Property="Background" Value="{DynamicResource BlueBrush}"/>
+                                                        <Setter Property="Foreground" Value="{DynamicResource BaseBrush}"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </ListBox.ItemContainerStyle>
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" Cursor="Hand">
+                                        <TextBlock Text="{Binding Icon}" Margin="0,0,6,0" FontSize="12"/>
+                                        <TextBlock Text="{Binding Name}" Foreground="{DynamicResource TextBrush}" FontSize="12"/>
+             
+                                                   Foreground="{Dynami
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </Expander>
+                    
+                    <!-- Folders -->
+                    <Expander x:Name="FoldersExpander" Header="📁 Folders" IsExpanded="True"
+                              Background="Transparent" Foreground="{DynamicResource TextBrush}">
+                        <TreeView x:Name="FoldersTreeView" Background="Transparent" BorderThickness="0"
+                                  MaxHeight="200" Margin="12,8">
+                            <TreeView.ItemContainerStyle>
+                                <Style TargetType="TreeViewItem">
+                                    <Setter Property="IsExpanded" Value="True"/>
+                                    <Setter Property="AllowDrop" Value="True"/>
+                                    <EventSetter Event="Drop" Handler="FolderTreeItem_Drop"/>
+                                    <EventSetter Event="DragOver" Handler="FolderTreeItem_DragOver"/>
+                                </Style>
+                            </TreeView.ItemContainerStyle>
+                            <TreeView.ItemTemplate>
+                                <HierarchicalDataTemplate ItemsSource="{Binding Children}">
+                                    <StackPanel Orientation="Horizontal" MouseRightButtonDown="FolderItem_RightClick">
+                                        <TextBlock Text="📁" Margin="0,0,4,0"/>
+                                        <TextBlock Text="{Binding Name}" Foreground="{DynamicResource TextBrush}"/>
+                                        <TextBlock Text="{Binding NoteCount, StringFormat=' ({0})'}" 
+                                                   Foreground="{DynamicResource SubtextBrush}" FontSize="11"/>
+                                    </StackPanel>
+                                </HierarchicalDataTemplate>
+                            </TreeView.ItemTemplate>
+                        </TreeView>
+                    </Expander>
+                </StackPanel>
+            </Border>                         
+            
             <!-- Notes List with Virtual Scrolling for performance -->
-            <ListBox x:Name="NotesList" Grid.Row="1" 
+            <ListBox x:Name="NotesList" Grid.Row="3" 
                      Background="Transparent" BorderThickness="0"
                      ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                      ScrollViewer.CanContentScroll="True"
@@ -93,7 +199,7 @@
                     
                     <!-- Note Item Template -->
                     <DataTemplate x:Key="NoteItemTemplate">
-                        <Grid MouseMove="NoteItem_MouseMove" Tag="{Binding Id}">
+                        <Grid MouseMove="NoteItem_MouseMove" MouseLeftButtonDown="NoteItem_MouseLeftButtonDown" Tag="{Binding Id}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
@@ -228,9 +334,15 @@
             </ListBox>
             
             <!-- Footer -->
-            <Border Grid.Row="2" Background="{DynamicResource Surface0Brush}" CornerRadius="0,0,8,8">
+            <Border Grid.Row="4" Background="{DynamicResource Surface0Brush}" CornerRadius="0,0,8,8">
                 <Grid Margin="12,0">
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <!-- Left: Status (always visible) -->
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                         <TextBlock x:Name="NoteCount" Foreground="{DynamicResource SubtextBrush}" 
                                    FontSize="12" VerticalAlignment="Center"/>
                         <!-- Cloud Sync Status -->
@@ -242,17 +354,68 @@
                             </StackPanel>
                         </Border>
                     </StackPanel>
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-                        <Button Content="📝" Style="{StaticResource IconBtn}" Click="BtnSnippetLibrary_Click" 
-                                ToolTip="{loc:Localize SnippetLibrary}" Width="32" Height="32"/>
-                        <Button Content="📋" Style="{StaticResource IconBtn}" Click="BtnTemplateManagement_Click" 
-                                ToolTip="{loc:Localize TemplateManagement}" Width="32" Height="32"/>
-                        <Button Content="🔗" Style="{StaticResource IconBtn}" Click="BtnGraphView_Click" 
-                                ToolTip="{loc:Localize GraphView}" Width="32" Height="32"/>
-                        <Button Content="📁" Style="{StaticResource IconBtn}" Click="BtnManageGroups_Click" 
-                                ToolTip="{loc:Localize ManageGroups}" Width="32" Height="32"/>
-                        <Button Content="🏷️" Style="{StaticResource IconBtn}" Click="BtnManageTags_Click" 
-                                ToolTip="{loc:Localize ManageTags}" Width="32" Height="32"/>
+                    <!-- Right: Action buttons with overflow menu -->
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                        <!-- Overflow Menu Button for less used actions -->
+                        <Button x:Name="BtnOverflowMenu" Content="⋯" Style="{StaticResource IconBtn}" 
+                                Width="32" Height="32" Click="BtnOverflowMenu_Click" ToolTip="{loc:Localize MoreActions}">
+                            <Button.ContextMenu>
+                                <ContextMenu x:Name="OverflowContextMenu">
+                                    <ContextMenu.Resources>
+                                        <Style TargetType="MenuItem">
+                                            <Setter Property="Background" Value="{DynamicResource Surface0Brush}"/>
+                                            <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="MenuItem">
+                                                        <Border x:Name="Bd" Background="{TemplateBinding Background}" 
+                                                                Padding="12,8" Cursor="Hand">
+                                                            <ContentPresenter ContentSource="Header"/>
+                                                        </Border>
+                                                        <ControlTemplate.Triggers>
+                                                            <Trigger Property="IsHighlighted" Value="True">
+                                                                <Setter TargetName="Bd" Property="Background" Value="{DynamicResource Surface1Brush}"/>
+                                                            </Trigger>
+                                                        </ControlTemplate.Triggers>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </ContextMenu.Resources>
+                                    <ContextMenu.Style>
+                                        <Style TargetType="ContextMenu">
+                                            <Setter Property="Background" Value="{DynamicResource Surface0Brush}"/>
+                                            <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+                                            <Setter Property="BorderBrush" Value="{DynamicResource Surface1Brush}"/>
+                                            <Setter Property="BorderThickness" Value="1"/>
+                                            <Setter Property="Padding" Value="0"/>
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="ContextMenu">
+                                                        <Border Background="{TemplateBinding Background}" 
+                                                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                                                BorderThickness="{TemplateBinding BorderThickness}"
+                                                                CornerRadius="4">
+                                                            <StackPanel IsItemsHost="True"/>
+                                                        </Border>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </ContextMenu.Style>
+                                    <MenuItem Header="{loc:Localize SnippetLibrary}" Click="BtnSnippetLibrary_Click"/>
+                                    <MenuItem Header="{loc:Localize TemplateManagement}" Click="BtnTemplateManagement_Click"/>
+                                    <MenuItem Header="{loc:Localize GraphView}" Click="BtnGraphView_Click"/>
+                                    <MenuItem Header="{loc:Localize ManageGroups}" Click="BtnManageGroups_Click"/>
+                                    <MenuItem Header="{loc:Localize ManageTags}" Click="BtnManageTags_Click"/>
+                                </ContextMenu>
+                            </Button.ContextMenu>
+                        </Button>
+                        <!-- Important buttons visible -->
+                        <Button Content="📋" Style="{StaticResource IconBtn}" Click="BtnKanbanView_Click" 
+                                ToolTip="{loc:Localize KanbanView}" Width="32" Height="32"/>
+                        <Button Content="📅" Style="{StaticResource IconBtn}" Click="BtnTimelineView_Click" 
+                                ToolTip="{loc:Localize TimelineView}" Width="32" Height="32"/>
                         <Button Content="{loc:Localize NewNote}" Style="{StaticResource ActionBtn}" 
                                 Click="BtnNewNote_Click" Margin="8,0,0,0"/>
                     </StackPanel>
