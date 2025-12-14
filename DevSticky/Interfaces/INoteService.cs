@@ -8,6 +8,12 @@ namespace DevSticky.Interfaces;
 public interface INoteService : IDisposable
 {
     Note CreateNote();
+    
+    /// <summary>
+    /// Adds an existing note to the service (e.g., from template)
+    /// </summary>
+    void AddNote(Note note);
+    
     void DeleteNote(Guid id);
     void UpdateNote(Note note);
     IReadOnlyList<Note> GetAllNotes();

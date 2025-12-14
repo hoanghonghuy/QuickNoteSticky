@@ -64,4 +64,11 @@
     </None>
   </ItemGroup>
 
+  <!-- Embedded resources for Highlight.js (syntax highlighting in markdown preview) -->
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\highlight.min.js" />
+    <EmbeddedResource Include="Resources\highlight-dark.css" />
+    <EmbeddedResource Include="Resources\highlight-light.css" />
+  </ItemGroup>
+
 </Project>

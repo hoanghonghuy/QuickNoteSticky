@@ -44,6 +44,9 @@ public partial class NoteWindow : Window
     
     // Backlinks panel state (Requirements 7.6, 7.7)
     private bool _isBacklinksPanelVisible;
+    
+    // Flag to prevent auto-save during initial content load
+    private bool _isInitializingContent;
 
     /// <summary>
     /// Creates a new NoteWindow with all required services injected via NoteWindowContext.
@@ -70,9 +73,10 @@ public partial class NoteWindow : Window
         LanguageCombo.ItemsSource = new[] 
         { 
             "PlainText", "Markdown", "CSharp", "Java", "JavaScript", "TypeScript", 
-            "Json", "Xml", "Sql", "Python", "Bash" 
+            "Json", "Xml", "Sql", "Python", "Bash", "Go"
         };
         LanguageCombo.SelectedIndex = 0;
+        LanguageCombo.SelectionChanged += OnLanguageComboSelectionChanged;
         
         // Subscribe to theme changes for syntax highlighting using weak event manager
         _eventManager.Subscribe<ThemeChangedEventArgs>(_themeService, nameof(_themeService.ThemeChanged), OnThemeChanged);
@@ -107,8 +111,41 @@ public partial class NoteWindow : Window
         BacklinksPanel.Initialize(_linkService, _noteService);
         BacklinksPanel.BacklinkClicked += OnBacklinkClicked;
         
+        // Subscribe to Editor.TextChanged once in constructor
+        Editor.TextChanged += OnEditorTextChanged;
+        
         // Populate monitor menu
         PopulateMonitorMenu();
+    }
+    
+    /// <summary>
+    /// Handle editor text changes - updates ViewModel and triggers auto-save
+    /// </summary>
+    private void OnEditorTextChanged(object? sender, EventArgs e)
+    {
+        // Skip updating ViewModel during initial content load to avoid triggering auto-save
+        if (_isInitializingContent) return;
+        
+        if (_viewModel != null)
+            _viewModel.Content = Editor.Text;
+        
+        // Update markdown preview if visible (Requirements 4.3, 2.2)
+        _markdownPreviewHandler?.RequestPreviewUpdate();
+    }
+    
+    /// <summary>
+    /// Handle language selection changes
+    /// </summary>
+    private void OnLanguageComboSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (LanguageCombo.SelectedItem is string lang && _viewModel != null)
+        {
+            _viewModel.Language = lang;
+            ApplySyntaxHighlighting(lang);
+            // Update handlers with new language (Requirements 2.2, 2.3)
+            _markdownPreviewHandler?.SetLanguage(lang);
+            _snippetHandler?.SetLanguage(lang);
+        }
     }
     
     #region Link Autocomplete (Requirements 2.1, 7.1, 7.2)
@@ -266,38 +303,21 @@ public partial class NoteWindow : Window
             // Initialize link autocomplete handler with editor and note ID (Requirements 2.1)
             _linkAutocompleteHandler?.Initialize(Editor, vm.Id);
             
+            // Set initial content with flag to prevent auto-save
+            _isInitializingContent = true;
             Editor.Text = vm.Content;
-            Editor.TextChanged += (_, _) => 
-            {
-                if (_viewModel != null)
-                    _viewModel.Content = Editor.Text;
-                
-                // Update markdown preview if visible (Requirements 4.3, 2.2)
-                _markdownPreviewHandler?.RequestPreviewUpdate();
-            };
+            _isInitializingContent = false;
             
             Opacity = vm.Opacity;
             Topmost = vm.IsPinned;
             OpacitySlider.Value = vm.Opacity;
             
             var langIndex = Array.IndexOf(
-                new[] { "PlainText", "CSharp", "Java", "JavaScript", "TypeScript", "Json", "Xml", "Sql", "Python", "Bash" },
+                new[] { "PlainText", "Markdown", "CSharp", "Java", "JavaScript", "TypeScript", "Json", "Xml", "Sql", "Python", "Bash", "Go" },
                 vm.Language);
             if (langIndex >= 0) LanguageCombo.SelectedIndex = langIndex;
             
             ApplySyntaxHighlighting(vm.Language);
-            
-            LanguageCombo.SelectionChanged += (_, _) =>
-            {
-                if (LanguageCombo.SelectedItem is string lang && _viewModel != null)
-                {
-                    _viewModel.Language = lang;
-                    ApplySyntaxHighlighting(lang);
-                    // Update handlers with new language (Requirements 2.2, 2.3)
-                    _markdownPreviewHandler?.SetLanguage(lang);
-                    _snippetHandler?.SetLanguage(lang);
-                }
-            };
             
             // Update handlers with initial language (Requirements 2.2, 2.3)
             _markdownPreviewHandler?.SetLanguage(vm.Language);
@@ -321,6 +341,7 @@ public partial class NoteWindow : Window
             "Sql" => "TSQL",
             "Python" => "Python",
             "Java" => "Java",
+            "Go" => "C#", // Go has similar syntax to C#
             "Bash" => "Boo", // Use Boo as fallback for shell-like syntax
             _ => null
         };
@@ -492,8 +513,19 @@ public partial class NoteWindow : Window
 
     private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
     {
+        UpdateSearchPlaceholder();
         if (_viewModel != null)
             _viewModel.SearchTerm = SearchBox.Text;
+    }
+
+    private void SearchBox_GotFocus(object sender, RoutedEventArgs e) => UpdateSearchPlaceholder();
+    private void SearchBox_LostFocus(object sender, RoutedEventArgs e) => UpdateSearchPlaceholder();
+
+    private void UpdateSearchPlaceholder()
+    {
+        if (SearchPlaceholder != null)
+            SearchPlaceholder.Visibility = string.IsNullOrEmpty(SearchBox.Text) && !SearchBox.IsFocused
+                ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private void BtnPrevMatch_Click(object sender, RoutedEventArgs e)
@@ -569,7 +601,11 @@ public partial class NoteWindow : Window
             if (SearchPanel.Visibility == Visibility.Visible)
                 SearchPanel.Visibility = Visibility.Collapsed;
             else
+            {
+                // Force save before hiding to ensure content is persisted
+                _viewModel?.SaveCommand.Execute(null);
                 Hide();
+            }
             e.Handled = true;
         }
     }
@@ -609,6 +645,10 @@ public partial class NoteWindow : Window
     {
         // Dispose weak event manager (automatically unsubscribes from all events)
         _eventManager.Dispose();
+        
+        // Unsubscribe from editor and language combo events
+        Editor.TextChanged -= OnEditorTextChanged;
+        LanguageCombo.SelectionChanged -= OnLanguageComboSelectionChanged;
         
         // Clean up AvalonEdit TextEditor resources
         WpfResourceHelper.DisposeTextEditor(Editor);

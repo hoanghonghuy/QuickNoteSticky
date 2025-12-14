@@ -29,6 +29,7 @@ public partial class DashboardWindow : Window
     private Guid? _filterTagId;
     private bool _isGroupedView;
     private bool _isFolderViewVisible;
+    private bool _isSearchVisible;
     private string _searchQuery = string.Empty;
     private List<FuzzySearchResult>? _searchResults;
     
@@ -162,7 +163,7 @@ public partial class DashboardWindow : Window
         var totalNotes = notesQuery.Count();
         
         if (!string.IsNullOrWhiteSpace(_searchQuery))
-            NoteCount.Text = L.Get("SearchResults", totalNotes, _searchQuery);
+            NoteCount.Text = $"{totalNotes} result(s)"; // Short format - search query already visible in search box
         else if (_filterTagId.HasValue && _isGroupedView)
             NoteCount.Text = L.Get("NoteCountFiltered", totalNotes) + " • " + L.Get("NoteCountGrouped", totalNotes).Split('•').Last().Trim();
         else if (_filterTagId.HasValue)
@@ -215,6 +216,44 @@ public partial class DashboardWindow : Window
         Hide();
     }
 
+    private void BtnSearch_Click(object sender, RoutedEventArgs e)
+    {
+        _isSearchVisible = !_isSearchVisible;
+        SearchBar.Visibility = _isSearchVisible ? Visibility.Visible : Visibility.Collapsed;
+        
+        if (_isSearchVisible)
+        {
+            // Delay focus to ensure TextBox is fully rendered
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                SearchBox.Focus();
+                SearchBox.CaretIndex = SearchBox.Text.Length; // Set cursor to end
+                UpdatePlaceholderVisibility();
+            }), System.Windows.Threading.DispatcherPriority.Render);
+        }
+        else
+        {
+            // Clear search when hiding
+            SearchBox.Text = string.Empty;
+            UpdatePlaceholderVisibility();
+        }
+    }
+
+    private void SearchBox_GotFocus(object sender, RoutedEventArgs e)
+    {
+        UpdatePlaceholderVisibility();
+    }
+
+    private void SearchBox_LostFocus(object sender, RoutedEventArgs e)
+    {
+        UpdatePlaceholderVisibility();
+    }
+
+    private void UpdatePlaceholderVisibility()
+    {
+        SearchPlaceholder.Visibility = string.IsNullOrEmpty(SearchBox.Text) ? Visibility.Visible : Visibility.Collapsed;
+    }
+
     private void BtnSettings_Click(object sender, RoutedEventArgs e)
     {
         var settingsWindow = new SettingsWindow(_mainViewModel.AppSettings);
@@ -238,6 +277,8 @@ public partial class DashboardWindow : Window
 
     private void BtnDelete_Click(object sender, RoutedEventArgs e)
     {
+        e.Handled = true; // Prevent event from bubbling up to ListBoxItem
+        
         if (sender is Button btn && btn.Tag is Guid noteId)
         {
             if (CustomDialog.ConfirmWarning(L.Get("DeleteNoteTitle"), L.Get("DeleteNoteMessage"), this))
@@ -726,6 +767,7 @@ public partial class DashboardWindow : Window
         {
             _searchQuery = textBox.Text?.Trim() ?? string.Empty;
             UpdateClearButtonVisibility();
+            UpdatePlaceholderVisibility();
             RefreshNotesList();
         }
     }
@@ -919,16 +961,6 @@ public partial class DashboardWindow : Window
             await _folderService.DeleteFolderAsync(folderId);
             RefreshNotesList();
             await LoadFoldersAsync();
-        }
-    }
-
-    private void NoteItem_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-    {
-        if (sender is Grid grid && grid.Tag is Guid noteId)
-        {
-            // Start drag operation
-            var dataObject = new DataObject(typeof(Guid), noteId);
-            DragDrop.DoDragDrop(grid, dataObject, DragDropEffects.Move);
         }
     }
 

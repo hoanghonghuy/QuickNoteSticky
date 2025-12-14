@@ -48,6 +48,8 @@
                         </Border>
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                        <Button x:Name="BtnSearch" Content="🔍" Style="{StaticResource IconBtn}" 
+                                Click="BtnSearch_Click" ToolTip="{loc:Localize Search}"/>
                         <Button x:Name="BtnFolderView" Content="📁" Style="{StaticResource IconBtn}" 
                                 Click="BtnToggleFolderView_Click" ToolTip="Toggle Folder View"/>
                         <Button x:Name="BtnGroupView" Content="📂" Style="{StaticResource IconBtn}" 
@@ -59,24 +61,31 @@
             </Border>
             
             <!-- Search Bar -->
-            <Border Grid.Row="1" Background="{DynamicResource Surface0Brush}" BorderBrush="{DynamicResource Surface1Brush}" 
-                    BorderThickness="0,1,0,1" Padding="12,6">
+            <Border x:Name="SearchBar" Grid.Row="1" Background="{DynamicResource Surface0Brush}" BorderBrush="{DynamicResource Surface1Brush}" 
+                    BorderThickness="0,1,0,1" Padding="12,6" Visibility="Collapsed">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-                    <TextBox x:Name="SearchBox"
-                             Background="{DynamicResource Surface1Brush}"
-                             Foreground="{DynamicResource TextBrush}"
-                             CaretBrush="{DynamicResource TextBrush}"
-                             SelectionBrush="{DynamicResource BlueBrush}"
-                             BorderThickness="0" FontSize="13" Padding="8,6"
-                             VerticalContentAlignment="Center"
-                             Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}"
-                             TextChanged="SearchBox_TextChanged"
-                             KeyDown="SearchBox_KeyDown"
-                             Style="{StaticResource SearchBoxStyle}"/>
+                    <Grid>
+                        <TextBox x:Name="SearchBox"
+                                 Background="{DynamicResource Surface1Brush}"
+                                 Foreground="{DynamicResource TextBrush}"
+                                 CaretBrush="{DynamicResource TextBrush}"
+                                 SelectionBrush="{DynamicResource BlueBrush}"
+                                 BorderThickness="0" FontSize="13" Padding="8,6"
+                                 VerticalContentAlignment="Center"
+                                 Text="{Binding SearchQuery, UpdateSourceTrigger=PropertyChanged}"
+                                 TextChanged="SearchBox_TextChanged"
+                                 KeyDown="SearchBox_KeyDown"
+                                 GotFocus="SearchBox_GotFocus"
+                                 LostFocus="SearchBox_LostFocus"/>
+                        <TextBlock x:Name="SearchPlaceholder" Text="Search notes..." 
+                                   Foreground="{DynamicResource SubtextBrush}"
+                                   VerticalAlignment="Center" Margin="10,0,0,0"
+                                   IsHitTestVisible="False"/>
+                    </Grid>
                     <Button x:Name="ClearSearchButton" Grid.Column="1" Content="✕" 
                             Style="{StaticResource IconBtn}" Margin="8,0,0,0"
                             Click="ClearSearchButton_Click" 
@@ -122,11 +131,19 @@
                             <ListBox.ItemTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal" Cursor="Hand">
-                                        <TextBlock Text="{Binding Icon}" Margin="0,0,6,0" FontSize="12"/>
-                                        <TextBlock Text="{Binding Name}" Foreground="{DynamicResource TextBrush}" FontSize="12"/>
-             
-                                                   Foreground="{Dynami
+                                        <TextBlock x:Name="IconText" Text="{Binding Icon}" Margin="0,0,6,0" FontSize="12" 
+                                                   Foreground="{DynamicResource BlueBrush}"/>
+                                        <TextBlock x:Name="NameText" Text="{Binding Name}" Foreground="{DynamicResource TextBrush}" FontSize="12"/>
+                                        <TextBlock x:Name="CountText" Text="{Binding Count, StringFormat=' ({0})'}" 
+                                                   Foreground="{DynamicResource SubtextBrush}" FontSize="11"/>
                                     </StackPanel>
+                                    <DataTemplate.Triggers>
+                                        <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
+                                            <Setter TargetName="IconText" Property="Foreground" Value="{DynamicResource BaseBrush}"/>
+                                            <Setter TargetName="NameText" Property="Foreground" Value="{DynamicResource BaseBrush}"/>
+                                            <Setter TargetName="CountText" Property="Foreground" Value="{DynamicResource BaseBrush}"/>
+                                        </DataTrigger>
+                                    </DataTemplate.Triggers>
                                 </DataTemplate>
                             </ListBox.ItemTemplate>
                         </ListBox>
@@ -199,7 +216,7 @@
                     
                     <!-- Note Item Template -->
                     <DataTemplate x:Key="NoteItemTemplate">
-                        <Grid MouseMove="NoteItem_MouseMove" MouseLeftButtonDown="NoteItem_MouseLeftButtonDown" Tag="{Binding Id}">
+                        <Grid MouseMove="NoteItem_MouseMove" Tag="{Binding Id}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
@@ -212,9 +229,8 @@
                                                FontSize="13" TextTrimming="CharacterEllipsis" MaxWidth="300" FontWeight="Medium"
                                                MouseLeftButtonDown="Title_MouseLeftButtonDown" Cursor="Hand"/>
                                     <TextBox x:Name="TitleEdit" Text="{Binding Title}" Visibility="Collapsed"
-                                             Background="{DynamicResource Surface1Brush}" Foreground="{DynamicResource TextBrush}" 
-                                             BorderBrush="{DynamicResource BlueBrush}"
-                                             BorderThickness="1" Padding="4,2" MaxLength="50" FontSize="13"
+                                             Style="{StaticResource EditTextBox}"
+                                             MaxLength="50" FontSize="13"
                                              KeyDown="TitleEdit_KeyDown" LostFocus="TitleEdit_LostFocus"/>
                                 </Grid>
                                 
@@ -337,14 +353,15 @@
             <Border Grid.Row="4" Background="{DynamicResource Surface0Brush}" CornerRadius="0,0,8,8">
                 <Grid Margin="12,0">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto" MaxWidth="180"/>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <!-- Left: Status (always visible) -->
                     <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                         <TextBlock x:Name="NoteCount" Foreground="{DynamicResource SubtextBrush}" 
-                                   FontSize="12" VerticalAlignment="Center"/>
+                                   FontSize="12" VerticalAlignment="Center"
+                                   TextTrimming="CharacterEllipsis" MaxWidth="170"/>
                         <!-- Cloud Sync Status -->
                         <Border x:Name="SyncStatusBadge" Visibility="Collapsed" CornerRadius="3" 
                                 Padding="6,2" Margin="8,0,0,0" Cursor="Hand" MouseLeftButtonDown="SyncStatus_Click">
@@ -355,7 +372,7 @@
                         </Border>
                     </StackPanel>
                     <!-- Right: Action buttons with overflow menu -->
-                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right">
                         <!-- Overflow Menu Button for less used actions -->
                         <Button x:Name="BtnOverflowMenu" Content="⋯" Style="{StaticResource IconBtn}" 
                                 Width="32" Height="32" Click="BtnOverflowMenu_Click" ToolTip="{loc:Localize MoreActions}">

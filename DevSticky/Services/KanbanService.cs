@@ -9,10 +9,12 @@ namespace DevSticky.Services;
 public class KanbanService : IKanbanService
 {
     private readonly INoteService _noteService;
+    private readonly ISaveQueueService _saveQueueService;
 
-    public KanbanService(INoteService noteService)
+    public KanbanService(INoteService noteService, ISaveQueueService saveQueueService)
     {
         _noteService = noteService ?? throw new ArgumentNullException(nameof(noteService));
+        _saveQueueService = saveQueueService ?? throw new ArgumentNullException(nameof(saveQueueService));
     }
 
     /// <summary>
@@ -32,6 +34,10 @@ public class KanbanService : IKanbanService
 
             note.KanbanStatus = status;
             _noteService.UpdateNote(note);
+            
+            // Queue the note for saving
+            _saveQueueService.QueueNote(note);
+            
             return true;
         }
         catch
@@ -58,6 +64,7 @@ public class KanbanService : IKanbanService
 
     /// <summary>
     /// Gets all notes organized by their Kanban status (Requirements 5.3)
+    /// Notes without a KanbanStatus are treated as ToDo
     /// </summary>
     public async Task<Dictionary<KanbanStatus, IReadOnlyList<Note>>> GetAllKanbanNotesAsync()
     {
@@ -70,7 +77,10 @@ public class KanbanService : IKanbanService
             // Initialize all status categories
             foreach (KanbanStatus status in Enum.GetValues<KanbanStatus>())
             {
-                var statusNotes = notes.Where(n => n.KanbanStatus == status).ToList();
+                // Notes with null KanbanStatus are treated as ToDo
+                var statusNotes = status == KanbanStatus.ToDo
+                    ? notes.Where(n => n.KanbanStatus == status || n.KanbanStatus == null).ToList()
+                    : notes.Where(n => n.KanbanStatus == status).ToList();
                 result[status] = statusNotes.AsReadOnly();
             }
 

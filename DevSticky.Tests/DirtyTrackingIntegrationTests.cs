@@ -162,6 +162,7 @@ public class DirtyTrackingIntegrationTests
     private class MockNoteService : INoteService
     {
         public Note CreateNote() => new Note();
+        public void AddNote(Note note) { }
         public void UpdateNote(Note note) { }
         public void DeleteNote(Guid id) { }
         public Note? GetNoteById(Guid id) => null;

@@ -43,9 +43,6 @@
             
             <!-- Settings Content -->
             <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="16">
-                <ScrollViewer.Resources>
-                    <Style TargetType="ScrollBar" BasedOn="{StaticResource DarkScrollBar}"/>
-                </ScrollViewer.Resources>
                 <StackPanel>
                     <!-- Default Opacity -->
                     <TextBlock Style="{StaticResource SettingLabel}">
@@ -280,9 +277,7 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
                                 <TextBox x:Name="NewNoteHotkeyBox" Grid.Column="0" IsReadOnly="True"
-                                         Background="{DynamicResource Surface1Brush}" 
-                                         Foreground="{DynamicResource TextBrush}"
-                                         BorderThickness="0" Padding="8,6" 
+                                         Style="{StaticResource InputBox}"
                                          PreviewKeyDown="HotkeyBox_PreviewKeyDown"
                                          GotFocus="HotkeyBox_GotFocus"
                                          LostFocus="HotkeyBox_LostFocus"/>
@@ -299,9 +294,7 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
                                 <TextBox x:Name="ToggleVisibilityHotkeyBox" Grid.Column="0" IsReadOnly="True"
-                                         Background="{DynamicResource Surface1Brush}" 
-                                         Foreground="{DynamicResource TextBrush}"
-                                         BorderThickness="0" Padding="8,6"
+                                         Style="{StaticResource InputBox}"
                                          PreviewKeyDown="HotkeyBox_PreviewKeyDown"
                                          GotFocus="HotkeyBox_GotFocus"
                                          LostFocus="HotkeyBox_LostFocus"/>
@@ -318,9 +311,7 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
                                 <TextBox x:Name="QuickCaptureHotkeyBox" Grid.Column="0" IsReadOnly="True"
-                                         Background="{DynamicResource Surface1Brush}" 
-                                         Foreground="{DynamicResource TextBrush}"
-                                         BorderThickness="0" Padding="8,6"
+                                         Style="{StaticResource InputBox}"
                                          PreviewKeyDown="HotkeyBox_PreviewKeyDown"
                                          GotFocus="HotkeyBox_GotFocus"
                                          LostFocus="HotkeyBox_LostFocus"/>

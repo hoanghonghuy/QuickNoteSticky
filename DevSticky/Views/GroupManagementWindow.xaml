@@ -15,15 +15,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/Resources/SharedStyles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
-            
-            <Style x:Key="EditTextBox" TargetType="TextBox">
-                <Setter Property="Background" Value="{DynamicResource Surface1Brush}"/>
-                <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
-                <Setter Property="BorderBrush" Value="{DynamicResource BlueBrush}"/>
-                <Setter Property="BorderThickness" Value="1"/>
-                <Setter Property="Padding" Value="6,4"/>
-                <Setter Property="CaretBrush" Value="{DynamicResource TextBrush}"/>
-            </Style>
+
         </ResourceDictionary>
     </Window.Resources>
     

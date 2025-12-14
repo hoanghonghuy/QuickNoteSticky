@@ -124,9 +124,17 @@
                     </Grid.RowDefinitions>
                     
                     <!-- Search Box -->
-                    <TextBox x:Name="SearchBox" Grid.Row="0" Margin="0,0,8,8"
-                             Style="{StaticResource SearchBoxStyle}"
-                             TextChanged="SearchBox_TextChanged"/>
+                    <Grid Grid.Row="0" Margin="0,0,8,8">
+                        <TextBox x:Name="SearchBox"
+                                 Style="{StaticResource InputBox}"
+                                 TextChanged="SearchBox_TextChanged"
+                                 GotFocus="SearchBox_GotFocus"
+                                 LostFocus="SearchBox_LostFocus"/>
+                        <TextBlock x:Name="SearchPlaceholder" Text="{loc:Localize SearchSnippets}"
+                                   Foreground="{DynamicResource SubtextBrush}"
+                                   IsHitTestVisible="False" VerticalAlignment="Center"
+                                   Margin="10,0,0,0" FontSize="13"/>
+                    </Grid>
                     
                     <!-- Category Tree -->
                     <Border Grid.Row="1" Background="{DynamicResource Surface0Brush}" 

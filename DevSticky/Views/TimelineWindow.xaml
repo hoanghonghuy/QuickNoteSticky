@@ -282,7 +282,7 @@
                                     <TextBlock Grid.Row="0" 
                                                Text="{Binding DateHeader}" 
                                                Style="{StaticResource DateHeaderStyle}"
-                                               Visibility="{Binding ShowDateHeader, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                               Visibility="{Binding ShowDateHeader, Converter={StaticResource BoolToVisibility}}"/>
                                     
                                     <!-- Timeline Item -->
                                     <Grid Grid.Row="1">
@@ -337,13 +337,13 @@
                                                            Foreground="{DynamicResource Text2Brush}"
                                                            TextWrapping="Wrap" 
                                                            MaxHeight="80"
-                                                           Visibility="{Binding HasContent, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                                           Visibility="{Binding HasContent, Converter={StaticResource BoolToVisibility}}"/>
                                                 
                                                 <!-- Tags -->
                                                 <ItemsControl Grid.Row="2" 
                                                               ItemsSource="{Binding Tags}" 
                                                               Margin="0,8,0,0"
-                                                              Visibility="{Binding HasTags, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                              Visibility="{Binding HasTags, Converter={StaticResource BoolToVisibility}}">
                                                     <ItemsControl.ItemsPanel>
                                                         <ItemsPanelTemplate>
                                                             <WrapPanel/>
@@ -369,7 +369,7 @@
                                                            FontSize="9" 
                                                            Foreground="{DynamicResource Text2Brush}"
                                                            Margin="0,4,0,0"
-                                                           Visibility="{Binding ShowModifiedInfo, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                                           Visibility="{Binding ShowModifiedInfo, Converter={StaticResource BoolToVisibility}}"/>
                                             </Grid>
                                         </Border>
                                     </Grid>

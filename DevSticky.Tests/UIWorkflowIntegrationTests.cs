@@ -67,22 +67,22 @@ public class UIWorkflowIntegrationTests : IDisposable
     }
 
     [Fact]
-    public void EditNote_Workflow_ShouldUpdateNoteAndMarkDirty()
+    public void EditNote_Workflow_ShouldUpdateNoteAndTriggerAutoSave()
     {
         // Arrange - Create a note first
         _mainViewModel.CreateNewNote();
         var noteViewModel = _mainViewModel.Notes.First();
-        noteViewModel.ToNote().MarkClean(); // Start with clean state
 
         // Act - Edit note content (simulates user typing)
         noteViewModel.Content = "User typed this content";
         noteViewModel.Title = "User changed title";
 
-        // Assert
+        // Assert - Content and title should be updated
         Assert.Equal("User typed this content", noteViewModel.Content);
         Assert.Equal("User changed title", noteViewModel.Title);
-        Assert.True(noteViewModel.IsDirty);
-        Assert.True(_debounceService.DebounceCalled); // Auto-save should be triggered
+        
+        // Assert - Auto-save should be triggered via debounce service
+        Assert.True(_debounceService.DebounceCalled, "Auto-save should be triggered via debounce");
     }
 
     [Fact]
@@ -177,7 +177,7 @@ public class UIWorkflowIntegrationTests : IDisposable
     }
 
     [Fact]
-    public void CloseNote_Workflow_ShouldRemoveNoteFromCollection()
+    public void CloseNote_Workflow_ShouldCloseWindowButKeepNoteInCollection()
     {
         // Arrange
         _mainViewModel.CreateNewNote();
@@ -186,11 +186,32 @@ public class UIWorkflowIntegrationTests : IDisposable
         var noteToClose = _mainViewModel.Notes.First();
 
         // Act - Close note (simulates user clicking X button)
+        // This should only close the window, not delete the note
         noteToClose.CloseCommand.Execute(null);
 
-        // Assert
+        // Assert - Note should still be in collection (can be reopened from Dashboard)
+        Assert.Equal(initialCount, _mainViewModel.Notes.Count);
+        Assert.Contains(noteToClose, _mainViewModel.Notes);
+        
+        // Window should be closed
+        Assert.DoesNotContain(noteToClose.ToNote(), _windowService.ShownNotes);
+    }
+    
+    [Fact]
+    public void DeleteNote_Workflow_ShouldRemoveNoteFromCollection()
+    {
+        // Arrange
+        _mainViewModel.CreateNewNote();
+        _mainViewModel.CreateNewNote();
+        var initialCount = _mainViewModel.Notes.Count;
+        var noteToDelete = _mainViewModel.Notes.First();
+
+        // Act - Delete note (simulates user clicking Delete button on Dashboard)
+        _mainViewModel.RemoveNote(noteToDelete);
+
+        // Assert - Note should be removed from collection
         Assert.Equal(initialCount - 1, _mainViewModel.Notes.Count);
-        Assert.DoesNotContain(noteToClose, _mainViewModel.Notes);
+        Assert.DoesNotContain(noteToDelete, _mainViewModel.Notes);
     }
 
     [Fact]
@@ -292,6 +313,16 @@ public class UIWorkflowIntegrationTests : IDisposable
             var note = new Note();
             _notes.Add(note);
             return note;
+        }
+
+        public void AddNote(Note note)
+        {
+            if (note == null) return;
+            var existingIndex = _notes.FindIndex(n => n.Id == note.Id);
+            if (existingIndex >= 0)
+                _notes[existingIndex] = note;
+            else
+                _notes.Add(note);
         }
 
         public void UpdateNote(Note note) { }

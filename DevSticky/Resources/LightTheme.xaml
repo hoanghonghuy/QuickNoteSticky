@@ -48,6 +48,7 @@
 
     <!-- SolidColorBrushes for Text Colors -->
     <SolidColorBrush x:Key="TextBrush" Color="{StaticResource Text}"/>
+    <SolidColorBrush x:Key="Text2Brush" Color="{StaticResource Subtext1}"/>
     <SolidColorBrush x:Key="SubtextBrush" Color="{StaticResource Subtext0}"/>
     <SolidColorBrush x:Key="Subtext0Brush" Color="{StaticResource Subtext0}"/>
     <SolidColorBrush x:Key="Subtext1Brush" Color="{StaticResource Subtext1}"/>

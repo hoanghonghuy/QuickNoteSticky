@@ -39,6 +39,21 @@ public partial class App : Application
 
     protected override async void OnStartup(StartupEventArgs e)
     {
+        // Add global exception handlers to catch unhandled exceptions
+        AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
+        {
+            var ex = args.ExceptionObject as Exception;
+            System.Diagnostics.Debug.WriteLine($"[FATAL] Unhandled exception: {ex?.Message}\n{ex?.StackTrace}");
+            System.Windows.MessageBox.Show($"Fatal error: {ex?.Message}", "DevSticky Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        };
+        
+        DispatcherUnhandledException += (sender, args) =>
+        {
+            System.Diagnostics.Debug.WriteLine($"[ERROR] Dispatcher exception: {args.Exception.Message}\n{args.Exception.StackTrace}");
+            System.Windows.MessageBox.Show($"Error: {args.Exception.Message}", "DevSticky Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            args.Handled = true; // Prevent app from crashing
+        };
+        
         // Initialize crash fix components early
         IExceptionLogger? exceptionLogger = null;
         IStartupDiagnostics? startupDiagnostics = null;
@@ -805,11 +820,17 @@ public partial class App : Application
         services.AddSingleton<IThemeService, ThemeService>();
         services.AddSingleton<IHotkeyService, HotkeyService>();
         
+        // Performance Services - Singleton (shared queues) - Must be registered before services that depend on it
+        services.AddSingleton<ISaveQueueService, SaveQueueService>();
+        services.AddSingleton<IDirtyTracker<Note>>(sp => new DirtyTracker<Note>());
+        
         // Content Services - Singleton (stateless)
         services.AddSingleton<ISnippetService, SnippetService>();
         services.AddSingleton<IMarkdownService, MarkdownService>();
         services.AddSingleton<ITemplateService, TemplateService>();
-        services.AddSingleton<ILinkService, LinkService>();
+        services.AddSingleton<ILinkService>(sp => new LinkService(
+            sp.GetRequiredService<INoteService>(),
+            sp.GetRequiredService<ISaveQueueService>()));
         services.AddSingleton<IFileDropService, FileDropService>();
         services.AddSingleton<IFuzzySearchService, FuzzySearchService>();
         services.AddSingleton<IFolderService, FolderService>();
@@ -817,16 +838,15 @@ public partial class App : Application
         services.AddSingleton<IKanbanService, KanbanService>();
         // ITagManagementService is created by MainViewModel, so we get it from there
         services.AddSingleton<ITagManagementService>(sp => sp.GetRequiredService<MainViewModel>().TagManagementService);
-        services.AddSingleton<ITimelineService, TimelineService>();
+        // ITimelineService uses lazy loading for ITagManagementService to avoid circular dependency
+        services.AddSingleton<ITimelineService>(sp => new TimelineService(
+            sp.GetRequiredService<INoteService>(),
+            () => sp.GetRequiredService<ITagManagementService>()));
         
         // Cache Services - Singleton (shared cache) - Enhanced cache for future use
         services.AddSingleton<ILruCache<Guid, NoteTag>>(sp => new LruCache<Guid, NoteTag>(100));
         services.AddSingleton<ILruCache<Guid, NoteGroup>>(sp => new LruCache<Guid, NoteGroup>(50));
         services.AddSingleton<ICacheService, EnhancedCacheService>();
-        
-        // Performance Services - Singleton (shared queues)
-        services.AddSingleton<ISaveQueueService, SaveQueueService>();
-        services.AddSingleton<IDirtyTracker<Note>>(sp => new DirtyTracker<Note>());
         
         // v2.1 Services - Memory Management and User Experience
         services.AddSingleton<IMemoryCleanupService, MemoryCleanupService>();
@@ -834,8 +854,8 @@ public partial class App : Application
         services.AddSingleton<IRecentNotesService, RecentNotesService>();
         services.AddTransient<IUndoRedoService, UndoRedoService>();
         
-        // Window Services - Transient (per-window instances)
-        services.AddTransient<IWindowService>(sp => 
+        // Window Services - Singleton (shared window management)
+        services.AddSingleton<IWindowService>(sp => 
             new WindowService(
                 note => CreateNoteWindow(sp, note),
                 sp.GetRequiredService<IMonitorService>(),
@@ -891,19 +911,29 @@ public partial class App : Application
         var context = sp.GetRequiredService<NoteWindowContext>();
         var coordinator = sp.GetRequiredService<NoteWindowCoordinator>();
         
-        var vm = new NoteViewModel(
-            note,
-            sp.GetRequiredService<INoteService>(),
-            sp.GetRequiredService<IFormatterService>(),
-            sp.GetRequiredService<ISearchService>(),
-            sp.GetRequiredService<IDebounceService>(),
-            onClose: noteVm => 
-            {
-                mainVm.RemoveNote(noteVm);
-                window?.Close();
-            },
-            onSave: () => mainVm.SaveAllNotes()
-        );
+        // IMPORTANT: Find existing NoteViewModel from MainViewModel.Notes collection
+        // This ensures edits are saved to the same ViewModel that SaveAllNotes() uses
+        var vm = mainVm.Notes.FirstOrDefault(n => n.Id == note.Id);
+        
+        if (vm == null)
+        {
+            // Fallback: Create new ViewModel if not found (shouldn't happen normally)
+            System.Diagnostics.Debug.WriteLine($"[CreateNoteWindow] Warning: NoteViewModel not found for note {note.Id}, creating new one");
+            vm = new NoteViewModel(
+                note,
+                sp.GetRequiredService<INoteService>(),
+                sp.GetRequiredService<IFormatterService>(),
+                sp.GetRequiredService<ISearchService>(),
+                sp.GetRequiredService<IDebounceService>(),
+                onClose: noteVm => 
+                {
+                    // Just close the window, don't delete the note
+                    mainVm.SaveAllNotes();
+                    window?.Close();
+                },
+                onSave: () => mainVm.SaveAllNotes()
+            );
+        }
         
         // Wire up NavigateToNoteCommand for internal note links (Requirements 4.7)
         vm.NavigateToNoteCommand = new RelayCommand<Guid>(noteId =>

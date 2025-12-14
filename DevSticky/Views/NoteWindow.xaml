@@ -253,10 +253,18 @@
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-                    <TextBox x:Name="SearchBox" 
-                             Style="{StaticResource SearchBoxStyle}"
-                             FontSize="12" Padding="6,4"
-                             TextChanged="SearchBox_TextChanged"/>
+                    <Grid>
+                        <TextBox x:Name="SearchBox" 
+                                 Style="{StaticResource InputBox}"
+                                 FontSize="12" Padding="6,4"
+                                 TextChanged="SearchBox_TextChanged"
+                                 GotFocus="SearchBox_GotFocus"
+                                 LostFocus="SearchBox_LostFocus"/>
+                        <TextBlock x:Name="SearchPlaceholder" Text="{loc:Localize FindInNote}"
+                                   Foreground="{DynamicResource SubtextBrush}"
+                                   IsHitTestVisible="False" VerticalAlignment="Center"
+                                   Margin="8,0,0,0" FontSize="12"/>
+                    </Grid>
                     <StackPanel Grid.Column="1" Orientation="Horizontal">
                         <Button Content="◀" Style="{StaticResource NoteIconBtn}" Width="24"
                                 Click="BtnPrevMatch_Click"/>

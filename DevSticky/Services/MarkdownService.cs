@@ -160,15 +160,22 @@ public partial class MarkdownService : IMarkdownService
     {
         var isDark = options.CurrentTheme == Theme.Dark;
         var css = GetStylesheet(isDark);
+        
+        // Get Highlight.js resources for syntax highlighting
+        var highlightJs = Resources.HighlightJsResources.HighlightJs;
+        var highlightCss = Resources.HighlightJsResources.GetCssForTheme(isDark);
 
         return $@"<!DOCTYPE html>
 <html>
 <head>
     <meta charset=""utf-8"">
     <style>{css}</style>
+    <style>{highlightCss}</style>
 </head>
 <body class=""markdown-body"">
 {bodyHtml}
+<script>{highlightJs}</script>
+<script>hljs.highlightAll();</script>
 </body>
 </html>";
     }
@@ -212,8 +219,16 @@ public partial class MarkdownService : IMarkdownService
                 padding: 16px;
                 overflow: auto;
                 border-radius: 6px;
+                margin: 16px 0;
             }}
             pre code {{
+                background-color: transparent;
+                padding: 0;
+                font-size: 13px;
+                line-height: 1.5;
+            }}
+            /* Override highlight.js background to match theme */
+            pre code.hljs {{
                 background-color: transparent;
                 padding: 0;
             }}

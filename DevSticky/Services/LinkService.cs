@@ -15,10 +15,12 @@ public partial class LinkService : ILinkService
     private static partial Regex LinkRegex();
 
     private readonly INoteService _noteService;
+    private readonly ISaveQueueService? _saveQueueService;
 
-    public LinkService(INoteService noteService)
+    public LinkService(INoteService noteService, ISaveQueueService? saveQueueService = null)
     {
         _noteService = noteService;
+        _saveQueueService = saveQueueService;
     }
 
     /// <summary>
@@ -241,6 +243,9 @@ public partial class LinkService : ILinkService
             {
                 note.Content = updatedContent;
                 _noteService.UpdateNote(note);
+                
+                // Queue the note for saving if save queue service is available
+                _saveQueueService?.QueueNote(note);
             }
         }
 

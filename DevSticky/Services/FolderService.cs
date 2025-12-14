@@ -18,12 +18,14 @@ public class FolderService : IFolderService, IDisposable
     private readonly IErrorHandler _errorHandler;
     private readonly IFileSystem _fileSystem;
     private readonly INoteService _noteService;
+    private readonly ISaveQueueService _saveQueueService;
 
-    public FolderService(IErrorHandler errorHandler, IFileSystem fileSystem, INoteService noteService)
+    public FolderService(IErrorHandler errorHandler, IFileSystem fileSystem, INoteService noteService, ISaveQueueService saveQueueService)
     {
         _errorHandler = errorHandler ?? throw new ArgumentNullException(nameof(errorHandler));
         _fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
         _noteService = noteService ?? throw new ArgumentNullException(nameof(noteService));
+        _saveQueueService = saveQueueService ?? throw new ArgumentNullException(nameof(saveQueueService));
         
         _foldersPath = PathHelper.Combine(
             PathHelper.GetAppDataPath(AppConstants.AppDataFolderName),
@@ -75,6 +77,8 @@ public class FolderService : IFolderService, IDisposable
         foreach (var note in notesInFolder)
         {
             note.FolderId = folder.ParentId;
+            // Queue note for save after folder change
+            _saveQueueService.QueueNote(note);
         }
 
         _folders.Remove(folder);
@@ -120,6 +124,8 @@ public class FolderService : IFolderService, IDisposable
         }
 
         note.FolderId = folderId;
+        // Queue note for save after folder change
+        _saveQueueService.QueueNote(note);
         return true;
     }
 

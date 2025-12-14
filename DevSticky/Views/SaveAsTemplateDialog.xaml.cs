@@ -39,12 +39,12 @@ public partial class SaveAsTemplateDialog : Window
             // Populate language combo
             LanguageCombo.ItemsSource = new[]
             {
-                "PlainText", "Markdown", "CSharp", "Java", "JavaScript", "TypeScript",
+                "PlainText", "Markdown", "CSharp", "Java", "JavaScript", "TypeScript", "Go",
                 "Json", "Xml", "Sql", "Python", "Bash"
             };
 
             var langIndex = Array.IndexOf(
-                new[] { "PlainText", "Markdown", "CSharp", "Java", "JavaScript", "TypeScript", "Json", "Xml", "Sql", "Python", "Bash" },
+                new[] { "PlainText", "Markdown", "CSharp", "Java", "JavaScript", "TypeScript", "Go", "Json", "Xml", "Sql", "Python", "Bash" },
                 _sourceNote.Language);
             LanguageCombo.SelectedIndex = langIndex >= 0 ? langIndex : 0;
 

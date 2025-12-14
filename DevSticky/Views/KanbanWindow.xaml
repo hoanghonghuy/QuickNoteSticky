@@ -82,7 +82,9 @@
                 
                 <!-- To Do Column -->
                 <Border Grid.Column="0" Background="{DynamicResource Surface0Brush}" 
-                        CornerRadius="6" Margin="4" BorderBrush="{DynamicResource Surface2Brush}" BorderThickness="1">
+                        CornerRadius="6" Margin="4" BorderBrush="{DynamicResource Surface2Brush}" BorderThickness="1"
+                        AllowDrop="True" Drop="Column_Drop" DragEnter="Column_DragEnter" DragLeave="Column_DragLeave"
+                        Tag="ToDo">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -145,7 +147,9 @@
                 
                 <!-- In Progress Column -->
                 <Border Grid.Column="1" Background="{DynamicResource Surface0Brush}" 
-                        CornerRadius="6" Margin="4" BorderBrush="{DynamicResource Surface2Brush}" BorderThickness="1">
+                        CornerRadius="6" Margin="4" BorderBrush="{DynamicResource Surface2Brush}" BorderThickness="1"
+                        AllowDrop="True" Drop="Column_Drop" DragEnter="Column_DragEnter" DragLeave="Column_DragLeave"
+                        Tag="InProgress">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -208,7 +212,9 @@
                 
                 <!-- Done Column -->
                 <Border Grid.Column="2" Background="{DynamicResource Surface0Brush}" 
-                        CornerRadius="6" Margin="4" BorderBrush="{DynamicResource Surface2Brush}" BorderThickness="1">
+                        CornerRadius="6" Margin="4" BorderBrush="{DynamicResource Surface2Brush}" BorderThickness="1"
+                        AllowDrop="True" Drop="Column_Drop" DragEnter="Column_DragEnter" DragLeave="Column_DragLeave"
+                        Tag="Done">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>

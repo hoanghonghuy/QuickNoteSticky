@@ -153,6 +153,27 @@ public class FallbackNoteService : INoteService
         "FallbackNoteService.LoadNotes");
     }
 
+    public void AddNote(Note note)
+    {
+        _errorHandler.HandleWithFallback(() =>
+        {
+            if (note == null) return false;
+            
+            var existingIndex = _notes.FindIndex(n => n.Id == note.Id);
+            if (existingIndex >= 0)
+            {
+                _notes[existingIndex] = note;
+            }
+            else
+            {
+                _notes.Add(note);
+            }
+            return true;
+        },
+        false,
+        "FallbackNoteService.AddNote");
+    }
+
     public void Dispose()
     {
         Dispose(true);

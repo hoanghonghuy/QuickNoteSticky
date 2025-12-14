@@ -469,6 +469,7 @@ public class TagManagementServiceTests
     {
         public void Dispose() { }
         public Note CreateNote() => new Note();
+        public void AddNote(Note note) { }
         public void DeleteNote(Guid id) { }
         public Note? GetNoteById(Guid id) => null;
         public IReadOnlyList<Note> GetAllNotes() => Array.Empty<Note>();

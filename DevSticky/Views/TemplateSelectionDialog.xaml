@@ -52,9 +52,17 @@
                     </Grid.RowDefinitions>
                     
                     <!-- Search Box -->
-                    <TextBox x:Name="SearchBox" Grid.Row="0" Margin="0,0,0,8"
-                             Style="{StaticResource SearchBoxStyle}"
-                             TextChanged="SearchBox_TextChanged"/>
+                    <Grid Grid.Row="0" Margin="0,0,0,8">
+                        <TextBox x:Name="SearchBox"
+                                 Style="{StaticResource InputBox}"
+                                 TextChanged="SearchBox_TextChanged"
+                                 GotFocus="SearchBox_GotFocus"
+                                 LostFocus="SearchBox_LostFocus"/>
+                        <TextBlock x:Name="SearchPlaceholder" Text="{loc:Localize SearchTemplates}"
+                                   Foreground="{DynamicResource SubtextBrush}"
+                                   IsHitTestVisible="False" VerticalAlignment="Center"
+                                   Margin="10,0,0,0" FontSize="13"/>
+                    </Grid>
                     
                     <!-- Category Filter -->
                     <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto" 
@@ -67,9 +75,6 @@
             <!-- Template Grid -->
             <Border Grid.Row="2" Padding="8,0,8,8">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
-                    <ScrollViewer.Resources>
-                        <Style TargetType="ScrollBar" BasedOn="{StaticResource DarkScrollBar}"/>
-                    </ScrollViewer.Resources>
                     <ItemsControl x:Name="TemplateList">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>

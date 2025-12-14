@@ -27,7 +27,8 @@ public class CloudSyncIntegrationTests : IDisposable
         var storageService = new TestStorageService();
         var errorHandler = new ErrorHandler();
         
-        _cloudSyncService = new CloudSyncService(_noteService, storageService, _mockEncryption, registry, errorHandler);
+        var saveQueueService = new TestSaveQueueService();
+        _cloudSyncService = new CloudSyncService(_noteService, storageService, _mockEncryption, registry, errorHandler, saveQueueService);
     }
 
     [Fact]
@@ -285,6 +286,7 @@ public class CloudSyncIntegrationTests : IDisposable
             }
         }
 
+        public void AddNote(Note note) => _notes.Add(note);
         public void DeleteNote(Guid id) => _notes.RemoveAll(n => n.Id == id);
         public Note? GetNoteById(Guid id) => _notes.FirstOrDefault(n => n.Id == id);
         public IReadOnlyList<Note> GetAllNotes() => _notes.AsReadOnly();
@@ -307,6 +309,16 @@ public class CloudSyncIntegrationTests : IDisposable
         public Task SaveAsync(AppData data) => Task.CompletedTask;
         public Task SaveNotesAsync(IEnumerable<Note> notes, AppData currentData) => Task.CompletedTask;
         public string GetStoragePath() => "test-path";
+        public void Dispose() { }
+    }
+
+    private class TestSaveQueueService : ISaveQueueService
+    {
+        public void QueueNote(Note note) { }
+        public void QueueNotes(IEnumerable<Note> notes) { }
+        public Task FlushAsync() => Task.CompletedTask;
+        public int QueueCount => 0;
+        public event EventHandler<SaveCompletedEventArgs>? SaveCompleted;
         public void Dispose() { }
     }
 

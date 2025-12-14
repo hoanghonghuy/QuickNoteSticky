@@ -17,7 +17,7 @@ namespace DevSticky.Views;
 /// </summary>
 public partial class SnippetBrowserWindow : Window
 {
-    private readonly ISnippetService _snippetService;
+    private readonly ISnippetService? _snippetService;
     private readonly IThemeService? _themeService;
     private IReadOnlyList<Snippet> _allSnippets = Array.Empty<Snippet>();
     private Snippet? _selectedSnippet;
@@ -30,17 +30,20 @@ public partial class SnippetBrowserWindow : Window
     public SnippetBrowserWindow(ISnippetService? snippetService = null, IThemeService? themeService = null)
     {
         InitializeComponent();
-        _snippetService = snippetService ?? App.GetService<ISnippetService>();
         
         try
         {
+            _snippetService = snippetService ?? App.GetService<ISnippetService>();
             _themeService = themeService ?? App.GetService<IThemeService>();
             if (_themeService != null)
             {
                 _themeService.ThemeChanged += OnThemeChanged;
             }
         }
-        catch { /* Service not available during design time */ }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[SnippetBrowserWindow] Failed to resolve services: {ex.Message}");
+        }
         
         Loaded += async (_, _) => await LoadSnippetsAsync();
     }
@@ -52,8 +55,21 @@ public partial class SnippetBrowserWindow : Window
 
     private async Task LoadSnippetsAsync()
     {
-        _allSnippets = await _snippetService.GetAllSnippetsAsync();
-        BuildCategoryTree(_allSnippets);
+        if (_snippetService == null)
+        {
+            System.Diagnostics.Debug.WriteLine("[SnippetBrowserWindow] SnippetService not available");
+            return;
+        }
+        
+        try
+        {
+            _allSnippets = await _snippetService.GetAllSnippetsAsync();
+            BuildCategoryTree(_allSnippets);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[SnippetBrowserWindow] Error loading snippets: {ex.Message}");
+        }
     }
 
     /// <summary>
@@ -97,8 +113,11 @@ public partial class SnippetBrowserWindow : Window
     /// </summary>
     private async void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
     {
+        if (_snippetService == null) return;
+        
         try
         {
+            UpdateSearchPlaceholder();
             var query = SearchBox.Text.Trim();
             
             if (string.IsNullOrEmpty(query))
@@ -115,6 +134,16 @@ public partial class SnippetBrowserWindow : Window
         {
             System.Diagnostics.Debug.WriteLine($"Search failed: {ex.Message}");
         }
+    }
+
+    private void SearchBox_GotFocus(object sender, RoutedEventArgs e) => UpdateSearchPlaceholder();
+    private void SearchBox_LostFocus(object sender, RoutedEventArgs e) => UpdateSearchPlaceholder();
+
+    private void UpdateSearchPlaceholder()
+    {
+        if (SearchPlaceholder != null)
+            SearchPlaceholder.Visibility = string.IsNullOrEmpty(SearchBox.Text) && !SearchBox.IsFocused
+                ? Visibility.Visible : Visibility.Collapsed;
     }
 
     /// <summary>
@@ -188,6 +217,7 @@ public partial class SnippetBrowserWindow : Window
             "Sql" => "TSQL",
             "Python" => "Python",
             "Java" => "Java",
+            "Go" => "C#", // Go has similar syntax to C#
             "Bash" => "Boo",
             _ => null
         };
@@ -248,7 +278,7 @@ public partial class SnippetBrowserWindow : Window
     /// </summary>
     private async void BtnDelete_Click(object sender, RoutedEventArgs e)
     {
-        if (_selectedSnippet == null) return;
+        if (_selectedSnippet == null || _snippetService == null) return;
         
         try
         {
@@ -271,6 +301,8 @@ public partial class SnippetBrowserWindow : Window
     /// </summary>
     private async void BtnExport_Click(object sender, RoutedEventArgs e)
     {
+        if (_snippetService == null) return;
+        
         var dialog = new Microsoft.Win32.SaveFileDialog
         {
             Filter = "JSON files (*.json)|*.json|All files (*.*)|*.*",
@@ -298,6 +330,8 @@ public partial class SnippetBrowserWindow : Window
     /// </summary>
     private async void BtnImport_Click(object sender, RoutedEventArgs e)
     {
+        if (_snippetService == null) return;
+        
         var dialog = new Microsoft.Win32.OpenFileDialog
         {
             Filter = "JSON files (*.json)|*.json|All files (*.*)|*.*",

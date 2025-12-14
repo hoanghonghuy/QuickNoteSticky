@@ -36,12 +36,12 @@ public partial class SaveSnippetDialog : Window
             // Populate language combo
             LanguageCombo.ItemsSource = new[] 
             { 
-                "PlainText", "CSharp", "Java", "JavaScript", "TypeScript", 
+                "PlainText", "CSharp", "Java", "JavaScript", "TypeScript", "Go",
                 "Json", "Xml", "Sql", "Python", "Bash" 
             };
             
             var langIndex = Array.IndexOf(
-                new[] { "PlainText", "CSharp", "Java", "JavaScript", "TypeScript", "Json", "Xml", "Sql", "Python", "Bash" },
+                new[] { "PlainText", "CSharp", "Java", "JavaScript", "TypeScript", "Go", "Json", "Xml", "Sql", "Python", "Bash" },
                 defaultLanguage);
             LanguageCombo.SelectedIndex = langIndex >= 0 ? langIndex : 0;
             

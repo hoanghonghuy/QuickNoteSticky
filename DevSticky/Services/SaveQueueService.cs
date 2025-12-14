@@ -151,7 +151,25 @@ public class SaveQueueService : ISaveQueueService
             // Use incremental save if we have current app data, otherwise fall back to full save
             if (_currentAppData != null)
             {
-                await _storageService.SaveNotesAsync(notesToSave, _currentAppData);
+                // Merge queued notes with existing notes in AppData
+                var allNotes = new List<Note>(_currentAppData.Notes);
+                foreach (var queuedNote in notesToSave)
+                {
+                    var existingIndex = allNotes.FindIndex(n => n.Id == queuedNote.Id);
+                    if (existingIndex >= 0)
+                    {
+                        allNotes[existingIndex] = queuedNote;
+                    }
+                    else
+                    {
+                        allNotes.Add(queuedNote);
+                    }
+                }
+                
+                // Update current app data with merged notes
+                _currentAppData.Notes = allNotes;
+                
+                await _storageService.SaveNotesAsync(allNotes, _currentAppData);
             }
             else
             {

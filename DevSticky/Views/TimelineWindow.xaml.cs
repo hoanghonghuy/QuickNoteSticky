@@ -15,9 +15,9 @@ namespace DevSticky.Views;
 /// </summary>
 public partial class TimelineWindow : Window
 {
-    private readonly ITimelineService _timelineService;
-    private readonly INoteService _noteService;
-    private readonly IWindowService _windowService;
+    private readonly ITimelineService? _timelineService;
+    private readonly INoteService? _noteService;
+    private readonly IWindowService? _windowService;
     
     private DateTime? _fromDate;
     private DateTime? _toDate;
@@ -30,9 +30,20 @@ public partial class TimelineWindow : Window
     {
         InitializeComponent();
         
-        _timelineService = App.ServiceProvider.GetRequiredService<ITimelineService>();
-        _noteService = App.ServiceProvider.GetRequiredService<INoteService>();
-        _windowService = App.ServiceProvider.GetRequiredService<IWindowService>();
+        try
+        {
+            _timelineService = App.ServiceProvider.GetRequiredService<ITimelineService>();
+            _noteService = App.ServiceProvider.GetRequiredService<INoteService>();
+            _windowService = App.ServiceProvider.GetRequiredService<IWindowService>();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[TimelineWindow] Failed to resolve services: {ex.Message}");
+            System.Windows.MessageBox.Show($"Failed to initialize Timeline: {ex.Message}", "Error", 
+                MessageBoxButton.OK, MessageBoxImage.Error);
+            Close();
+            return;
+        }
         
         TimelineContent.ItemsSource = TimelineItems;
         
@@ -177,9 +188,20 @@ public partial class TimelineWindow : Window
     /// </summary>
     private async Task LoadTimelineDataAsync()
     {
+        if (_timelineService == null)
+        {
+            System.Diagnostics.Debug.WriteLine("[TimelineWindow] TimelineService not available");
+            return;
+        }
+        
         try
         {
             var timelineItems = await _timelineService.GetTimelineItemsAsync(_fromDate, _toDate);
+            if (timelineItems == null)
+            {
+                System.Diagnostics.Debug.WriteLine("[TimelineWindow] No timeline items returned");
+                return;
+            }
             var groupedItems = _timelineService.GroupByDate(timelineItems);
             
             TimelineItems.Clear();
@@ -230,6 +252,8 @@ public partial class TimelineWindow : Window
     
     private void TimelineItem_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
+        if (_noteService == null || _windowService == null) return;
+        
         if (sender is Border border && border.Tag is Guid noteId)
         {
             var note = _noteService.GetNoteById(noteId);

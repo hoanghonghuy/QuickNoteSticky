@@ -39,7 +39,7 @@ public class SmartCollectionService : ISmartCollectionService, IDisposable
             {
                 Id = Guid.Parse("00000000-0000-0000-0000-000000000001"),
                 Name = "Today",
-                Icon = "📅",
+                Icon = "◉",
                 Criteria = new FilterCriteria { DateRange = DateRangeType.Today },
                 IsBuiltIn = true
             },
@@ -47,7 +47,7 @@ public class SmartCollectionService : ISmartCollectionService, IDisposable
             {
                 Id = Guid.Parse("00000000-0000-0000-0000-000000000002"),
                 Name = "This Week",
-                Icon = "📆",
+                Icon = "◎",
                 Criteria = new FilterCriteria { DateRange = DateRangeType.ThisWeek },
                 IsBuiltIn = true
             },
@@ -55,7 +55,7 @@ public class SmartCollectionService : ISmartCollectionService, IDisposable
             {
                 Id = Guid.Parse("00000000-0000-0000-0000-000000000003"),
                 Name = "Has TODO",
-                Icon = "☑️",
+                Icon = "☐",
                 Criteria = new FilterCriteria { HasUncheckedTodos = true },
                 IsBuiltIn = true
             },
@@ -63,7 +63,7 @@ public class SmartCollectionService : ISmartCollectionService, IDisposable
             {
                 Id = Guid.Parse("00000000-0000-0000-0000-000000000004"),
                 Name = "Code Notes",
-                Icon = "💻",
+                Icon = "⟨⟩",
                 Criteria = new FilterCriteria { HasCodeBlocks = true },
                 IsBuiltIn = true
             }

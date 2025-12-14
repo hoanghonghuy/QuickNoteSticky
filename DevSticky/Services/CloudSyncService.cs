@@ -26,6 +26,7 @@ public class CloudSyncService : ICloudSyncService, ICloudConnection, ICloudSync,
     private readonly IEncryptionService _encryptionService;
     private readonly ICloudProviderRegistry _providerRegistry;
     private readonly IErrorHandler _errorHandler;
+    private readonly ISaveQueueService _saveQueueService;
     
     private ICloudStorageProvider? _cloudProvider;
     private string? _encryptionPassphrase;
@@ -70,13 +71,15 @@ public class CloudSyncService : ICloudSyncService, ICloudConnection, ICloudSync,
         IStorageService storageService,
         IEncryptionService encryptionService,
         ICloudProviderRegistry providerRegistry,
-        IErrorHandler errorHandler)
+        IErrorHandler errorHandler,
+        ISaveQueueService saveQueueService)
     {
         _noteService = noteService ?? throw new ArgumentNullException(nameof(noteService));
         _storageService = storageService ?? throw new ArgumentNullException(nameof(storageService));
         _encryptionService = encryptionService ?? throw new ArgumentNullException(nameof(encryptionService));
         _providerRegistry = providerRegistry ?? throw new ArgumentNullException(nameof(providerRegistry));
         _errorHandler = errorHandler ?? throw new ArgumentNullException(nameof(errorHandler));
+        _saveQueueService = saveQueueService ?? throw new ArgumentNullException(nameof(saveQueueService));
     }
 
     /// <inheritdoc />
@@ -579,6 +582,7 @@ public class CloudSyncService : ICloudSyncService, ICloudConnection, ICloudSync,
         {
             // Update local note with new sync info
             _noteService.UpdateNote(note);
+            _saveQueueService.QueueNote(note);
             return true;
         }
 
@@ -589,6 +593,7 @@ public class CloudSyncService : ICloudSyncService, ICloudConnection, ICloudSync,
     {
         remoteNote.LastSyncedDate = DateTime.UtcNow;
         _noteService.UpdateNote(remoteNote);
+        _saveQueueService.QueueNote(remoteNote);
     }
 
     private void RaiseProgress(string operation, int percent, int processed, int total, string? message = null)

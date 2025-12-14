@@ -138,7 +138,18 @@ public partial class TemplateSelectionDialog : Window, IDisposable
     private void SearchBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
     {
         _searchQuery = SearchBox.Text.Trim().ToLowerInvariant();
+        UpdateSearchPlaceholder();
         RefreshTemplateList();
+    }
+
+    private void SearchBox_GotFocus(object sender, RoutedEventArgs e) => UpdateSearchPlaceholder();
+    private void SearchBox_LostFocus(object sender, RoutedEventArgs e) => UpdateSearchPlaceholder();
+
+    private void UpdateSearchPlaceholder()
+    {
+        if (SearchPlaceholder != null)
+            SearchPlaceholder.Visibility = string.IsNullOrEmpty(SearchBox.Text) && !SearchBox.IsFocused
+                ? Visibility.Visible : Visibility.Collapsed;
     }
 
     /// <summary>

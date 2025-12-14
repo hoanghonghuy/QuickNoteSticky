@@ -9,12 +9,12 @@ namespace DevSticky.Services;
 public class TimelineService : ITimelineService
 {
     private readonly INoteService _noteService;
-    private readonly ITagManagementService _tagManagementService;
+    private readonly Func<ITagManagementService> _tagManagementServiceFactory;
 
-    public TimelineService(INoteService noteService, ITagManagementService tagManagementService)
+    public TimelineService(INoteService noteService, Func<ITagManagementService> tagManagementServiceFactory)
     {
         _noteService = noteService ?? throw new ArgumentNullException(nameof(noteService));
-        _tagManagementService = tagManagementService ?? throw new ArgumentNullException(nameof(tagManagementService));
+        _tagManagementServiceFactory = tagManagementServiceFactory ?? throw new ArgumentNullException(nameof(tagManagementServiceFactory));
     }
 
     /// <summary>
@@ -22,26 +22,51 @@ public class TimelineService : ITimelineService
     /// </summary>
     public async Task<IReadOnlyList<TimelineItem>> GetTimelineItemsAsync(DateTime? fromDate = null, DateTime? toDate = null)
     {
-        var notes = _noteService.GetAllNotes();
-        var allTags = _tagManagementService.GetAllTags();
-        
-        // Create a dictionary for fast tag lookup
-        var tagLookup = allTags.ToDictionary(t => t.Id, t => t.Name);
-        
-        var timelineItems = notes.Select(note => CreateTimelineItem(note, tagLookup)).ToList();
-        
-        // Apply date filtering if specified
-        if (fromDate.HasValue || toDate.HasValue)
+        try
         {
-            timelineItems = FilterByDateRange(timelineItems, 
-                fromDate ?? DateTime.MinValue, 
-                toDate ?? DateTime.MaxValue).ToList();
+            var notes = _noteService.GetAllNotes();
+            if (notes == null || !notes.Any())
+            {
+                return Array.Empty<TimelineItem>();
+            }
+            
+            ITagManagementService? tagService = null;
+            IReadOnlyList<NoteTag> allTags = Array.Empty<NoteTag>();
+            
+            try
+            {
+                tagService = _tagManagementServiceFactory();
+                allTags = tagService?.GetAllTags() ?? Array.Empty<NoteTag>();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[TimelineService] Failed to get tags: {ex.Message}");
+                // Continue without tags
+            }
+            
+            // Create a dictionary for fast tag lookup
+            var tagLookup = allTags.ToDictionary(t => t.Id, t => t.Name);
+            
+            var timelineItems = notes.Select(note => CreateTimelineItem(note, tagLookup)).ToList();
+            
+            // Apply date filtering if specified
+            if (fromDate.HasValue || toDate.HasValue)
+            {
+                timelineItems = FilterByDateRange(timelineItems, 
+                    fromDate ?? DateTime.MinValue, 
+                    toDate ?? DateTime.MaxValue).ToList();
+            }
+            
+            // Sort by creation date descending (newest first)
+            timelineItems.Sort((a, b) => b.CreatedDate.CompareTo(a.CreatedDate));
+            
+            return timelineItems.AsReadOnly();
         }
-        
-        // Sort by creation date descending (newest first)
-        timelineItems.Sort((a, b) => b.CreatedDate.CompareTo(a.CreatedDate));
-        
-        return timelineItems.AsReadOnly();
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[TimelineService] Error getting timeline items: {ex.Message}");
+            return Array.Empty<TimelineItem>();
+        }
     }
 
     /// <summary>

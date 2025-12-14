@@ -110,16 +110,18 @@ public class MainViewModel : ViewModelBase
         foreach (var tag in data.Tags)
             Tags.Add(tag);
         
-        // Load notes
+        // Load notes into NoteService first
+        _noteService.LoadNotes(data.Notes);
+        
+        // Then create ViewModels (don't show them automatically - user opens from Dashboard)
         foreach (var note in data.Notes)
         {
             var vm = CreateNoteViewModel(note);
             Notes.Add(vm);
-            _windowService.ShowNote(note);
         }
 
-        if (Notes.Count == 0)
-            CreateNewNote();
+        // Open Dashboard on startup instead of showing notes
+        OnOpenDashboard?.Invoke();
     }
 
     /// <summary>
@@ -133,8 +135,8 @@ public class MainViewModel : ViewModelBase
             var template = OnShowTemplateSelection();
             if (template != null)
             {
-                // Create note from template - fire and forget with proper exception handling
-                _ = CreateNoteFromTemplateAsync(template);
+                // Create note from template - use async void wrapper for fire-and-forget with exception handling
+                _ = CreateNoteFromTemplateWithErrorHandlingAsync(template);
                 return;
             }
             // If template is null but dialog was shown, user chose blank note or cancelled
@@ -147,8 +149,27 @@ public class MainViewModel : ViewModelBase
         Notes.Add(vm);
         _windowService.ShowNote(note);
         
+        // Force immediate save
+        _ = SaveAllNotesImmediateAsync();
+        
         // Record access for recent notes
         RecordNoteAccess(note.Id);
+    }
+
+    /// <summary>
+    /// Wrapper for CreateNoteFromTemplateAsync with proper error handling for fire-and-forget calls
+    /// </summary>
+    private async Task CreateNoteFromTemplateWithErrorHandlingAsync(NoteTemplate template)
+    {
+        try
+        {
+            await CreateNoteFromTemplateAsync(template);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"CreateNoteFromTemplate failed: {ex.Message}");
+            // Fallback is already handled in CreateNoteFromTemplateAsync
+        }
     }
 
     /// <summary>
@@ -171,23 +192,33 @@ public class MainViewModel : ViewModelBase
     {
         try
         {
+            System.Diagnostics.Debug.WriteLine($"[CreateNoteFromTemplate] Creating note from template: {template.Name}");
             var note = await _templateService.CreateNoteFromTemplateAsync(template.Id);
+            System.Diagnostics.Debug.WriteLine($"[CreateNoteFromTemplate] Note created: {note.Title}, Content length: {note.Content?.Length ?? 0}");
+            
+            // Add note to NoteService so it's tracked
+            _noteService.AddNote(note);
             
             // Add to notes collection
             var vm = CreateNoteViewModel(note);
             Notes.Add(vm);
             _windowService.ShowNote(note);
-            SaveAllNotes();
+            
+            // Force immediate save to persist the new note
+            await SaveAllNotesImmediateAsync();
+            
             RecordNoteAccess(note.Id);
+            System.Diagnostics.Debug.WriteLine($"[CreateNoteFromTemplate] Note saved and shown successfully");
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Failed to create note from template: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"[CreateNoteFromTemplate] Failed: {ex.Message}");
             // Fall back to blank note
             var note = _noteService.CreateNote();
             var vm = CreateNoteViewModel(note);
             Notes.Add(vm);
             _windowService.ShowNote(note);
+            await SaveAllNotesImmediateAsync();
         }
     }
 
@@ -200,6 +231,10 @@ public class MainViewModel : ViewModelBase
         var vm = CreateNoteViewModel(note);
         Notes.Add(vm);
         _windowService.ShowNote(note);
+        
+        // Force immediate save
+        _ = SaveAllNotesImmediateAsync();
+        
         RecordNoteAccess(note.Id);
     }
 
@@ -219,14 +254,25 @@ public class MainViewModel : ViewModelBase
         );
     }
 
+    /// <summary>
+    /// Closes the note window without deleting the note.
+    /// The note remains in the collection and can be reopened from Dashboard.
+    /// </summary>
     private void CloseNote(NoteViewModel vm)
     {
-        RemoveNote(vm);
+        // Save the note before closing to ensure content is persisted
+        SaveAllNotes();
+        
+        // Just close the window, don't remove from collection or delete
+        _windowService.CloseNote(vm.Id);
     }
 
+    /// <summary>
+    /// Permanently deletes a note from the collection and storage.
+    /// Use this when user explicitly wants to delete a note.
+    /// </summary>
     public void RemoveNote(NoteViewModel vm)
     {
-        var note = vm.ToNote();
         _noteService.DeleteNote(vm.Id);
         Notes.Remove(vm);
         _windowService.CloseNote(vm.Id);
@@ -239,7 +285,12 @@ public class MainViewModel : ViewModelBase
     }
 
     private void ShowAllNotes() => _windowService.ShowAllNotes();
-    private void HideAllNotes() => _windowService.HideAllNotes();
+    private void HideAllNotes()
+    {
+        // Save all notes before hiding to ensure content is persisted
+        SaveAllNotes();
+        _windowService.HideAllNotes();
+    }
     private void OpenSettings() => OnOpenSettings?.Invoke();
     public void OpenDashboard() => OnOpenDashboard?.Invoke();
 
@@ -284,48 +335,53 @@ public class MainViewModel : ViewModelBase
         }
     }
 
-    private void ExitApplication()
+    private async void ExitApplication()
     {
-        SaveAllNotes();
+        // Wait for save to complete before shutting down
+        await SaveAllNotesImmediateAsync();
         System.Windows.Application.Current.Shutdown();
     }
 
     public void SaveAllNotes()
     {
-        // Check if we have dirty notes and use incremental save if possible
-        var dirtyNotes = _dirtyTracker.GetDirtyItems().ToList();
+        // Fire and forget save - use for auto-save scenarios
+        _ = SaveAllNotesImmediateAsync();
+    }
+    
+    /// <summary>
+    /// Saves all notes immediately and waits for completion
+    /// </summary>
+    public async Task SaveAllNotesImmediateAsync()
+    {
+        // Always do a full save to ensure data integrity
+        var allNotes = new List<Note>(Notes.Count);
         
-        if (dirtyNotes.Count > 0 && dirtyNotes.Count < Notes.Count)
+        foreach (var vm in Notes)
         {
-            // Use incremental save for better performance when only some notes are dirty
-            SaveNotesIncremental();
+            var note = vm.ToNote();
+            allNotes.Add(note);
+            // Mark note as clean after adding to save list
+            note.MarkClean();
         }
-        else
+        
+        System.Diagnostics.Debug.WriteLine($"[SaveAllNotes] Saving {allNotes.Count} notes");
+        
+        var data = new AppData
         {
-            // Fall back to full save when many notes are dirty or for safety
-            // Optimized: Single pass to convert notes and track dirty ones
-            var allNotes = new List<Note>(Notes.Count);
-            
-            // Single iteration to convert all notes
-            foreach (var vm in Notes)
-            {
-                allNotes.Add(vm.ToNote());
-            }
-            
-            // Mark dirty notes as clean after identifying them for save
-            foreach (var dirtyNote in dirtyNotes)
-            {
-                _dirtyTracker.MarkClean(dirtyNote);
-            }
-            
-            var data = new AppData
-            {
-                AppSettings = AppSettings,
-                Notes = allNotes,
-                Groups = new List<NoteGroup>(Groups), // Optimized: Direct list creation
-                Tags = new List<NoteTag>(Tags) // Optimized: Direct list creation
-            };
-            _ = _storageService.SaveAsync(data);
+            AppSettings = AppSettings,
+            Notes = allNotes,
+            Groups = new List<NoteGroup>(Groups),
+            Tags = new List<NoteTag>(Tags)
+        };
+        
+        try
+        {
+            await _storageService.SaveAsync(data);
+            System.Diagnostics.Debug.WriteLine($"[SaveAllNotes] Completed: {allNotes.Count} notes saved");
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[SaveAllNotes] Failed: {ex.Message}");
         }
     }
 

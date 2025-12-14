@@ -35,12 +35,14 @@ public class CloudSyncPropertyTests
                 registry.RegisterProvider(CloudProvider.OneDrive, () => new MockCloudStorageProvider());
                 var errorHandler = new ErrorHandler();
                 
+                var saveQueueService = new MockSaveQueueService();
                 var syncService = new CloudSyncService(
                     noteService, 
                     storageService, 
                     encryptionService,
                     registry,
-                    errorHandler);
+                    errorHandler,
+                    saveQueueService);
 
                 // Queue notes with small delays to ensure ordering
                 var queuedTimes = new List<DateTime>();
@@ -280,6 +282,16 @@ public class CloudSyncPropertyTests
             return note;
         }
 
+        public void AddNote(Note note)
+        {
+            if (note == null) return;
+            var existingIndex = _notes.FindIndex(n => n.Id == note.Id);
+            if (existingIndex >= 0)
+                _notes[existingIndex] = note;
+            else
+                _notes.Add(note);
+        }
+
         public void DeleteNote(Guid id) => _notes.RemoveAll(n => n.Id == id);
         public void UpdateNote(Note note)
         {
@@ -322,6 +334,16 @@ public class CloudSyncPropertyTests
             Task.FromResult<IReadOnlyList<CloudFileInfo>>(Array.Empty<CloudFileInfo>());
         public Task<CloudFileInfo?> GetFileInfoAsync(string remotePath) => Task.FromResult<CloudFileInfo?>(null);
         public Task<bool> CreateFolderAsync(string remotePath) => Task.FromResult(true);
+        public void Dispose() { }
+    }
+
+    private class MockSaveQueueService : ISaveQueueService
+    {
+        public void QueueNote(Note note) { }
+        public void QueueNotes(IEnumerable<Note> notes) { }
+        public Task FlushAsync() => Task.CompletedTask;
+        public int QueueCount => 0;
+        public event EventHandler<SaveCompletedEventArgs>? SaveCompleted;
         public void Dispose() { }
     }
 

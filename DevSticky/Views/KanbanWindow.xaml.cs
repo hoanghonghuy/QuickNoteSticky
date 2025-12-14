@@ -15,9 +15,9 @@ namespace DevSticky.Views;
 /// </summary>
 public partial class KanbanWindow : Window
 {
-    private readonly IKanbanService _kanbanService;
-    private readonly INoteService _noteService;
-    private readonly ITagManagementService _tagService;
+    private readonly IKanbanService? _kanbanService;
+    private readonly INoteService? _noteService;
+    private readonly ITagManagementService? _tagService;
     
     // Collections for each column
     public ObservableCollection<KanbanCardViewModel> ToDoNotes { get; } = new();
@@ -30,10 +30,21 @@ public partial class KanbanWindow : Window
     {
         InitializeComponent();
         
-        _kanbanService = App.ServiceProvider.GetRequiredService<IKanbanService>();
-        _noteService = App.ServiceProvider.GetRequiredService<INoteService>();
-        var mainViewModel = App.ServiceProvider.GetRequiredService<MainViewModel>();
-        _tagService = mainViewModel.TagManagementService;
+        try
+        {
+            _kanbanService = App.ServiceProvider.GetRequiredService<IKanbanService>();
+            _noteService = App.ServiceProvider.GetRequiredService<INoteService>();
+            var mainViewModel = App.ServiceProvider.GetRequiredService<MainViewModel>();
+            _tagService = mainViewModel.TagManagementService;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[KanbanWindow] Failed to resolve services: {ex.Message}");
+            System.Windows.MessageBox.Show($"Failed to initialize Kanban: {ex.Message}", "Error", 
+                MessageBoxButton.OK, MessageBoxImage.Error);
+            Close();
+            return;
+        }
         
         // Set data context for binding
         ToDoItems.ItemsSource = ToDoNotes;
@@ -53,6 +64,12 @@ public partial class KanbanWindow : Window
     /// </summary>
     private async Task LoadKanbanDataAsync()
     {
+        if (_kanbanService == null || _tagService == null)
+        {
+            System.Diagnostics.Debug.WriteLine("[KanbanWindow] Services not available");
+            return;
+        }
+        
         try
         {
             var kanbanNotes = await _kanbanService.GetAllKanbanNotesAsync();
@@ -123,6 +140,7 @@ public partial class KanbanWindow : Window
             {
                 try
                 {
+                    if (_noteService == null) return;
                     var note = _noteService.GetAllNotes().FirstOrDefault(n => n.Id == card.NoteId);
                     if (note != null)
                     {
@@ -150,7 +168,7 @@ public partial class KanbanWindow : Window
     /// </summary>
     private async void Card_Drop(object sender, System.Windows.DragEventArgs e)
     {
-        if (_draggedCard != null && sender is Border border)
+        if (_draggedCard != null && sender is Border border && _kanbanService != null)
         {
             // Determine target status based on which column the card was dropped in
             KanbanStatus targetStatus = DetermineTargetStatus(border);
@@ -282,6 +300,66 @@ public partial class KanbanWindow : Window
     private void BtnClose_Click(object sender, RoutedEventArgs e)
     {
         Close();
+    }
+    
+    /// <summary>
+    /// Handle drop on column (for dropping into empty areas or between cards)
+    /// </summary>
+    private async void Column_Drop(object sender, System.Windows.DragEventArgs e)
+    {
+        if (_draggedCard == null || _kanbanService == null) return;
+        
+        if (sender is Border columnBorder && columnBorder.Tag is string statusTag)
+        {
+            var targetStatus = statusTag switch
+            {
+                "ToDo" => KanbanStatus.ToDo,
+                "InProgress" => KanbanStatus.InProgress,
+                "Done" => KanbanStatus.Done,
+                _ => KanbanStatus.ToDo
+            };
+            
+            if (targetStatus != _draggedCard.Status)
+            {
+                try
+                {
+                    var success = await _kanbanService.UpdateNoteStatusAsync(_draggedCard.NoteId, targetStatus);
+                    
+                    if (success)
+                    {
+                        RemoveCardFromCurrentColumn(_draggedCard);
+                        _draggedCard.Status = targetStatus;
+                        AddCardToTargetColumn(_draggedCard, targetStatus);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[KanbanWindow] Error moving card: {ex.Message}");
+                }
+            }
+            
+            _draggedCard = null;
+            
+            // Reset column opacity
+            columnBorder.Opacity = 1.0;
+        }
+    }
+    
+    private void Column_DragEnter(object sender, System.Windows.DragEventArgs e)
+    {
+        if (sender is Border border && _draggedCard != null)
+        {
+            // Highlight the column when dragging over it
+            border.Opacity = 0.8;
+        }
+    }
+    
+    private void Column_DragLeave(object sender, System.Windows.DragEventArgs e)
+    {
+        if (sender is Border border)
+        {
+            border.Opacity = 1.0;
+        }
     }
 }
 

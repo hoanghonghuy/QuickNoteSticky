@@ -76,9 +76,6 @@
                                    Foreground="{DynamicResource Subtext0Brush}" 
                                    FontSize="11" Margin="0,0,0,8"/>
                         <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
-                            <ScrollViewer.Resources>
-                                <Style TargetType="ScrollBar" BasedOn="{StaticResource DarkScrollBar}"/>
-                            </ScrollViewer.Resources>
                             <TextBox x:Name="LocalContentText" 
                                      Background="Transparent"
                                      Foreground="{DynamicResource TextBrush}"
@@ -108,9 +105,6 @@
                                    Foreground="{DynamicResource Subtext0Brush}" 
                                    FontSize="11" Margin="0,0,0,8"/>
                         <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
-                            <ScrollViewer.Resources>
-                                <Style TargetType="ScrollBar" BasedOn="{StaticResource DarkScrollBar}"/>
-                            </ScrollViewer.Resources>
                             <TextBox x:Name="RemoteContentText" 
                                      Background="Transparent"
                                      Foreground="{DynamicResource TextBrush}"

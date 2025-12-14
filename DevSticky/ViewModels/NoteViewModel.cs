@@ -54,6 +54,7 @@ public class NoteViewModel : ViewModelBase
             if (SetProperty(ref _title, newValue))
             {
                 _note.Title = newValue;
+                _debounceService.Debounce($"save_{Id}", () => Save(), 500);
             }
         }
     }
@@ -118,6 +119,8 @@ public class NoteViewModel : ViewModelBase
             if (SetProperty(ref _language, value))
             {
                 _note.Language = value;
+                // Trigger auto-save when language changes
+                _onSave?.Invoke();
             }
         }
     }
@@ -130,6 +133,8 @@ public class NoteViewModel : ViewModelBase
             if (SetProperty(ref _isPinned, value))
             {
                 _note.IsPinned = value;
+                // Trigger auto-save when pin state changes
+                _onSave?.Invoke();
             }
         }
     }
@@ -144,6 +149,8 @@ public class NoteViewModel : ViewModelBase
             if (SetProperty(ref _opacity, clampedValue))
             {
                 _note.Opacity = clampedValue;
+                // Trigger auto-save when opacity changes
+                _onSave?.Invoke();
             }
         }
     }

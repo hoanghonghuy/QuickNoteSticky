@@ -105,7 +105,7 @@
   <data name="SearchPlaceholder" xml:space="preserve"><value>Tìm kiếm...</value></data>
   <data name="SearchNotesPlaceholder" xml:space="preserve"><value>Tìm kiếm ghi chú...</value></data>
   <data name="ClearSearch" xml:space="preserve"><value>Xóa tìm kiếm</value></data>
-  <data name="SearchResults" xml:space="preserve"><value>{0} kết quả cho "{1}"</value></data>
+  <data name="FindInNote" xml:space="preserve"><value>Tìm trong ghi chú...</value></data>
   <data name="Next" xml:space="preserve"><value>Tiếp</value></data>
   <data name="Previous" xml:space="preserve"><value>Trước</value></data>
   <data name="Format" xml:space="preserve"><value>Định dạng</value></data>
@@ -195,6 +195,7 @@
   
   <!-- Template Selection -->
   <data name="TemplateSelectionTitle" xml:space="preserve"><value>Chọn mẫu</value></data>
+  <data name="SearchTemplates" xml:space="preserve"><value>Tìm kiếm mẫu...</value></data>
   <data name="BlankNote" xml:space="preserve"><value>Ghi chú trống</value></data>
   <data name="BlankNoteDescription" xml:space="preserve"><value>Bắt đầu với ghi chú trống</value></data>
   <data name="BuiltInTemplates" xml:space="preserve"><value>Mẫu có sẵn</value></data>

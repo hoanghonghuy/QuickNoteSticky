@@ -419,6 +419,7 @@ public class ServiceFallbackPropertyTests
             return new DevSticky.Models.Note { Id = Guid.NewGuid(), Title = "Mock Note" };
         }
 
+        public void AddNote(DevSticky.Models.Note note) { if (_disposed) throw new ObjectDisposedException(nameof(MockNoteService)); }
         public void DeleteNote(Guid id) { if (_disposed) throw new ObjectDisposedException(nameof(MockNoteService)); }
         public void UpdateNote(DevSticky.Models.Note note) { if (_disposed) throw new ObjectDisposedException(nameof(MockNoteService)); }
         public IReadOnlyList<DevSticky.Models.Note> GetAllNotes() 

@@ -311,8 +311,8 @@ This tag will be removed from {1} note(s).</value>
   <data name="ClearSearch" xml:space="preserve">
     <value>Clear search</value>
   </data>
-  <data name="SearchResults" xml:space="preserve">
-    <value>{0} results for "{1}"</value>
+  <data name="FindInNote" xml:space="preserve">
+    <value>Find in note...</value>
   </data>
   <data name="Next" xml:space="preserve">
     <value>Next</value>
@@ -583,6 +583,9 @@ This tag will be removed from {1} note(s).</value>
   <!-- Template Selection -->
   <data name="TemplateSelectionTitle" xml:space="preserve">
     <value>Select Template</value>
+  </data>
+  <data name="SearchTemplates" xml:space="preserve">
+    <value>Search templates...</value>
   </data>
   <data name="BlankNote" xml:space="preserve">
     <value>Blank Note</value>

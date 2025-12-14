@@ -43,6 +43,22 @@ public class NoteService : INoteService, IDisposable
         return note;
     }
 
+    public void AddNote(Note note)
+    {
+        if (note == null) return;
+        
+        // Check if note already exists
+        var existingIndex = _notes.FindIndex(n => n.Id == note.Id);
+        if (existingIndex >= 0)
+        {
+            _notes[existingIndex] = note;
+        }
+        else
+        {
+            _notes.Add(note);
+        }
+    }
+
     public void DeleteNote(Guid id)
     {
         // Optimized: Direct search and removal without LINQ

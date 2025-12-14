@@ -62,7 +62,10 @@ public class StorageService : IStorageService, IDisposable
             }
 
             var json = JsonSerializer.Serialize(data, JsonOptions);
+            System.Diagnostics.Debug.WriteLine($"[StorageService] Saving {data.Notes?.Count ?? 0} notes to {_storagePath}");
+            System.Diagnostics.Debug.WriteLine($"[StorageService] JSON length: {json.Length} chars");
             await _fileSystem.WriteAllTextAsync(_storagePath, json).ConfigureAwait(false);
+            System.Diagnostics.Debug.WriteLine($"[StorageService] Save completed successfully");
             return true;
         }, 
         false, 
