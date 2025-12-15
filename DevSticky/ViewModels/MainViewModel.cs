@@ -90,9 +90,22 @@ public class MainViewModel : ViewModelBase
         );
     }
 
-    public async Task LoadNotesAsync()
+    public async Task LoadNotesAsync(bool useLazyLoading = false)
     {
-        var data = await _storageService.LoadAsync();
+        AppData data;
+        
+        if (useLazyLoading)
+        {
+            // Load only metadata, content will be loaded on demand
+            data = await _storageService.LoadMetadataOnlyAsync();
+            System.Diagnostics.Debug.WriteLine($"[MainViewModel] Loaded {data.Notes.Count} notes with lazy loading");
+        }
+        else
+        {
+            // Load full data (backward compatible)
+            data = await _storageService.LoadAsync();
+        }
+        
         _currentAppData = data;
         
         // Set current app data for incremental saves

@@ -24,6 +24,10 @@ public class Note : TrackableModel
     // v2.2 properties for folders and kanban
     private Guid? _folderId;
     private KanbanStatus? _kanbanStatus;
+    
+    // v2.1 lazy loading support
+    private bool _isContentLoaded = true;
+    private string _contentPreview = string.Empty;
 
     public Guid Id
     {
@@ -135,5 +139,44 @@ public class Note : TrackableModel
     {
         get => _kanbanStatus;
         set => SetProperty(ref _kanbanStatus, value);
+    }
+    
+    /// <summary>
+    /// Whether the full content is loaded in memory (for lazy loading)
+    /// </summary>
+    public bool IsContentLoaded
+    {
+        get => _isContentLoaded;
+        set => SetProperty(ref _isContentLoaded, value);
+    }
+    
+    /// <summary>
+    /// Preview of content (first 200 chars) for display in lists
+    /// </summary>
+    public string ContentPreview
+    {
+        get => _contentPreview;
+        set => SetProperty(ref _contentPreview, value ?? string.Empty);
+    }
+    
+    /// <summary>
+    /// Updates content preview from current content
+    /// </summary>
+    public void UpdateContentPreview()
+    {
+        ContentPreview = Content.Length > 200 ? Content[..200] + "..." : Content;
+    }
+    
+    /// <summary>
+    /// Unloads content to free memory (keeps preview)
+    /// </summary>
+    public void UnloadContent()
+    {
+        if (IsContentLoaded && !string.IsNullOrEmpty(Content))
+        {
+            UpdateContentPreview();
+            _content = string.Empty;
+            IsContentLoaded = false;
+        }
     }
 }

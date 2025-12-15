@@ -80,6 +80,33 @@ public class FallbackStorageService : IStorageService
         false,
         "FallbackStorageService.SaveNotesAsync");
     }
+    
+    #region Lazy Loading (Not supported in fallback mode)
+    
+    public bool IsLazyLoadingFormat => false;
+    
+    public Task<AppData> LoadMetadataOnlyAsync() => LoadAsync();
+    
+    public Task<string?> LoadNoteContentAsync(Guid noteId)
+    {
+        var note = _inMemoryData?.Notes.FirstOrDefault(n => n.Id == noteId);
+        return Task.FromResult(note?.Content);
+    }
+    
+    public Task SaveNoteContentAsync(Guid noteId, string content)
+    {
+        var note = _inMemoryData?.Notes.FirstOrDefault(n => n.Id == noteId);
+        if (note != null) note.Content = content;
+        return Task.CompletedTask;
+    }
+    
+    public Task DeleteNoteContentAsync(Guid noteId) => Task.CompletedTask;
+    
+    public Task<bool> MigrateToLazyLoadingFormatAsync() => Task.FromResult(false);
+    
+    public Task PreloadNoteContentsAsync(IEnumerable<Guid> noteIds) => Task.CompletedTask;
+    
+    #endregion
 
     private static AppData CreateDefaultAppData()
     {

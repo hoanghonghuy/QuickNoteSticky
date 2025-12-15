@@ -384,7 +384,30 @@ public partial class App : Application
                 throw; // Main ViewModel is critical
             }
 
-            // Phase 10: Notes Loading (Limited in Safe Mode)
+            // Phase 10: Lazy Loading Migration (if enabled)
+            var storageService = ServiceProvider.GetRequiredService<IStorageService>();
+            var appSettings = ServiceProvider.GetRequiredService<AppSettings>();
+            
+            if (appSettings.LazyLoadingEnabled && !storageService.IsLazyLoadingFormat)
+            {
+                var migrationStep = startupDiagnostics.StartStep("LazyLoadingMigration", "StorageService", "DataMigration");
+                try
+                {
+                    await startupDiagnostics.ExecuteStepAsync("MigrateToLazyLoading", async () =>
+                    {
+                        await storageService.MigrateToLazyLoadingFormatAsync();
+                        return true;
+                    }, "StorageService", "DataMigration");
+                    startupDiagnostics.CompleteStep(migrationStep);
+                }
+                catch (Exception ex)
+                {
+                    startupDiagnostics.FailStep(migrationStep, ex);
+                    System.Diagnostics.Debug.WriteLine($"[App] Lazy loading migration failed: {ex.Message}");
+                }
+            }
+            
+            // Phase 11: Notes Loading (Limited in Safe Mode)
             var notesStep = startupDiagnostics.StartStep("NotesLoading", "MainViewModel", "DataLoading");
             
             try
@@ -393,9 +416,22 @@ public partial class App : Application
                 
                 await startupDiagnostics.ExecuteStepAsync("LoadNotes", async () =>
                 {
-                    await _mainViewModel.LoadNotesAsync();
+                    // Use metadata-only loading if lazy loading is enabled
+                    await _mainViewModel.LoadNotesAsync(useLazyLoading: storageService.IsLazyLoadingFormat);
                     return true;
                 }, "MainViewModel", "DataLoading");
+                
+                // Preload recent notes content for faster access
+                if (storageService.IsLazyLoadingFormat)
+                {
+                    var recentNotesService = ServiceProvider.GetService<IRecentNotesService>();
+                    var noteService = ServiceProvider.GetRequiredService<INoteService>();
+                    if (recentNotesService != null)
+                    {
+                        var recentIds = recentNotesService.GetRecentNotes().Take(5).Select(r => r.NoteId);
+                        await noteService.PreloadContentsAsync(recentIds);
+                    }
+                }
                 
                 performanceMonitoringService.StopCategoryTiming("DataLoading");
                 startupDiagnostics.CompleteStep(notesStep);
@@ -807,7 +843,9 @@ public partial class App : Application
         
         // Core Services - Singleton (shared application state)
         services.AddSingleton<IStorageService, StorageService>();
-        services.AddSingleton<INoteService, NoteService>();
+        services.AddSingleton<INoteService>(sp => new NoteService(
+            sp.GetRequiredService<AppSettings>(),
+            sp.GetRequiredService<IStorageService>()));
         
         // Utility Services - Singleton (stateless)
         services.AddSingleton<IFormatterService, FormatterService>();
@@ -849,7 +887,9 @@ public partial class App : Application
         services.AddSingleton<ICacheService, EnhancedCacheService>();
         
         // v2.1 Services - Memory Management and User Experience
-        services.AddSingleton<IMemoryCleanupService, MemoryCleanupService>();
+        services.AddSingleton<IMemoryCleanupService>(sp => new MemoryCleanupService(
+            sp.GetRequiredService<ICacheService>(),
+            sp.GetRequiredService<INoteService>()));
         services.AddSingleton<IBackupService, BackupService>();
         services.AddSingleton<IRecentNotesService, RecentNotesService>();
         services.AddTransient<IUndoRedoService, UndoRedoService>();

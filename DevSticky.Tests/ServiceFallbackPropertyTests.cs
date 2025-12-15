@@ -439,6 +439,32 @@ public class ServiceFallbackPropertyTests
             return 0.9; 
         }
         public void LoadNotes(IEnumerable<DevSticky.Models.Note> notes) { if (_disposed) throw new ObjectDisposedException(nameof(MockNoteService)); }
+        
+        // Lazy loading methods
+        public Task PreloadContentsAsync(IEnumerable<Guid> noteIds) 
+        { 
+            if (_disposed) throw new ObjectDisposedException(nameof(MockNoteService));
+            return Task.CompletedTask; 
+        }
+        public Task<bool> EnsureContentLoadedAsync(Guid noteId) 
+        { 
+            if (_disposed) throw new ObjectDisposedException(nameof(MockNoteService));
+            return Task.FromResult(true); 
+        }
+        public void UnloadNoteContent(Guid noteId) 
+        { 
+            if (_disposed) throw new ObjectDisposedException(nameof(MockNoteService));
+        }
+        public Task<string?> GetNoteContentAsync(Guid noteId) 
+        { 
+            if (_disposed) throw new ObjectDisposedException(nameof(MockNoteService));
+            return Task.FromResult<string?>(null); 
+        }
+        public Task SaveNoteContentAsync(Guid noteId, string content) 
+        { 
+            if (_disposed) throw new ObjectDisposedException(nameof(MockNoteService));
+            return Task.CompletedTask; 
+        }
 
         public void Dispose()
         {
@@ -480,6 +506,15 @@ public class ServiceFallbackPropertyTests
             if (_disposed) throw new ObjectDisposedException(nameof(MockStorageService));
             return Task.CompletedTask; 
         }
+        
+        // Lazy loading support (not implemented in mock)
+        public bool IsLazyLoadingFormat => false;
+        public Task<DevSticky.Models.AppData> LoadMetadataOnlyAsync() => LoadAsync();
+        public Task<string?> LoadNoteContentAsync(Guid noteId) => Task.FromResult<string?>(null);
+        public Task SaveNoteContentAsync(Guid noteId, string content) => Task.CompletedTask;
+        public Task DeleteNoteContentAsync(Guid noteId) => Task.CompletedTask;
+        public Task<bool> MigrateToLazyLoadingFormatAsync() => Task.FromResult(false);
+        public Task PreloadNoteContentsAsync(IEnumerable<Guid> noteIds) => Task.CompletedTask;
 
         public void Dispose()
         {

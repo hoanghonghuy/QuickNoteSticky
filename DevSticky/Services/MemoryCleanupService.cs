@@ -4,7 +4,7 @@ using DevSticky.Interfaces;
 namespace DevSticky.Services;
 
 /// <summary>
-/// Service for automatic memory cleanup of unused note content
+/// Service for automatic memory cleanup of unused note content with lazy loading support
 /// </summary>
 public class MemoryCleanupService : IMemoryCleanupService
 {
@@ -13,6 +13,7 @@ public class MemoryCleanupService : IMemoryCleanupService
     private readonly HashSet<Guid> _loadedNotes = new();
     private readonly System.Timers.Timer _cleanupTimer;
     private readonly ICacheService? _cacheService;
+    private readonly INoteService? _noteService;
     private readonly object _lock = new();
     
     private const int CleanupIntervalMinutes = 5;
@@ -24,9 +25,10 @@ public class MemoryCleanupService : IMemoryCleanupService
 
     public event EventHandler<CleanupEventArgs>? CleanupPerformed;
 
-    public MemoryCleanupService(ICacheService? cacheService = null)
+    public MemoryCleanupService(ICacheService? cacheService = null, INoteService? noteService = null)
     {
         _cacheService = cacheService;
+        _noteService = noteService;
         
         _cleanupTimer = new System.Timers.Timer(CleanupIntervalMinutes * 60 * 1000);
         _cleanupTimer.Elapsed += OnCleanupTimerElapsed;
@@ -51,10 +53,11 @@ public class MemoryCleanupService : IMemoryCleanupService
         var cleanedCount = 0;
         var threshold = DateTime.UtcNow.AddMinutes(-InactiveThresholdMinutes);
         
+        List<Guid> toCleanup;
         lock (_lock)
         {
             // Find notes that have been closed for longer than threshold
-            var toCleanup = _closedTimes
+            toCleanup = _closedTimes
                 .Where(kvp => kvp.Value < threshold)
                 .Select(kvp => kvp.Key)
                 .ToList();
@@ -65,6 +68,15 @@ public class MemoryCleanupService : IMemoryCleanupService
                 _loadedNotes.Remove(noteId);
                 _accessTimes.Remove(noteId);
                 cleanedCount++;
+            }
+        }
+        
+        // Unload content for cleaned up notes (lazy loading support)
+        if (_noteService != null)
+        {
+            foreach (var noteId in toCleanup)
+            {
+                _noteService.UnloadNoteContent(noteId);
             }
         }
         
@@ -79,6 +91,8 @@ public class MemoryCleanupService : IMemoryCleanupService
         
         _lastCleanupTime = DateTime.UtcNow;
         _lastCleanupCount = cleanedCount;
+        
+        System.Diagnostics.Debug.WriteLine($"[MemoryCleanupService] Cleaned up {cleanedCount} notes, freed {(memoryBefore - memoryAfter) / 1024}KB");
         
         CleanupPerformed?.Invoke(this, new CleanupEventArgs
         {

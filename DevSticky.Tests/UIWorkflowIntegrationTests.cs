@@ -333,6 +333,13 @@ public class UIWorkflowIntegrationTests : IDisposable
         public double AdjustOpacity(Guid id, double step) => 0.9;
         public void LoadNotes(IEnumerable<Note> notes) => _notes.AddRange(notes);
         public void Dispose() { }
+        
+        // Lazy loading methods
+        public Task PreloadContentsAsync(IEnumerable<Guid> noteIds) => Task.CompletedTask;
+        public Task<bool> EnsureContentLoadedAsync(Guid noteId) => Task.FromResult(true);
+        public void UnloadNoteContent(Guid noteId) { }
+        public Task<string?> GetNoteContentAsync(Guid noteId) => Task.FromResult<string?>(GetNoteById(noteId)?.Content);
+        public Task SaveNoteContentAsync(Guid noteId, string content) => Task.CompletedTask;
     }
 
     private class TestFormatterService : IFormatterService
@@ -421,6 +428,16 @@ public class UIWorkflowIntegrationTests : IDisposable
         public Task SaveAsync(AppData data) => Task.CompletedTask;
         public Task SaveNotesAsync(IEnumerable<Note> notes, AppData currentData) => Task.CompletedTask;
         public string GetStoragePath() => "test-path";
+        
+        // Lazy loading support
+        public bool IsLazyLoadingFormat => false;
+        public Task<AppData> LoadMetadataOnlyAsync() => LoadAsync();
+        public Task<string?> LoadNoteContentAsync(Guid noteId) => Task.FromResult<string?>(null);
+        public Task SaveNoteContentAsync(Guid noteId, string content) => Task.CompletedTask;
+        public Task DeleteNoteContentAsync(Guid noteId) => Task.CompletedTask;
+        public Task<bool> MigrateToLazyLoadingFormatAsync() => Task.FromResult(false);
+        public Task PreloadNoteContentsAsync(IEnumerable<Guid> noteIds) => Task.CompletedTask;
+        
         public void Dispose() { }
     }
 

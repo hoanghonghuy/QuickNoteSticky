@@ -54,7 +54,14 @@ public interface IFileSystem
     Task<string> ReadAllTextAsync(string path);
     Task WriteAllTextAsync(string path, string content);
     bool FileExists(string path);
+    bool DirectoryExists(string path);
     void CreateDirectory(string path);
+    void DeleteFile(string path);
+    Task DeleteFileAsync(string path);
+    void MoveFile(string sourcePath, string destinationPath);
+    Task MoveFileAsync(string sourcePath, string destinationPath);
+    string? GetDirectoryName(string path);
+    string Combine(params string[] paths);
 }
 ```
 
@@ -69,7 +76,11 @@ public interface IDialogService
 {
     Task<bool> ShowConfirmationAsync(string title, string message);
     Task ShowErrorAsync(string title, string message);
+    Task ShowInfoAsync(string title, string message);
+    Task ShowSuccessAsync(string title, string message);
+    Task ShowWarningAsync(string title, string message);
     Task<T?> ShowCustomDialogAsync<T>(Func<Window> dialogFactory) where T : class;
+    Task<T?> ShowCustomDialogAsync<T>(Window owner, Func<Window> dialogFactory) where T : class;
 }
 ```
 
@@ -81,24 +92,29 @@ DevSticky includes comprehensive crash detection, analysis, and recovery systems
 
 ### ICrashAnalyticsService
 
-Service for analyzing and tracking application crashes.
+Service for crash reporting and analytics.
 
 ```csharp
-public interface ICrashAnalyticsService
+public interface ICrashAnalyticsService : IDisposable
 {
-    Task<CrashReport> AnalyzeCrashAsync(Exception exception, string context = "");
-    Task<IReadOnlyList<CrashReport>> GetRecentCrashesAsync(TimeSpan timeWindow);
-    Task<bool> HasRecentCrashesAsync(int threshold = 3, TimeSpan window = TimeSpan.FromMinutes(5));
-    void TrackCrashPattern(string component, Exception exception);
+    Task RecordCrashAsync(CrashReport crashReport);
+    Task RecordRecoveryAttemptAsync(RecoveryAttempt recoveryAttempt);
+    Task RecordSafeModeUsageAsync(SafeModeUsage safeModeUsage);
+    Task<CrashFrequencyStats> GetCrashFrequencyStatsAsync();
+    Task<FailurePatternAnalysis> AnalyzeFailurePatternsAsync();
+    Task<RecoverySuccessStats> GetRecoverySuccessStatsAsync();
+    Task<SafeModeStats> GetSafeModeStatsAsync();
     Task<CrashAnalyticsReport> GenerateAnalyticsReportAsync();
+    Task CleanupOldDataAsync(TimeSpan maxAge);
 }
 ```
 
 **Features**:
-- Windows Event Log analysis for crash detection
-- Stack trace analysis and component identification
-- Crash pattern recognition and frequency tracking
-- Comprehensive crash reporting with context
+- Crash recording and tracking
+- Recovery attempt monitoring
+- Safe mode usage statistics
+- Failure pattern analysis
+- Comprehensive analytics reporting
 
 **Implementation**: `CrashAnalyticsService`
 
@@ -202,25 +218,25 @@ public interface IStartupDiagnostics
 
 ### IExceptionLogger
 
-Centralized exception logging with context and categorization.
+Centralized exception logging with startup context and resource tracking.
 
 ```csharp
-public interface IExceptionLogger
+public interface IExceptionLogger : IDisposable
 {
-    Task LogExceptionAsync(Exception exception, string context = "", ExceptionSeverity severity = ExceptionSeverity.Error);
-    Task LogExceptionAsync(Exception exception, Dictionary<string, object> contextData);
-    Task<IReadOnlyList<ExceptionLogEntry>> GetRecentExceptionsAsync(TimeSpan timeWindow);
-    Task<ExceptionStatistics> GetExceptionStatisticsAsync();
-    void SetContextProperty(string key, object value);
-    void ClearContext();
+    void LogStartupException(Exception exception, StartupExceptionContext context);
+    Task LogStartupExceptionAsync(Exception exception, StartupExceptionContext context);
+    void TrackResource(IDisposable resource);
+    void CleanupTrackedResources();
+    T ExecuteWithResourceTracking<T>(Func<T> operation, StartupExceptionContext context);
+    Task<T> ExecuteWithResourceTrackingAsync<T>(Func<Task<T>> operation, StartupExceptionContext context);
 }
 ```
 
 **Features**:
 - Dual logging (file and Windows Event Log)
-- Exception categorization and severity levels
-- Context data collection
-- Exception statistics and analysis
+- Startup-specific context information
+- Resource tracking for cleanup on failure
+- Safe execution with automatic cleanup
 
 **Implementation**: `ExceptionLogger`
 
@@ -300,13 +316,19 @@ public class RecoveryAction
 public class SafeModeConfig
 {
     public bool IsEnabled { get; set; }
-    public IList<string> DisabledServices { get; set; }
-    public IList<string> DisabledFeatures { get; set; }
-    public bool UseDefaultTheme { get; set; }
+    public string Reason { get; set; }
+    public DateTime ActivatedAt { get; set; }
+    public bool UseDefaultSettings { get; set; }
+    public bool DisableNonEssentialServices { get; set; }
     public bool DisableCloudSync { get; set; }
     public bool DisableHotkeys { get; set; }
-    public int MaxNoteCount { get; set; }
-    public TimeSpan StartupTimeout { get; set; }
+    public bool DisableMarkdownPreview { get; set; }
+    public bool DisableSnippetsAndTemplates { get; set; }
+    public bool DisableThemeSwitching { get; set; }
+    public int MaxNotesToLoad { get; set; }
+    public bool ShowSafeModeIndicator { get; set; }
+    public List<string> StartupFailures { get; set; }
+    public int AutoActivateThreshold { get; set; }
 }
 ```
 
@@ -440,6 +462,265 @@ public interface IDirtyTracker<T>
 
 **Implementation**: `DirtyTracker<T>`
 
+## v2.1.0 New Services
+
+### IFolderService
+
+Manages hierarchical folder structure for notes.
+
+```csharp
+public interface IFolderService
+{
+    Task<NoteFolder> CreateFolderAsync(string name, Guid? parentId = null);
+    Task<bool> DeleteFolderAsync(Guid folderId);
+    Task<bool> RenameFolderAsync(Guid folderId, string newName);
+    Task<bool> MoveFolderAsync(Guid folderId, Guid? newParentId);
+    Task<bool> MoveNoteToFolderAsync(Guid noteId, Guid? folderId);
+    Task<IReadOnlyList<NoteFolder>> GetAllFoldersAsync();
+    Task<IReadOnlyList<NoteFolder>> GetRootFoldersAsync();
+    Task<IReadOnlyList<NoteFolder>> GetChildFoldersAsync(Guid parentId);
+    Task<IReadOnlyList<Note>> GetNotesInFolderAsync(Guid? folderId);
+    Task SaveAsync();
+    Task LoadAsync();
+}
+```
+
+**Features**:
+- Hierarchical folder structure with unlimited nesting
+- Drag-and-drop support for notes and folders
+- Folder colors and icons
+- JSON persistence
+
+**Implementation**: `FolderService`
+
+### ISmartCollectionService
+
+Manages smart collections that automatically group notes by criteria.
+
+```csharp
+public interface ISmartCollectionService
+{
+    IReadOnlyList<SmartCollection> GetDefaultCollections();
+    Task<SmartCollection> CreateCollectionAsync(string name, FilterCriteria criteria);
+    Task<bool> DeleteCollectionAsync(Guid collectionId);
+    Task<IReadOnlyList<Note>> GetNotesForCollectionAsync(Guid collectionId);
+    Task<IReadOnlyList<Note>> ApplyFilterAsync(FilterCriteria criteria, IEnumerable<Note> notes);
+    Task SaveAsync();
+    Task LoadAsync();
+}
+```
+
+**Default Collections**:
+- "Today" - Notes created/modified today
+- "This Week" - Notes from current week
+- "Has TODO" - Notes with unchecked checkboxes
+- "Code Notes" - Notes with code blocks
+
+**Implementation**: `SmartCollectionService`
+
+### IKanbanService
+
+Manages Kanban board functionality for task management.
+
+```csharp
+public interface IKanbanService
+{
+    Task<bool> UpdateNoteStatusAsync(Guid noteId, KanbanStatus status);
+    Task<IReadOnlyList<Note>> GetNotesByStatusAsync(KanbanStatus status);
+    Task<Dictionary<KanbanStatus, IReadOnlyList<Note>>> GetAllKanbanNotesAsync();
+}
+```
+
+**KanbanStatus Enum**:
+- `ToDo` - Tasks to be done
+- `InProgress` - Tasks in progress
+- `Done` - Completed tasks
+
+**Implementation**: `KanbanService`
+
+### ITimelineService
+
+Provides timeline view functionality for notes.
+
+```csharp
+public interface ITimelineService
+{
+    Task<IReadOnlyList<TimelineItem>> GetTimelineItemsAsync(DateTime? fromDate = null, DateTime? toDate = null);
+    Dictionary<DateTime, IReadOnlyList<TimelineItem>> GroupByDate(IEnumerable<TimelineItem> items);
+    IReadOnlyList<TimelineItem> FilterByDateRange(IEnumerable<TimelineItem> items, DateTime fromDate, DateTime toDate);
+}
+```
+
+**Implementation**: `TimelineService`
+
+### IFuzzySearchService
+
+Intelligent search with typo tolerance.
+
+```csharp
+public interface IFuzzySearchService
+{
+    IReadOnlyList<FuzzySearchResult> Search(string query, IEnumerable<Note> notes, int maxResults = 20);
+    int CalculateLevenshteinDistance(string source, string target);
+    double CalculateRelevanceScore(string query, string text, MatchType matchType);
+}
+```
+
+**Features**:
+- Levenshtein distance-based fuzzy matching
+- Relevance scoring (exact > partial > fuzzy)
+- Highlight positions for matched terms
+
+**Implementation**: `FuzzySearchService`
+
+### IFileDropService
+
+Handles file drag-and-drop operations.
+
+```csharp
+public interface IFileDropService
+{
+    Task<string> ProcessDroppedFileAsync(string filePath);
+    Task<string> ProcessDroppedFilesAsync(IEnumerable<string> filePaths);
+    bool IsTextFile(string filePath);
+    bool IsCodeFile(string filePath);
+    bool IsImageFile(string filePath);
+}
+```
+
+**Supported File Types**:
+- Text files (.txt, .md, .json, .xml): Insert content
+- Code files (.cs, .js, .py, etc.): Insert with syntax highlighting
+- Images (.png, .jpg, .gif): Insert as markdown image
+- Other files: Insert file path
+
+**Implementation**: `FileDropService`
+
+### IMemoryCleanupService
+
+Automatic memory cleanup of unused resources.
+
+```csharp
+public interface IMemoryCleanupService : IDisposable
+{
+    void Start();
+    void Stop();
+    void CleanupNow();
+    void MarkAccessed(Guid noteId);
+    void MarkClosed(Guid noteId);
+    MemoryStats GetStats();
+    event EventHandler<CleanupEventArgs>? CleanupPerformed;
+}
+```
+
+**Features**:
+- Automatic cleanup every 5 minutes
+- Releases content of notes closed > 10 minutes
+- Memory usage statistics
+
+**Implementation**: `MemoryCleanupService`
+
+### IRecentNotesService
+
+Tracks recently accessed notes.
+
+```csharp
+public interface IRecentNotesService
+{
+    void AddRecentNote(Guid noteId, string title);
+    IReadOnlyList<RecentNoteInfo> GetRecentNotes(int count = 10);
+    void ClearRecentNotes();
+    void RemoveNote(Guid noteId);
+}
+```
+
+**Implementation**: `RecentNotesService`
+
+### IBackupService
+
+Automatic backup management.
+
+```csharp
+public interface IBackupService : IDisposable
+{
+    void Start();
+    void Stop();
+    Task BackupNowAsync();
+    Task<IReadOnlyList<BackupInfo>> GetAvailableBackupsAsync();
+    Task<bool> RestoreFromBackupAsync(string backupPath);
+    Task CleanupOldBackupsAsync(int keepCount = 10);
+}
+```
+
+**Features**:
+- Automatic backup every 30 minutes (configurable)
+- Keeps up to 10 backup versions
+- Backup restore with selection dialog
+
+**Implementation**: `BackupService`
+
+### IUndoRedoService
+
+Command pattern-based undo/redo.
+
+```csharp
+public interface IUndoRedoService
+{
+    void Execute(IUndoableCommand command);
+    bool CanUndo { get; }
+    bool CanRedo { get; }
+    void Undo();
+    void Redo();
+    void Clear();
+}
+```
+
+**Features**:
+- 50-step history limit
+- Command batching support
+- Integration with AvalonEdit's built-in undo
+
+**Implementation**: `UndoRedoService`
+
+### IPerformanceMonitoringService
+
+Performance monitoring and metrics collection.
+
+```csharp
+public interface IPerformanceMonitoringService : IDisposable
+{
+    void StartCategoryTiming(string category);
+    void StopCategoryTiming(string category);
+    void MarkMilestone(string milestone);
+    PerformanceMetrics GetPerformanceMetrics();
+    Task ExportPerformanceMetricsAsync(string filePath);
+    void LogPerformanceSummary();
+    IReadOnlyList<PerformanceWarning> GetWarnings();
+    void UpdateThresholds(PerformanceThresholds newThresholds);
+}
+```
+
+**Implementation**: `PerformanceMonitoringService`
+
+### IServiceFallbackManager
+
+Manages service fallback mechanisms during startup failures.
+
+```csharp
+public interface IServiceFallbackManager
+{
+    T? CreateFallbackService<T>(string serviceName, Exception originalException) where T : class;
+    bool DetectServiceFailure(Type serviceType, object? serviceInstance);
+    string? GetEmbeddedFallbackResource(string resourceType, string resourceKey);
+    ServiceFallbackResult ConfigureGracefulDegradation(string serviceName, int degradationLevel);
+    void RegisterFallback<TInterface, TFallback>() where TInterface : class where TFallback : class, TInterface;
+    bool HasFallback<T>() where T : class;
+    Dictionary<Type, Type> GetRegisteredFallbacks();
+}
+```
+
+**Implementation**: `ServiceFallbackManager`
+
 ## Business Logic Services
 
 ### IGroupManagementService
@@ -495,18 +776,65 @@ public interface ITagManagementService
 Core note operations and lifecycle management.
 
 ```csharp
-public interface INoteService
+public interface INoteService : IDisposable
 {
-    Task<Note> CreateNoteAsync(string? content = null, NoteGroup? group = null);
-    Task<Note?> GetNoteAsync(Guid noteId);
-    Task<IReadOnlyList<Note>> GetAllNotesAsync();
-    Task SaveNoteAsync(Note note);
-    Task DeleteNoteAsync(Guid noteId);
-    Task<IReadOnlyList<Note>> SearchNotesAsync(string query);
+    Note CreateNote();
+    void AddNote(Note note);
+    void UpdateNote(Note note);
+    void DeleteNote(Guid id);
+    Note? GetNoteById(Guid id);
+    IReadOnlyList<Note> GetAllNotes();
+    void TogglePin(Guid id);
+    double AdjustOpacity(Guid id, double step);
+    void LoadNotes(IEnumerable<Note> notes);
+    
+    // Lazy Loading Methods (v2.1.0)
+    Task PreloadContentsAsync(IEnumerable<Guid> noteIds);
+    Task<bool> EnsureContentLoadedAsync(Guid noteId);
+    void UnloadNoteContent(Guid noteId);
+    Task<string?> GetNoteContentAsync(Guid noteId);
+    Task SaveNoteContentAsync(Guid noteId, string content);
 }
 ```
 
+**Features**:
+- CRUD operations for notes
+- Lazy loading support for on-demand content loading
+- Content preloading for batch operations
+- Memory management via content unloading
+
 **Implementation**: `NoteService`
+
+### IStorageService
+
+Data persistence and lazy loading storage.
+
+```csharp
+public interface IStorageService : IDisposable
+{
+    Task<AppData> LoadAsync();
+    Task SaveAsync(AppData data);
+    Task SaveNotesAsync(IEnumerable<Note> notes, AppData currentData);
+    string GetStoragePath();
+    
+    // Lazy Loading Methods (v2.1.0)
+    bool IsLazyLoadingFormat { get; }
+    Task<AppData> LoadMetadataOnlyAsync();
+    Task<string?> LoadNoteContentAsync(Guid noteId);
+    Task SaveNoteContentAsync(Guid noteId, string content);
+    Task DeleteNoteContentAsync(Guid noteId);
+    Task<bool> MigrateToLazyLoadingFormatAsync();
+    Task PreloadNoteContentsAsync(IEnumerable<Guid> noteIds);
+}
+```
+
+**Features**:
+- JSON-based local storage
+- Lazy loading format with separate content files
+- Automatic migration from legacy format
+- Thread-safe per-note operations
+
+**Implementation**: `StorageService`
 
 ### ISearchService
 
@@ -676,8 +1004,88 @@ public static class MonitorBoundsHelper
 - **ValidationHelper**: Input validation utilities
 - **WeakEventHelper**: Memory-safe event handling
 - **WpfResourceHelper**: WPF resource cleanup utilities
+- **MemoryLeakDetector**: Detects potential memory leaks
+- **PerformanceBenchmark**: Performance measurement utilities
 
 ## Data Models
+
+### v2.1.0 New Models
+
+#### NoteFolder
+```csharp
+public class NoteFolder
+{
+    public Guid Id { get; set; }
+    public string Name { get; set; }
+    public Guid? ParentId { get; set; }
+    public string Color { get; set; }
+    public string Icon { get; set; }
+    public DateTime CreatedDate { get; set; }
+    public int SortOrder { get; set; }
+}
+```
+
+#### SmartCollection
+```csharp
+public class SmartCollection
+{
+    public Guid Id { get; set; }
+    public string Name { get; set; }
+    public string Icon { get; set; }
+    public FilterCriteria Criteria { get; set; }
+    public bool IsBuiltIn { get; set; }
+}
+```
+
+#### FilterCriteria
+```csharp
+public class FilterCriteria
+{
+    public List<Guid> TagIds { get; set; }
+    public DateRangeType? DateRange { get; set; }
+    public DateTime? CustomFromDate { get; set; }
+    public DateTime? CustomToDate { get; set; }
+    public string? ContentContains { get; set; }
+    public string? Language { get; set; }
+    public bool? HasCheckboxes { get; set; }
+    public bool? HasCodeBlocks { get; set; }
+}
+```
+
+#### TimelineItem
+```csharp
+public record TimelineItem(
+    Guid NoteId,
+    string Title,
+    string ContentPreview,
+    DateTime CreatedDate,
+    DateTime ModifiedDate,
+    IReadOnlyList<string> Tags
+);
+```
+
+#### FuzzySearchResult
+```csharp
+public record FuzzySearchResult(
+    Note Note,
+    double Score,
+    MatchType MatchType,
+    IReadOnlyList<HighlightRange> Highlights
+);
+```
+
+#### MemoryStats
+```csharp
+public class MemoryStats
+{
+    public long TotalMemoryBytes { get; set; }
+    public long ManagedMemoryBytes { get; set; }
+    public int LoadedNotesCount { get; set; }
+    public int CachedItemsCount { get; set; }
+    public DateTime LastCleanupTime { get; set; }
+    public int ItemsCleanedLastRun { get; set; }
+}
+```
 
 ### TrackableModel
 

@@ -173,6 +173,41 @@ public class FallbackNoteService : INoteService
         false,
         "FallbackNoteService.AddNote");
     }
+    
+    #region Lazy Loading (Not supported in fallback mode)
+    
+    public Task PreloadContentsAsync(IEnumerable<Guid> noteIds) => Task.CompletedTask;
+    
+    public Task<bool> EnsureContentLoadedAsync(Guid noteId)
+    {
+        var note = GetNoteById(noteId);
+        if (note != null) note.IsContentLoaded = true;
+        return Task.FromResult(true);
+    }
+    
+    public void UnloadNoteContent(Guid noteId)
+    {
+        // No-op in fallback mode
+    }
+    
+    public Task<string?> GetNoteContentAsync(Guid noteId)
+    {
+        var note = GetNoteById(noteId);
+        return Task.FromResult(note?.Content);
+    }
+    
+    public Task SaveNoteContentAsync(Guid noteId, string content)
+    {
+        var note = GetNoteById(noteId);
+        if (note != null)
+        {
+            note.Content = content;
+            note.IsContentLoaded = true;
+        }
+        return Task.CompletedTask;
+    }
+    
+    #endregion
 
     public void Dispose()
     {

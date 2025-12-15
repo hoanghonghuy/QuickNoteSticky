@@ -353,6 +353,13 @@ public class TestNoteService : INoteService
     }
     
     public void Dispose() { }
+    
+    // Lazy loading methods
+    public Task PreloadContentsAsync(IEnumerable<Guid> noteIds) => Task.CompletedTask;
+    public Task<bool> EnsureContentLoadedAsync(Guid noteId) => Task.FromResult(true);
+    public void UnloadNoteContent(Guid noteId) { }
+    public Task<string?> GetNoteContentAsync(Guid noteId) => Task.FromResult<string?>(GetNoteById(noteId)?.Content);
+    public Task SaveNoteContentAsync(Guid noteId, string content) => Task.CompletedTask;
 }
 
 #endregion

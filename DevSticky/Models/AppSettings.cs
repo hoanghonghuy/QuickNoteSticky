@@ -73,6 +73,9 @@ public class AppSettings
     // v2.1 properties for recent notes
     public int MaxRecentNotes { get; set; } = 10;
 
+    // v2.1 properties for lazy loading
+    public bool LazyLoadingEnabled { get; set; } = true;
+
     public void Save()
     {
         try

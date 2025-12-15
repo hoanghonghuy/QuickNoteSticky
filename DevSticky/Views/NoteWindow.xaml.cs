@@ -293,7 +293,7 @@ public partial class NoteWindow : Window
         PopulateMonitorMenu();
     }
 
-    private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+    private async void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
     {
         if (e.NewValue is NoteViewModel vm)
         {
@@ -305,6 +305,23 @@ public partial class NoteWindow : Window
             
             // Set initial content with flag to prevent auto-save
             _isInitializingContent = true;
+            
+            // Lazy loading: ensure content is loaded before displaying
+            var note = _noteService.GetNoteById(vm.Id);
+            if (note != null && !note.IsContentLoaded)
+            {
+                // Show loading indicator
+                Editor.Text = "Loading...";
+                Editor.IsEnabled = false;
+                
+                // Load content asynchronously
+                await _noteService.EnsureContentLoadedAsync(vm.Id);
+                
+                // Update ViewModel with loaded content
+                vm.Content = note.Content;
+                Editor.IsEnabled = true;
+            }
+            
             Editor.Text = vm.Content;
             _isInitializingContent = false;
             

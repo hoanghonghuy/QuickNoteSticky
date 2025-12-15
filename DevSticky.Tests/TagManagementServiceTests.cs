@@ -477,6 +477,13 @@ public class TagManagementServiceTests
         public void TogglePin(Guid id) { }
         public double AdjustOpacity(Guid id, double step) => 0.9;
         public void LoadNotes(IEnumerable<Note> notes) { }
+        
+        // Lazy loading methods
+        public Task PreloadContentsAsync(IEnumerable<Guid> noteIds) => Task.CompletedTask;
+        public Task<bool> EnsureContentLoadedAsync(Guid noteId) => Task.FromResult(true);
+        public void UnloadNoteContent(Guid noteId) { }
+        public Task<string?> GetNoteContentAsync(Guid noteId) => Task.FromResult<string?>(null);
+        public Task SaveNoteContentAsync(Guid noteId, string content) => Task.CompletedTask;
     }
 
     private class MockFormatterService : IFormatterService
