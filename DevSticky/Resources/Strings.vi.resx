@@ -368,4 +368,111 @@
   <data name="SelectDate" xml:space="preserve"><value>Chọn ngày</value></data>
   <data name="DateRange" xml:space="preserve"><value>Khoảng thời gian</value></data>
   <data name="ClearFilter" xml:space="preserve"><value>Xóa bộ lọc</value></data>
+  
+  <!-- Help System -->
+  <data name="HelpTitle" xml:space="preserve"><value>Trợ giúp &amp; Hướng dẫn</value></data>
+  <data name="KeyboardShortcuts" xml:space="preserve"><value>Phím tắt</value></data>
+  <data name="HelpQuickStart" xml:space="preserve"><value>Bắt đầu nhanh</value></data>
+  <data name="HelpNotes" xml:space="preserve"><value>Ghi chú</value></data>
+  <data name="HelpKanban" xml:space="preserve"><value>Kanban</value></data>
+  <data name="HelpSnippets" xml:space="preserve"><value>Đoạn mã</value></data>
+  <data name="HelpGraph" xml:space="preserve"><value>Đồ thị</value></data>
+  <data name="HelpTimeline" xml:space="preserve"><value>Dòng thời gian</value></data>
+  <data name="HelpShortcuts" xml:space="preserve"><value>Phím tắt</value></data>
+  <data name="HelpTips" xml:space="preserve"><value>Mẹo</value></data>
+  <data name="HelpQuickStartTitle" xml:space="preserve"><value>Bắt đầu với DevSticky</value></data>
+  <data name="HelpQuickStartIntro" xml:space="preserve"><value>DevSticky là ứng dụng ghi chú dành cho lập trình viên với tô sáng cú pháp, đoạn mã, và nhiều tính năng khác.</value></data>
+  <data name="HelpCreateNote" xml:space="preserve"><value>Tạo ghi chú</value></data>
+  <data name="HelpCreateNoteDesc" xml:space="preserve"><value>Nhấn "+ Ghi chú mới" trong Bảng điều khiển hoặc dùng biểu tượng khay hệ thống. Ghi chú tự động lưu khi bạn gõ.</value></data>
+  <data name="HelpOrganize" xml:space="preserve"><value>Sắp xếp ghi chú</value></data>
+  <data name="HelpOrganizeDesc" xml:space="preserve"><value>Dùng Nhóm và Thẻ để sắp xếp ghi chú. Kéo ghi chú vào nhóm hoặc nhấn nút thẻ để thêm thẻ.</value></data>
+  <data name="HelpViews" xml:space="preserve"><value>Các chế độ xem</value></data>
+  <data name="HelpViewsDesc" xml:space="preserve"><value>Dùng Kanban để quản lý công việc, Dòng thời gian để xem theo thời gian, và Đồ thị để xem liên kết giữa các ghi chú.</value></data>
+  <data name="HelpNotesTitle" xml:space="preserve"><value>Làm việc với ghi chú</value></data>
+  <data name="HelpNotesCreate" xml:space="preserve"><value>Tạo ghi chú</value></data>
+  <data name="HelpNotesCreateDesc1" xml:space="preserve"><value>Nhấn "+ Ghi chú mới" trong Bảng điều khiển</value></data>
+  <data name="HelpNotesCreateDesc2" xml:space="preserve"><value>Nhấn chuột phải vào khay hệ thống → Ghi chú mới</value></data>
+  <data name="HelpNotesEdit" xml:space="preserve"><value>Chỉnh sửa ghi chú</value></data>
+  <data name="HelpNotesEditDesc1" xml:space="preserve"><value>Chọn ngôn ngữ để tô sáng cú pháp</value></data>
+  <data name="HelpNotesEditDesc2" xml:space="preserve"><value>Dùng Ctrl+Shift+F để định dạng mã</value></data>
+  <data name="HelpNotesEditDesc3" xml:space="preserve"><value>Ghi chú tự động lưu sau 1 giây không hoạt động</value></data>
+  <data name="HelpNotesFeatures" xml:space="preserve"><value>Tính năng</value></data>
+  <data name="HelpNotesFeature1" xml:space="preserve"><value>Ghim ghi chú để luôn hiển thị trên cùng</value></data>
+  <data name="HelpNotesFeature2" xml:space="preserve"><value>Điều chỉnh độ trong suốt bằng thanh trượt</value></data>
+  <data name="HelpNotesFeature3" xml:space="preserve"><value>Dùng xem trước Markdown cho nội dung .md</value></data>
+  <data name="HelpNotesFeature4" xml:space="preserve"><value>Kéo thả file để chèn đường dẫn hoặc nội dung</value></data>
+  <data name="HelpKanbanTitle" xml:space="preserve"><value>Bảng Kanban</value></data>
+  <data name="HelpKanbanIntro" xml:space="preserve"><value>Chế độ xem Kanban giúp bạn quản lý công việc với bảng trực quan. Ghi chú được sắp xếp vào các cột theo trạng thái.</value></data>
+  <data name="HelpKanbanOpen" xml:space="preserve"><value>Mở Kanban</value></data>
+  <data name="HelpKanbanOpenDesc" xml:space="preserve"><value>Nhấn nút 📋 ở chân Bảng điều khiển để mở chế độ xem Kanban.</value></data>
+  <data name="HelpKanbanUse" xml:space="preserve"><value>Sử dụng Kanban</value></data>
+  <data name="HelpKanbanUseDesc1" xml:space="preserve"><value>Tất cả ghi chú tự động xuất hiện trong bảng</value></data>
+  <data name="HelpKanbanUseDesc2" xml:space="preserve"><value>Kéo thẻ giữa các cột để thay đổi trạng thái</value></data>
+  <data name="HelpKanbanUseDesc3" xml:space="preserve"><value>Nhấn vào thẻ để mở và chỉnh sửa ghi chú</value></data>
+  <data name="HelpKanbanColumns" xml:space="preserve"><value>Các cột</value></data>
+  <data name="HelpKanbanTodo" xml:space="preserve"><value>Công việc cần bắt đầu</value></data>
+  <data name="HelpKanbanProgress" xml:space="preserve"><value>Công việc đang thực hiện</value></data>
+  <data name="HelpKanbanDone" xml:space="preserve"><value>Công việc đã hoàn thành</value></data>
+  <data name="HelpSnippetsTitle" xml:space="preserve"><value>Đoạn mã</value></data>
+  <data name="HelpSnippetsIntro" xml:space="preserve"><value>Lưu mã thường dùng thành đoạn mã để chèn nhanh. Đoạn mã hỗ trợ placeholder cho nội dung động.</value></data>
+  <data name="HelpSnippetsSave" xml:space="preserve"><value>Lưu đoạn mã</value></data>
+  <data name="HelpSnippetsSaveDesc1" xml:space="preserve"><value>Chọn (bôi đen) văn bản trong ghi chú</value></data>
+  <data name="HelpSnippetsSaveDesc2" xml:space="preserve"><value>Nhấn Ctrl+Shift+S</value></data>
+  <data name="HelpSnippetsSaveDesc3" xml:space="preserve"><value>Nhập tên, trigger, và mô tả</value></data>
+  <data name="HelpSnippetsInsert" xml:space="preserve"><value>Chèn đoạn mã</value></data>
+  <data name="HelpSnippetsInsertDesc1" xml:space="preserve"><value>Nhấn Ctrl+Shift+I để mở Thư viện đoạn mã</value></data>
+  <data name="HelpSnippetsInsertDesc2" xml:space="preserve"><value>Chọn đoạn mã và nhấn Chèn</value></data>
+  <data name="HelpSnippetsManage" xml:space="preserve"><value>Quản lý đoạn mã</value></data>
+  <data name="HelpSnippetsManageDesc" xml:space="preserve"><value>Mở Thư viện đoạn mã từ menu Bảng điều khiển (⋯) để sửa, xóa, hoặc xuất/nhập đoạn mã.</value></data>
+  <data name="HelpGraphTitle" xml:space="preserve"><value>Đồ thị ghi chú</value></data>
+  <data name="HelpGraphIntro" xml:space="preserve"><value>Chế độ xem đồ thị hiển thị các kết nối giữa ghi chú. Liên kết ghi chú với nhau để xây dựng mạng lưới kiến thức.</value></data>
+  <data name="HelpGraphCreate" xml:space="preserve"><value>Tạo liên kết</value></data>
+  <data name="HelpGraphCreateDesc1" xml:space="preserve"><value>Gõ [[ trong ghi chú để bắt đầu liên kết</value></data>
+  <data name="HelpGraphCreateDesc2" xml:space="preserve"><value>Chọn ghi chú từ danh sách gợi ý</value></data>
+  <data name="HelpGraphView" xml:space="preserve"><value>Sử dụng chế độ xem đồ thị</value></data>
+  <data name="HelpGraphViewDesc1" xml:space="preserve"><value>Mở từ menu Bảng điều khiển (⋯) → Xem đồ thị</value></data>
+  <data name="HelpGraphViewDesc2" xml:space="preserve"><value>Nhấn vào nút để mở ghi chú</value></data>
+  <data name="HelpGraphViewDesc3" xml:space="preserve"><value>Cuộn để zoom, kéo để di chuyển</value></data>
+  <data name="HelpTimelineTitle" xml:space="preserve"><value>Dòng thời gian</value></data>
+  <data name="HelpTimelineIntro" xml:space="preserve"><value>Dòng thời gian hiển thị ghi chú theo ngày tạo, giúp dễ dàng tìm ghi chú từ các khoảng thời gian cụ thể.</value></data>
+  <data name="HelpTimelineOpen" xml:space="preserve"><value>Mở dòng thời gian</value></data>
+  <data name="HelpTimelineOpenDesc" xml:space="preserve"><value>Nhấn nút 📅 ở chân Bảng điều khiển để mở chế độ xem Dòng thời gian.</value></data>
+  <data name="HelpTimelineFeatures" xml:space="preserve"><value>Tính năng</value></data>
+  <data name="HelpTimelineFeature1" xml:space="preserve"><value>Ghi chú được nhóm theo ngày</value></data>
+  <data name="HelpTimelineFeature2" xml:space="preserve"><value>Lọc theo khoảng thời gian</value></data>
+  <data name="HelpTimelineFeature3" xml:space="preserve"><value>Nhấn vào ghi chú để mở</value></data>
+  <data name="HelpShortcutsTitle" xml:space="preserve"><value>Phím tắt</value></data>
+  <data name="HelpShortcutsGeneral" xml:space="preserve"><value>Chung</value></data>
+  <data name="HelpShortcutsSnippets" xml:space="preserve"><value>Đoạn mã</value></data>
+  <data name="HelpShortcutsFormat" xml:space="preserve"><value>Định dạng</value></data>
+  <data name="HelpShortcutsHelp" xml:space="preserve"><value>Trợ giúp</value></data>
+  <data name="ShortcutNewNote" xml:space="preserve"><value>Tạo ghi chú mới</value></data>
+  <data name="ShortcutSave" xml:space="preserve"><value>Lưu ghi chú</value></data>
+  <data name="ShortcutSearch" xml:space="preserve"><value>Tìm kiếm trong ghi chú</value></data>
+  <data name="ShortcutClose" xml:space="preserve"><value>Đóng cửa sổ ghi chú</value></data>
+  <data name="ShortcutHide" xml:space="preserve"><value>Ẩn cửa sổ ghi chú</value></data>
+  <data name="ShortcutSaveSnippet" xml:space="preserve"><value>Lưu vùng chọn thành đoạn mã</value></data>
+  <data name="ShortcutInsertSnippet" xml:space="preserve"><value>Mở thư viện đoạn mã</value></data>
+  <data name="ShortcutNextPlaceholder" xml:space="preserve"><value>Placeholder tiếp theo (trong đoạn mã)</value></data>
+  <data name="ShortcutPrevPlaceholder" xml:space="preserve"><value>Placeholder trước đó</value></data>
+  <data name="ShortcutFormat" xml:space="preserve"><value>Định dạng mã</value></data>
+  <data name="ShortcutCreateLink" xml:space="preserve"><value>Tạo liên kết ghi chú</value></data>
+  <data name="ShortcutFollowLink" xml:space="preserve"><value>Theo liên kết</value></data>
+  <data name="ShortcutHelp" xml:space="preserve"><value>Mở trợ giúp</value></data>
+  <data name="ShortcutCategoryGeneral" xml:space="preserve"><value>Chung</value></data>
+  <data name="ShortcutCategorySnippets" xml:space="preserve"><value>Đoạn mã</value></data>
+  <data name="ShortcutCategoryFormat" xml:space="preserve"><value>Định dạng</value></data>
+  <data name="ShortcutCategoryNavigation" xml:space="preserve"><value>Điều hướng</value></data>
+  <data name="ShortcutCategoryHelp" xml:space="preserve"><value>Trợ giúp</value></data>
+  <data name="ShortcutsFooter" xml:space="preserve"><value>Nhấn F1 bất cứ lúc nào để mở bảng này</value></data>
+  <data name="HelpTipsTitle" xml:space="preserve"><value>Mẹo &amp; Thủ thuật</value></data>
+  <data name="HelpTip1" xml:space="preserve"><value>Nhấn đúp vào tiêu đề ghi chú trong Bảng điều khiển để đổi tên trực tiếp</value></data>
+  <data name="HelpTip2" xml:space="preserve"><value>Kéo ghi chú vào tiêu đề nhóm để sắp xếp nhanh</value></data>
+  <data name="HelpTip3" xml:space="preserve"><value>Dùng ngôn ngữ Markdown cho ghi chú có định dạng - bật xem trước bằng biểu tượng mắt</value></data>
+  <data name="HelpTip4" xml:space="preserve"><value>Ghim ghi chú quan trọng để luôn hiển thị trên cùng</value></data>
+  <data name="HelpTip5" xml:space="preserve"><value>Xuất ghi chú thường xuyên qua Cài đặt → Sao lưu &amp; Khôi phục</value></data>
+  <data name="HelpTip6" xml:space="preserve"><value>Dùng đoạn mã với placeholder như ${1:name} cho nội dung động</value></data>
+  <data name="Help" xml:space="preserve"><value>Trợ giúp</value></data>
+  <data name="KanbanView" xml:space="preserve"><value>Xem Kanban</value></data>
+  <data name="TimelineView" xml:space="preserve"><value>Xem dòng thời gian</value></data>
 </root>

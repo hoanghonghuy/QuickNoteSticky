@@ -596,6 +596,13 @@ public partial class NoteWindow : Window
                 e.Handled = true;
             }
         }
+        else if (e.Key == Key.F1)
+        {
+            // Open keyboard shortcuts help
+            var window = new KeyboardShortcutsWindow { Owner = this };
+            window.ShowDialog();
+            e.Handled = true;
+        }
         else if (e.Key == Key.Escape)
         {
             if (SearchPanel.Visibility == Visibility.Visible)

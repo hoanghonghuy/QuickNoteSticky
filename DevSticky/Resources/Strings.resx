@@ -1035,4 +1035,343 @@ This tag will be removed from {1} note(s).</value>
   <data name="ClearFilter" xml:space="preserve">
     <value>Clear Filter</value>
   </data>
+  
+  <!-- Help System -->
+  <data name="HelpTitle" xml:space="preserve">
+    <value>Help &amp; Guide</value>
+  </data>
+  <data name="KeyboardShortcuts" xml:space="preserve">
+    <value>Keyboard Shortcuts</value>
+  </data>
+  <data name="HelpQuickStart" xml:space="preserve">
+    <value>Quick Start</value>
+  </data>
+  <data name="HelpNotes" xml:space="preserve">
+    <value>Notes</value>
+  </data>
+  <data name="HelpKanban" xml:space="preserve">
+    <value>Kanban</value>
+  </data>
+  <data name="HelpSnippets" xml:space="preserve">
+    <value>Snippets</value>
+  </data>
+  <data name="HelpGraph" xml:space="preserve">
+    <value>Graph</value>
+  </data>
+  <data name="HelpTimeline" xml:space="preserve">
+    <value>Timeline</value>
+  </data>
+  <data name="HelpShortcuts" xml:space="preserve">
+    <value>Shortcuts</value>
+  </data>
+  <data name="HelpTips" xml:space="preserve">
+    <value>Tips</value>
+  </data>
+  
+  <!-- Quick Start -->
+  <data name="HelpQuickStartTitle" xml:space="preserve">
+    <value>Getting Started with DevSticky</value>
+  </data>
+  <data name="HelpQuickStartIntro" xml:space="preserve">
+    <value>DevSticky is a developer-friendly sticky notes app with code highlighting, snippets, and more.</value>
+  </data>
+  <data name="HelpCreateNote" xml:space="preserve">
+    <value>Create a Note</value>
+  </data>
+  <data name="HelpCreateNoteDesc" xml:space="preserve">
+    <value>Click "+ New Note" in Dashboard or use the system tray icon. Notes auto-save as you type.</value>
+  </data>
+  <data name="HelpOrganize" xml:space="preserve">
+    <value>Organize Notes</value>
+  </data>
+  <data name="HelpOrganizeDesc" xml:space="preserve">
+    <value>Use Groups and Tags to organize your notes. Drag notes to groups or click the tag button to add tags.</value>
+  </data>
+  <data name="HelpViews" xml:space="preserve">
+    <value>Different Views</value>
+  </data>
+  <data name="HelpViewsDesc" xml:space="preserve">
+    <value>Use Kanban for task management, Timeline for chronological view, and Graph for linked notes visualization.</value>
+  </data>
+  
+  <!-- Notes Help -->
+  <data name="HelpNotesTitle" xml:space="preserve">
+    <value>Working with Notes</value>
+  </data>
+  <data name="HelpNotesCreate" xml:space="preserve">
+    <value>Creating Notes</value>
+  </data>
+  <data name="HelpNotesCreateDesc1" xml:space="preserve">
+    <value>Click "+ New Note" in Dashboard</value>
+  </data>
+  <data name="HelpNotesCreateDesc2" xml:space="preserve">
+    <value>Right-click system tray → New Note</value>
+  </data>
+  <data name="HelpNotesEdit" xml:space="preserve">
+    <value>Editing Notes</value>
+  </data>
+  <data name="HelpNotesEditDesc1" xml:space="preserve">
+    <value>Select language for syntax highlighting</value>
+  </data>
+  <data name="HelpNotesEditDesc2" xml:space="preserve">
+    <value>Use Ctrl+Shift+F to format code</value>
+  </data>
+  <data name="HelpNotesEditDesc3" xml:space="preserve">
+    <value>Notes auto-save after 1 second of inactivity</value>
+  </data>
+  <data name="HelpNotesFeatures" xml:space="preserve">
+    <value>Features</value>
+  </data>
+  <data name="HelpNotesFeature1" xml:space="preserve">
+    <value>Pin notes to keep them always on top</value>
+  </data>
+  <data name="HelpNotesFeature2" xml:space="preserve">
+    <value>Adjust opacity with the slider</value>
+  </data>
+  <data name="HelpNotesFeature3" xml:space="preserve">
+    <value>Use Markdown preview for .md content</value>
+  </data>
+  <data name="HelpNotesFeature4" xml:space="preserve">
+    <value>Drag files to insert file paths or content</value>
+  </data>
+  
+  <!-- Kanban Help -->
+  <data name="HelpKanbanTitle" xml:space="preserve">
+    <value>Kanban Board</value>
+  </data>
+  <data name="HelpKanbanIntro" xml:space="preserve">
+    <value>Kanban view helps you manage tasks with a visual board. Notes are organized into columns based on their status.</value>
+  </data>
+  <data name="HelpKanbanOpen" xml:space="preserve">
+    <value>Opening Kanban</value>
+  </data>
+  <data name="HelpKanbanOpenDesc" xml:space="preserve">
+    <value>Click the 📋 button in Dashboard footer to open Kanban view.</value>
+  </data>
+  <data name="HelpKanbanUse" xml:space="preserve">
+    <value>Using Kanban</value>
+  </data>
+  <data name="HelpKanbanUseDesc1" xml:space="preserve">
+    <value>All your notes automatically appear in the board</value>
+  </data>
+  <data name="HelpKanbanUseDesc2" xml:space="preserve">
+    <value>Drag cards between columns to change status</value>
+  </data>
+  <data name="HelpKanbanUseDesc3" xml:space="preserve">
+    <value>Click a card to open and edit the note</value>
+  </data>
+  <data name="HelpKanbanColumns" xml:space="preserve">
+    <value>Columns</value>
+  </data>
+  <data name="HelpKanbanTodo" xml:space="preserve">
+    <value>Tasks to be started</value>
+  </data>
+  <data name="HelpKanbanProgress" xml:space="preserve">
+    <value>Tasks currently being worked on</value>
+  </data>
+  <data name="HelpKanbanDone" xml:space="preserve">
+    <value>Completed tasks</value>
+  </data>
+  
+  <!-- Snippets Help -->
+  <data name="HelpSnippetsTitle" xml:space="preserve">
+    <value>Code Snippets</value>
+  </data>
+  <data name="HelpSnippetsIntro" xml:space="preserve">
+    <value>Save frequently used code as snippets for quick insertion. Snippets support placeholders for dynamic content.</value>
+  </data>
+  <data name="HelpSnippetsSave" xml:space="preserve">
+    <value>Saving Snippets</value>
+  </data>
+  <data name="HelpSnippetsSaveDesc1" xml:space="preserve">
+    <value>Select (highlight) text in a note</value>
+  </data>
+  <data name="HelpSnippetsSaveDesc2" xml:space="preserve">
+    <value>Press Ctrl+Shift+S</value>
+  </data>
+  <data name="HelpSnippetsSaveDesc3" xml:space="preserve">
+    <value>Enter name, trigger, and description</value>
+  </data>
+  <data name="HelpSnippetsInsert" xml:space="preserve">
+    <value>Inserting Snippets</value>
+  </data>
+  <data name="HelpSnippetsInsertDesc1" xml:space="preserve">
+    <value>Press Ctrl+Shift+I to open Snippet Browser</value>
+  </data>
+  <data name="HelpSnippetsInsertDesc2" xml:space="preserve">
+    <value>Select a snippet and click Insert</value>
+  </data>
+  <data name="HelpSnippetsManage" xml:space="preserve">
+    <value>Managing Snippets</value>
+  </data>
+  <data name="HelpSnippetsManageDesc" xml:space="preserve">
+    <value>Open Snippet Library from Dashboard menu (⋯) to edit, delete, or export/import snippets.</value>
+  </data>
+  
+  <!-- Graph Help -->
+  <data name="HelpGraphTitle" xml:space="preserve">
+    <value>Note Graph</value>
+  </data>
+  <data name="HelpGraphIntro" xml:space="preserve">
+    <value>Graph view visualizes connections between your notes. Link notes together to build a knowledge network.</value>
+  </data>
+  <data name="HelpGraphCreate" xml:space="preserve">
+    <value>Creating Links</value>
+  </data>
+  <data name="HelpGraphCreateDesc1" xml:space="preserve">
+    <value>Type [[ in a note to start linking</value>
+  </data>
+  <data name="HelpGraphCreateDesc2" xml:space="preserve">
+    <value>Select a note from the autocomplete list</value>
+  </data>
+  <data name="HelpGraphView" xml:space="preserve">
+    <value>Using Graph View</value>
+  </data>
+  <data name="HelpGraphViewDesc1" xml:space="preserve">
+    <value>Open from Dashboard menu (⋯) → Graph View</value>
+  </data>
+  <data name="HelpGraphViewDesc2" xml:space="preserve">
+    <value>Click a node to open the note</value>
+  </data>
+  <data name="HelpGraphViewDesc3" xml:space="preserve">
+    <value>Scroll to zoom, drag to pan the view</value>
+  </data>
+  
+  <!-- Timeline Help -->
+  <data name="HelpTimelineTitle" xml:space="preserve">
+    <value>Timeline View</value>
+  </data>
+  <data name="HelpTimelineIntro" xml:space="preserve">
+    <value>Timeline shows your notes organized by creation date, making it easy to find notes from specific time periods.</value>
+  </data>
+  <data name="HelpTimelineOpen" xml:space="preserve">
+    <value>Opening Timeline</value>
+  </data>
+  <data name="HelpTimelineOpenDesc" xml:space="preserve">
+    <value>Click the 📅 button in Dashboard footer to open Timeline view.</value>
+  </data>
+  <data name="HelpTimelineFeatures" xml:space="preserve">
+    <value>Features</value>
+  </data>
+  <data name="HelpTimelineFeature1" xml:space="preserve">
+    <value>Notes grouped by date</value>
+  </data>
+  <data name="HelpTimelineFeature2" xml:space="preserve">
+    <value>Filter by date range</value>
+  </data>
+  <data name="HelpTimelineFeature3" xml:space="preserve">
+    <value>Click a note to open it</value>
+  </data>
+  
+  <!-- Shortcuts Help -->
+  <data name="HelpShortcutsTitle" xml:space="preserve">
+    <value>Keyboard Shortcuts</value>
+  </data>
+  <data name="HelpShortcutsGeneral" xml:space="preserve">
+    <value>General</value>
+  </data>
+  <data name="HelpShortcutsSnippets" xml:space="preserve">
+    <value>Snippets</value>
+  </data>
+  <data name="HelpShortcutsFormat" xml:space="preserve">
+    <value>Formatting</value>
+  </data>
+  <data name="HelpShortcutsHelp" xml:space="preserve">
+    <value>Help</value>
+  </data>
+  
+  <!-- Shortcut Descriptions -->
+  <data name="ShortcutNewNote" xml:space="preserve">
+    <value>Create new note</value>
+  </data>
+  <data name="ShortcutSave" xml:space="preserve">
+    <value>Save note</value>
+  </data>
+  <data name="ShortcutSearch" xml:space="preserve">
+    <value>Search in note</value>
+  </data>
+  <data name="ShortcutClose" xml:space="preserve">
+    <value>Close note window</value>
+  </data>
+  <data name="ShortcutHide" xml:space="preserve">
+    <value>Hide note window</value>
+  </data>
+  <data name="ShortcutSaveSnippet" xml:space="preserve">
+    <value>Save selection as snippet</value>
+  </data>
+  <data name="ShortcutInsertSnippet" xml:space="preserve">
+    <value>Open snippet browser</value>
+  </data>
+  <data name="ShortcutNextPlaceholder" xml:space="preserve">
+    <value>Next placeholder (in snippet)</value>
+  </data>
+  <data name="ShortcutPrevPlaceholder" xml:space="preserve">
+    <value>Previous placeholder</value>
+  </data>
+  <data name="ShortcutFormat" xml:space="preserve">
+    <value>Format code</value>
+  </data>
+  <data name="ShortcutCreateLink" xml:space="preserve">
+    <value>Create note link</value>
+  </data>
+  <data name="ShortcutFollowLink" xml:space="preserve">
+    <value>Follow link</value>
+  </data>
+  <data name="ShortcutHelp" xml:space="preserve">
+    <value>Open help</value>
+  </data>
+  
+  <!-- Shortcut Categories -->
+  <data name="ShortcutCategoryGeneral" xml:space="preserve">
+    <value>General</value>
+  </data>
+  <data name="ShortcutCategorySnippets" xml:space="preserve">
+    <value>Snippets</value>
+  </data>
+  <data name="ShortcutCategoryFormat" xml:space="preserve">
+    <value>Formatting</value>
+  </data>
+  <data name="ShortcutCategoryNavigation" xml:space="preserve">
+    <value>Navigation</value>
+  </data>
+  <data name="ShortcutCategoryHelp" xml:space="preserve">
+    <value>Help</value>
+  </data>
+  <data name="ShortcutsFooter" xml:space="preserve">
+    <value>Press F1 anytime to open this panel</value>
+  </data>
+  
+  <!-- Tips -->
+  <data name="HelpTipsTitle" xml:space="preserve">
+    <value>Tips &amp; Tricks</value>
+  </data>
+  <data name="HelpTip1" xml:space="preserve">
+    <value>Double-click a note title in Dashboard to rename it inline</value>
+  </data>
+  <data name="HelpTip2" xml:space="preserve">
+    <value>Drag notes to group headers to organize them quickly</value>
+  </data>
+  <data name="HelpTip3" xml:space="preserve">
+    <value>Use Markdown language for notes with formatting - toggle preview with the eye icon</value>
+  </data>
+  <data name="HelpTip4" xml:space="preserve">
+    <value>Pin important notes to keep them always visible on top</value>
+  </data>
+  <data name="HelpTip5" xml:space="preserve">
+    <value>Export your notes regularly using Settings → Backup &amp; Restore</value>
+  </data>
+  <data name="HelpTip6" xml:space="preserve">
+    <value>Use snippets with placeholders like ${1:name} for dynamic content</value>
+  </data>
+  
+  <!-- Menu Items -->
+  <data name="Help" xml:space="preserve">
+    <value>Help</value>
+  </data>
+  <data name="KanbanView" xml:space="preserve">
+    <value>Kanban View</value>
+  </data>
+  <data name="TimelineView" xml:space="preserve">
+    <value>Timeline View</value>
+  </data>
 </root>

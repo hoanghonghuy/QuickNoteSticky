@@ -63,6 +63,9 @@ public partial class DashboardWindow : Window
         
         // Subscribe to language changes to update UI text
         LocalizationService.Instance.LanguageChanged += OnLanguageChanged;
+        
+        // Add F1 key handler for help
+        KeyDown += OnWindowKeyDown;
     }
     
     /// <summary>
@@ -395,6 +398,28 @@ public partial class DashboardWindow : Window
         {
             System.Diagnostics.Debug.WriteLine($"Failed to open Timeline view: {ex.Message}\n{ex.StackTrace}");
             CustomDialog.ShowInfo(L.Get("Error"), $"{L.Get("TimelineViewNotAvailable")}\n{ex.Message}", this);
+        }
+    }
+
+    // Help System
+    private void BtnHelp_Click(object sender, RoutedEventArgs e)
+    {
+        var window = new HelpWindow { Owner = this };
+        window.ShowDialog();
+    }
+
+    private void BtnKeyboardShortcuts_Click(object sender, RoutedEventArgs e)
+    {
+        var window = new KeyboardShortcutsWindow { Owner = this };
+        window.ShowDialog();
+    }
+
+    private void OnWindowKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key == Key.F1)
+        {
+            BtnKeyboardShortcuts_Click(sender, e);
+            e.Handled = true;
         }
     }
 

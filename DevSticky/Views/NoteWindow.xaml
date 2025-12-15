@@ -237,9 +237,9 @@
                         <Button x:Name="BtnPin" Content="●" Style="{StaticResource NoteIconBtn}" 
                                 Click="BtnPin_Click" ToolTip="{loc:Localize Pin}"/>
                         <Button Content="🔎" Style="{StaticResource NoteIconBtn}" 
-                                Click="BtnSearch_Click" ToolTip="{loc:Localize Search}"/>
+                                Click="BtnSearch_Click" ToolTip="Search (Ctrl+F)"/>
                         <Button Content="✕" Style="{StaticResource CloseBtn}" 
-                                Click="BtnClose_Click" ToolTip="{loc:Localize Close}"/>
+                                Click="BtnClose_Click" ToolTip="Close (Ctrl+W)"/>
                     </StackPanel>
                 </Grid>
             </Border>

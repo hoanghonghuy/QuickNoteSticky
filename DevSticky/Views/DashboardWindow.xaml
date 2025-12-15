@@ -425,6 +425,15 @@
                                     <MenuItem Header="{loc:Localize GraphView}" Click="BtnGraphView_Click"/>
                                     <MenuItem Header="{loc:Localize ManageGroups}" Click="BtnManageGroups_Click"/>
                                     <MenuItem Header="{loc:Localize ManageTags}" Click="BtnManageTags_Click"/>
+                                    <MenuItem IsEnabled="False" Height="1" Margin="0,4">
+                                        <MenuItem.Template>
+                                            <ControlTemplate>
+                                                <Border Background="{DynamicResource Surface2Brush}" Height="1"/>
+                                            </ControlTemplate>
+                                        </MenuItem.Template>
+                                    </MenuItem>
+                                    <MenuItem Header="{loc:Localize Help}" Click="BtnHelp_Click"/>
+                                    <MenuItem Header="{loc:Localize KeyboardShortcuts}" Click="BtnKeyboardShortcuts_Click"/>
                                 </ContextMenu>
                             </Button.ContextMenu>
                         </Button>
