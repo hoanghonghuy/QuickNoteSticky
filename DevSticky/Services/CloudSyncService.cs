@@ -656,9 +656,6 @@ public class CloudSyncService : ICloudSyncService, ICloudConnection, ICloudSync,
             {
                 _pendingChanges.Clear();
             }
-            
-            // Clear sync queue
-            while (_syncQueue.TryDequeue(out _)) { }
         }
     }
 }

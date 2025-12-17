@@ -27,12 +27,13 @@ public class CrashAnalyticsService : ICrashAnalyticsService
     private readonly List<RecoveryAttempt> _sessionRecoveries = new();
     private readonly List<SafeModeUsage> _sessionSafeModeUsages = new();
     
-    public CrashAnalyticsService(IFileSystem fileSystem, IErrorHandler errorHandler)
+    public CrashAnalyticsService(IFileSystem fileSystem, IErrorHandler errorHandler, string? analyticsPath = null)
     {
         _fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
         _errorHandler = errorHandler ?? throw new ArgumentNullException(nameof(errorHandler));
         
-        _analyticsDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "DevSticky", "Analytics");
+        // Allow overriding base path for tests to avoid leaking state into %APPDATA%
+        _analyticsDirectory = analyticsPath ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "DevSticky", "Analytics");
         _crashHistoryFile = Path.Combine(_analyticsDirectory, "crash_history.json");
         _recoveryStatsFile = Path.Combine(_analyticsDirectory, "recovery_stats.json");
         _safeModeStatsFile = Path.Combine(_analyticsDirectory, "safe_mode_stats.json");
@@ -421,6 +422,7 @@ public class CrashAnalyticsService : ICrashAnalyticsService
         }
         catch
         {
+            try { await _fileSystem.DeleteFileAsync(_failurePatternsFile); } catch { }
             return new FailurePatternsData();
         }
     }

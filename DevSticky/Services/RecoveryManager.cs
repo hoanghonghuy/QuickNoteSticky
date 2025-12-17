@@ -133,34 +133,48 @@ public class RecoveryManager : IRecoveryManager
     /// </summary>
     public async Task<RecoveryResult> RecoverMissingDirectoriesAsync(string directoryPath)
     {
-        return await _errorHandler.HandleWithFallbackAsync(async () =>
+        return await _errorHandler.HandleWithFallbackAsync(() =>
         {
-            if (!_fileSystem.DirectoryExists(directoryPath))
+            if (string.IsNullOrWhiteSpace(directoryPath))
             {
-                _fileSystem.CreateDirectory(directoryPath);
-                
-                // If this is the main app data directory, create subdirectories
-                if (directoryPath.Equals(_appDataPath, StringComparison.OrdinalIgnoreCase))
+                return Task.FromResult(new RecoveryResult
                 {
-                    var backupDir = PathHelper.Combine(_appDataPath, "backups");
-                    var logsDir = PathHelper.Combine(_appDataPath, "logs");
-                    
-                    if (!_fileSystem.DirectoryExists(backupDir))
-                        _fileSystem.CreateDirectory(backupDir);
-                    
-                    if (!_fileSystem.DirectoryExists(logsDir))
-                        _fileSystem.CreateDirectory(logsDir);
-                }
+                    IsSuccessful = false,
+                    Action = RecoveryAction.CreateMissingDirectories,
+                    Message = "Invalid directory path"
+                });
             }
 
-            await Task.CompletedTask; // Make method async for consistency
+            if (_fileSystem.DirectoryExists(directoryPath))
+            {
+                return Task.FromResult(new RecoveryResult
+                {
+                    IsSuccessful = false,
+                    Action = RecoveryAction.CreateMissingDirectories,
+                    Message = $"Directory already exists: {directoryPath}"
+                });
+            }
 
-            return new RecoveryResult
+            _fileSystem.CreateDirectory(directoryPath);
+            
+            if (directoryPath.Equals(_appDataPath, StringComparison.OrdinalIgnoreCase))
+            {
+                var backupDir = PathHelper.Combine(_appDataPath, "backups");
+                var logsDir = PathHelper.Combine(_appDataPath, "logs");
+                
+                if (!_fileSystem.DirectoryExists(backupDir))
+                    _fileSystem.CreateDirectory(backupDir);
+                
+                if (!_fileSystem.DirectoryExists(logsDir))
+                    _fileSystem.CreateDirectory(logsDir);
+            }
+
+            return Task.FromResult(new RecoveryResult
             {
                 IsSuccessful = true,
                 Action = RecoveryAction.CreateMissingDirectories,
                 Message = $"Successfully created directory structure: {directoryPath}"
-            };
+            });
         },
         new RecoveryResult
         {
@@ -385,16 +399,16 @@ public class RecoveryManager : IRecoveryManager
             if (!_fileSystem.FileExists(configPath))
                 return null;
 
-            // Ensure backup directory exists
-            if (!_fileSystem.DirectoryExists(_backupPath))
+            var directory = _fileSystem.GetDirectoryName(configPath) ?? _appDataPath;
+            if (!_fileSystem.DirectoryExists(directory))
             {
-                _fileSystem.CreateDirectory(_backupPath);
+                _fileSystem.CreateDirectory(directory);
             }
 
             var fileName = Path.GetFileName(configPath);
-            var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-            var backupFileName = $"{Path.GetFileNameWithoutExtension(fileName)}_backup_{timestamp}{Path.GetExtension(fileName)}";
-            var backupFilePath = PathHelper.Combine(_backupPath, backupFileName);
+            var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss_fffffff");
+            var backupFileName = $"{fileName}.backup_{timestamp}_{Guid.NewGuid():N}";
+            var backupFilePath = PathHelper.Combine(directory, backupFileName);
 
             var content = await _fileSystem.ReadAllTextAsync(configPath);
             await _fileSystem.WriteAllTextAsync(backupFilePath, content);

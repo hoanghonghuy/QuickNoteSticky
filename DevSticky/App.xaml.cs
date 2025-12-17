@@ -1130,22 +1130,25 @@ public partial class App : Application
             _performanceMonitoringService?.Dispose();
             _startupDiagnostics?.Dispose();
             
-            // Dispose all services that implement IDisposable
-            try
-            {
-                (ServiceProvider.GetService<IDebounceService>() as IDisposable)?.Dispose();
-                (ServiceProvider.GetService<IThemeService>() as IDisposable)?.Dispose();
-                (ServiceProvider.GetService<IHotkeyService>() as IDisposable)?.Dispose();
-                (ServiceProvider.GetService<IMonitorService>() as IDisposable)?.Dispose();
-                (ServiceProvider.GetService<ICloudSyncService>() as IDisposable)?.Dispose();
-                
-                // Dispose the service provider itself if it implements IDisposable
-                (_serviceProvider as IDisposable)?.Dispose();
-            }
-            catch
-            {
-                // Ignore disposal errors during shutdown
-            }
+// Dispose all services that implement IDisposable
+try
+{
+    if (_serviceProvider != null)
+    {
+        (ServiceProvider.GetService<IDebounceService>() as IDisposable)?.Dispose();
+        (ServiceProvider.GetService<IThemeService>() as IDisposable)?.Dispose();
+        (ServiceProvider.GetService<IHotkeyService>() as IDisposable)?.Dispose();
+        (ServiceProvider.GetService<IMonitorService>() as IDisposable)?.Dispose();
+        (ServiceProvider.GetService<ICloudSyncService>() as IDisposable)?.Dispose();
+        
+        // Dispose the service provider itself if it implements IDisposable
+        (_serviceProvider as IDisposable)?.Dispose();
+    }
+}
+catch
+{
+    // Ignore disposal errors during shutdown
+}
         }
         catch
         {
@@ -1162,7 +1165,7 @@ public partial class App : Application
         return ServiceProvider.GetRequiredService<T>();
     }
 
-    /// <summary>
+/// <summary>
     /// Handle critical startup failure with recovery attempts and error dialog
     /// </summary>
     private async Task<bool> HandleCriticalStartupFailure(
@@ -1211,6 +1214,7 @@ public partial class App : Application
         {
             // If error handling itself fails, just show basic message and exit
             Debug.WriteLine($"Error handling failed: {dialogEx.Message}");
+            Debug.WriteLine($"Original exception: {exception.Message}");
             ShowCriticalStartupErrorDialog(exception);
             return false;
         }

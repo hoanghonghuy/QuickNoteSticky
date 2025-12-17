@@ -74,7 +74,7 @@ public class SafeModeControllerUnitTests : IDisposable
         CleanupSafeModeConfig();
         
         // Act
-        var controller = new SafeModeController(null, null);
+        var controller = new SafeModeController((IFileSystem)null, null);
         _controllers.Add(controller);
 
         // Assert
@@ -482,29 +482,24 @@ public class SafeModeControllerUnitTests : IDisposable
     [Fact]
     public void GetSafeModeStatus_WhenNotActive_ShouldReturnInactiveStatus()
     {
-        // Arrange - ensure clean state and use isolated file system
-        CleanupSafeModeConfig();
-        
-        // Create a test file system that doesn't persist configuration
-        var testFileSystem = new TestFileSystem();
-        var controller = new SafeModeController(testFileSystem, null);
+        // Arrange - use default configuration to bypass file system loading entirely
+        var defaultConfig = SafeModeConfig.CreateDefault();
+        var controller = new SafeModeController(defaultConfig, null);
         _controllers.Add(controller);
         
-        // Ensure safe mode is deactivated (in case it was activated by previous tests)
-        if (controller.IsInSafeMode)
-        {
-            controller.DeactivateSafeMode();
-        }
-        
-        // Verify the controller is not in safe mode
-        Assert.False(controller.IsInSafeMode, $"Controller should not be in safe mode after deactivation. Config.IsEnabled: {controller.Configuration.IsEnabled}, Config.Reason: '{controller.Configuration.Reason}'");
+        // Verify the controller is not in safe mode after creation
+        var initialConfig = controller.Configuration;
+        Assert.False(controller.IsInSafeMode, $"Controller should not be in safe mode after creation. Config.IsEnabled: {initialConfig.IsEnabled}, Config.Reason: '{initialConfig.Reason}'");
+        Assert.False(initialConfig.IsEnabled, "Initial configuration should have IsEnabled = false");
+        Assert.Equal(string.Empty, initialConfig.Reason);
+        Assert.Equal(0, initialConfig.StartupFailures.Count);
         
         // Act
         var status = controller.GetSafeModeStatus();
 
         // Assert
         Assert.NotNull(status);
-        Assert.False(status.IsActive);
+        Assert.False(status.IsActive, "Status should indicate safe mode is not active");
         Assert.True(string.IsNullOrEmpty(status.Reason));
         Assert.Null(status.ActivatedAt);
         Assert.Empty(status.DisabledServices);

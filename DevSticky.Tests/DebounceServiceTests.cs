@@ -32,11 +32,26 @@ public class DebounceServiceTests
         using var resetEvent = new ManualResetEventSlim(false);
         var executionCount = 0;
         var delay = 300;
+        var latch = new object();
 
         // Act
-        service.Debounce("test", () => { executionCount++; resetEvent.Set(); }, delay);
+        service.Debounce("test", () =>
+        {
+            lock (latch)
+            {
+                executionCount++;
+                resetEvent.Set();
+            }
+        }, delay);
         Thread.Sleep(150); // Wait half the delay
-        service.Debounce("test", () => { executionCount++; resetEvent.Set(); }, delay); // Reset timer
+        service.Debounce("test", () =>
+        {
+            lock (latch)
+            {
+                executionCount++;
+                resetEvent.Set();
+            }
+        }, delay); // Reset timer
         resetEvent.Wait(delay + 200); // Wait for action to execute
 
         // Assert - should only execute once (the second call)
@@ -67,17 +82,37 @@ public class DebounceServiceTests
         using var service = new DebounceService();
         using var resetEvent1 = new ManualResetEventSlim(false);
         using var resetEvent2 = new ManualResetEventSlim(false);
+        var executed1 = false;
+        var executed2 = false;
+        var latch = new object();
         var delay = 300;
 
         // Act
-        service.Debounce("key1", () => resetEvent1.Set(), delay);
-        service.Debounce("key2", () => resetEvent2.Set(), delay);
-        var executed1 = resetEvent1.Wait(delay + 200);
-        var executed2 = resetEvent2.Wait(delay + 200);
+        service.Debounce("key1", () =>
+        {
+            lock (latch)
+            {
+                executed1 = true;
+                resetEvent1.Set();
+            }
+        }, delay);
+        service.Debounce("key2", () =>
+        {
+            lock (latch)
+            {
+                executed2 = true;
+                resetEvent2.Set();
+            }
+        }, delay);
+        var waitResult1 = resetEvent1.Wait(delay + 200);
+        var waitResult2 = resetEvent2.Wait(delay + 200);
+
+        // Wait a bit more to ensure both have had time to execute
+        Thread.Sleep(50);
 
         // Assert
-        Assert.True(executed1);
-        Assert.True(executed2);
+        Assert.True(waitResult1 && executed1, "Key1 should execute");
+        Assert.True(waitResult2 && executed2, "Key2 should execute");
     }
 
     [Fact]

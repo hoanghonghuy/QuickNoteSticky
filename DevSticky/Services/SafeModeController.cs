@@ -27,17 +27,45 @@ public class SafeModeController : ISafeModeController
     /// <inheritdoc />
     public SafeModeConfig Configuration => _configuration;
 
-    /// <summary>
-    /// Initializes a new instance of SafeModeController
-    /// </summary>
-    /// <param name="fileSystem">File system service for configuration persistence</param>
-    /// <param name="exceptionLogger">Exception logger for error tracking</param>
-    public SafeModeController(IFileSystem? fileSystem = null, IExceptionLogger? exceptionLogger = null)
-    {
-        _fileSystem = fileSystem;
-        _exceptionLogger = exceptionLogger;
-        _configuration = LoadConfiguration();
-    }
+/// <summary>
+/// Initializes a new instance of SafeModeController
+/// </summary>
+/// <param name="fileSystem">File system service for configuration persistence</param>
+/// <param name="exceptionLogger">Exception logger for error tracking</param>
+public SafeModeController(IFileSystem? fileSystem = null, IExceptionLogger? exceptionLogger = null)
+{
+    _fileSystem = fileSystem;
+    _exceptionLogger = exceptionLogger;
+    // Load configuration from file, or create default if no file exists
+    _configuration = LoadConfiguration();
+}
+
+/// <summary>
+/// Initializes a new instance of SafeModeController with a specific configuration (for testing purposes)
+/// </summary>
+/// <param name="initialConfiguration">Initial configuration to use instead of loading from file</param>
+/// <param name="fileSystem">File system service for configuration persistence</param>
+/// <param name="exceptionLogger">Exception logger for error tracking</param>
+public SafeModeController(SafeModeConfig initialConfiguration, IFileSystem? fileSystem = null, IExceptionLogger? exceptionLogger = null)
+{
+    _fileSystem = fileSystem;
+    _exceptionLogger = exceptionLogger;
+    // Use the provided configuration instead of loading from file to prevent override
+    _configuration = initialConfiguration ?? SafeModeConfig.CreateDefault();
+}
+
+/// <summary>
+/// Initializes a new instance of SafeModeController with a specific configuration and no file system access (for testing purposes)
+/// </summary>
+/// <param name="initialConfiguration">Initial configuration to use instead of loading from file</param>
+/// <param name="exceptionLogger">Exception logger for error tracking</param>
+public SafeModeController(SafeModeConfig initialConfiguration, IExceptionLogger? exceptionLogger = null)
+{
+    _fileSystem = null;
+    _exceptionLogger = exceptionLogger;
+    // Use the provided configuration instead of loading from file to prevent override
+    _configuration = initialConfiguration ?? SafeModeConfig.CreateDefault();
+}
 
     /// <inheritdoc />
     public void ActivateSafeMode(string reason)

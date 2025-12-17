@@ -277,10 +277,9 @@ public class StartupValidator : IStartupValidator
                 }
                 catch (Exception ex)
                 {
-                    result.AddIssue(ValidationIssue.FromException(
+                    result.AddIssue(ValidationIssue.Warning(
                         "ServiceValidation",
-                        ex,
-                        ValidationSeverity.Warning,
+                        $"Optional service {serviceType.Name} missing or not registered: {ex.Message}",
                         $"Check {serviceType.Name} registration if this service is needed"));
                 }
             }

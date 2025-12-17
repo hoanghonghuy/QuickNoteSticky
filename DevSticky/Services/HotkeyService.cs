@@ -42,16 +42,22 @@ public class HotkeyService : IHotkeyService
 
     public HotkeyService()
     {
-        // Create hidden window for receiving hotkey messages
+        // Create hidden window for receiving hotkey messages when WPF context is available
         CreateMessageWindow();
     }
 
     private void CreateMessageWindow()
     {
-        // Must be called on UI thread
-        Application.Current.Dispatcher.Invoke(() =>
+        // Guard: in unit tests or early startup Application.Current can be null → avoid NRE
+        var dispatcher = Application.Current?.Dispatcher;
+        if (dispatcher == null)
         {
-            // Create a hidden window to receive WM_HOTKEY messages
+            _windowHandle = IntPtr.Zero;
+            return;
+        }
+
+        dispatcher.Invoke(() =>
+        {
             var parameters = new HwndSourceParameters("DevStickyHotkeyWindow")
             {
                 Width = 0,
@@ -317,11 +323,11 @@ public class HotkeyService : IHotkeyService
         if (_disposed) return;
         _disposed = true;
 
-        // Always clean up unmanaged resources (Win32 hotkeys)
-        UnregisterAll();
-
         if (disposing)
         {
+            // Clear event subscriptions to prevent memory leaks
+            HotkeyPressed = null;
+            
             // Clean up managed resources
             Application.Current?.Dispatcher.Invoke(() =>
             {
@@ -330,5 +336,8 @@ public class HotkeyService : IHotkeyService
                 _hwndSource = null;
             });
         }
+
+        // Always clean up unmanaged resources (Win32 hotkeys)
+        UnregisterAll();
     }
 }

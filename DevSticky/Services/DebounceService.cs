@@ -11,7 +11,23 @@ public class DebounceService : IDebounceService, IDisposable
 {
     private readonly ConcurrentDictionary<string, DebounceEntry> _entries = new();
     private readonly object _lock = new();
+    private readonly ITaskScheduler _taskScheduler;
     private bool _disposed;
+
+    /// <summary>
+    /// Default constructor that creates a default task scheduler
+    /// </summary>
+    public DebounceService() : this(new DefaultTaskScheduler())
+    {
+    }
+
+    /// <summary>
+    /// Constructor that accepts a task scheduler for better testability
+    /// </summary>
+    public DebounceService(ITaskScheduler taskScheduler)
+    {
+        _taskScheduler = taskScheduler;
+    }
 
     /// <summary>
     /// Debounces an action by key. If called again before the delay expires,
@@ -40,7 +56,7 @@ public class DebounceService : IDebounceService, IDisposable
             {
                 try
                 {
-                    await Task.Delay(milliseconds, cts.Token);
+                    await _taskScheduler.Delay(milliseconds, cts.Token);
                     
                     // Check if this entry is still current and execute
                     lock (_lock)

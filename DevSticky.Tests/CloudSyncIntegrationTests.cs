@@ -97,6 +97,7 @@ public class CloudSyncIntegrationTests : IDisposable
 
         // Act
         await _cloudSyncService.ConnectAsync(CloudProvider.OneDrive);
+        _cloudSyncService.SetEncryptionPassphrase("test-passphrase"); // Enable encryption
         await _cloudSyncService.SyncAsync();
 
         // Assert - Data should be encrypted before upload
@@ -239,10 +240,14 @@ public class CloudSyncIntegrationTests : IDisposable
     {
         public byte[] Encrypt(byte[] data, string passphrase)
         {
+            // In a real encryption service, this would fully encrypt the data
+            // For testing purposes, we'll use a simple transformation that hides the original content
+            var content = Convert.ToBase64String(data); // This will hide the original content
             var prefix = System.Text.Encoding.UTF8.GetBytes("ENCRYPTED:");
-            var result = new byte[prefix.Length + data.Length];
+            var transformedContent = System.Text.Encoding.UTF8.GetBytes(content);
+            var result = new byte[prefix.Length + transformedContent.Length];
             Array.Copy(prefix, 0, result, 0, prefix.Length);
-            Array.Copy(data, 0, result, prefix.Length, data.Length);
+            Array.Copy(transformedContent, 0, result, prefix.Length, transformedContent.Length);
             return result;
         }
 
@@ -251,9 +256,10 @@ public class CloudSyncIntegrationTests : IDisposable
             var prefix = System.Text.Encoding.UTF8.GetBytes("ENCRYPTED:");
             if (encryptedData.Length > prefix.Length)
             {
-                var result = new byte[encryptedData.Length - prefix.Length];
-                Array.Copy(encryptedData, prefix.Length, result, 0, result.Length);
-                return result;
+                var encryptedContent = new byte[encryptedData.Length - prefix.Length];
+                Array.Copy(encryptedData, prefix.Length, encryptedContent, 0, encryptedContent.Length);
+                var base64Content = System.Text.Encoding.UTF8.GetString(encryptedContent);
+                return Convert.FromBase64String(base64Content);
             }
             return encryptedData;
         }

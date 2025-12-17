@@ -37,7 +37,7 @@ public class SafeModeControllerPropertyTests : IDisposable
     public void SafeModeController_ActivateSafeMode_ShouldSetIsInSafeModeToTrue()
     {
         // Arrange
-        var controller = new SafeModeController(null, null);
+        var controller = new SafeModeController((IFileSystem)null, null);
         
         // Act
         controller.ActivateSafeMode("Test reason");
